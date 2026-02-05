@@ -1,0 +1,265 @@
+"""Core map abstraction for LLMaps.
+
+This module defines the public ``Map`` class that is used in examples and
+high-level documentation. The implementation is intentionally small and
+data-oriented: it focuses on building a serialisable configuration that
+can be consumed by the HTML/JS generator.
+
+The goal is to provide a predictable, LLM-friendly API rather than a
+feature-complete mapping framework.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence
+
+from .components.base import BaseComponent
+from .layers.base import BaseLayer
+from .tiles import resolve_tile_provider
+
+
+@dataclass
+class Map:
+    """High-level map configuration.
+
+    Parameters
+    ----------
+    center:
+        Initial map center as ``[lon, lat]``.
+    zoom:
+        Initial zoom level, typically between 0 and 22.
+    title:
+        Optional map title used in HTML.
+    tiles:
+        Tile provider identifier, e.g. ``"osm"`` or ``"carto-light"``.
+    """
+
+    center: Sequence[float]
+    zoom: float = 10.0
+    title: Optional[str] = None
+    tiles: str = "osm"
+    tile_providers: Optional[Sequence[str]] = None
+    embedded: bool = False
+    use_compression: bool = False
+
+    _layers: List[BaseLayer] = field(default_factory=list, init=False, repr=False)
+    _components: List[BaseComponent] = field(default_factory=list, init=False, repr=False)
+    _comparison: Optional[Dict[str, List[str]]] = field(
+        default=None, init=False, repr=False
+    )
+
+    def add_layer(self, layer: BaseLayer) -> "Map":
+        """Attach a visual layer to the map.
+
+        The method returns ``self`` to support method chaining::
+
+            map.add_layer(layer).add_component(legend).save("map.html")
+        """
+
+        self._layers.append(layer)
+        return self
+
+    def add_component(self, component: BaseComponent) -> "Map":
+        """Attach a UI component (legend, popup, controls, …).
+
+        Returns ``self`` to support method chaining.
+        """
+
+        self._components.append(component)
+        return self
+
+    def enable_comparison(
+        self, left_layers: List[str], right_layers: List[str]
+    ) -> "Map":
+        """Enable before/after comparison: two maps with a slider.
+
+        Left map shows left_layers, right map shows right_layers.
+        Layer ids must exist on this map.
+
+        Returns ``self`` for chaining.
+        """
+        layer_ids = {layer.id for layer in self._layers}
+        missing = set(left_layers + right_layers) - layer_ids
+        if missing:
+            raise ValueError(f"Layers not found: {', '.join(sorted(missing))}")
+        self._comparison = {"left_layers": list(left_layers), "right_layers": list(right_layers)}
+        return self
+
+    # ------------------------------------------------------------------
+    # Serialisation helpers
+    # ------------------------------------------------------------------
+    def _tile_config(self) -> Dict[str, Any]:
+        return resolve_tile_provider(self.tiles)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a serialisable representation of the map.
+
+        This configuration is consumed by the HTML/JS generator and is
+        intentionally conservative: plain dicts, lists and primitives only.
+        """
+
+        out: Dict[str, Any] = {
+            "title": self.title,
+            "center": list(self.center),
+            "zoom": self.zoom,
+            "tiles": self._tile_config(),
+            "layers": [layer.to_dict() for layer in self._layers],
+        }
+        if self.tile_providers is not None:
+            out["tile_providers"] = [
+                resolve_tile_provider(pid) for pid in self.tile_providers
+            ]
+        out["components"] = [component.to_dict() for component in self._components]
+        out["embedded"] = self.embedded
+        out["use_compression"] = self.use_compression
+        # Collect unique sources from layers for frontend
+        source_ids = set()
+        for layer in self._layers:
+            source_ids.add(layer.source.id)
+        sources_dict: Dict[str, Any] = {}
+        for layer in self._layers:
+            sid = layer.source.id
+            if sid not in sources_dict:
+                sources_dict[sid] = layer.source.to_dict()
+        out["sources"] = sources_dict
+        geojson_source_ids = [
+            sid for sid, s in sources_dict.items() if s.get("type") != "vector"
+        ]
+        out["visibility_optimization_source_ids"] = geojson_source_ids
+        if self._comparison is not None:
+            out["comparison"] = self._comparison
+        return out
+
+    # ------------------------------------------------------------------
+    # Output helpers
+    # ------------------------------------------------------------------
+    def _build_embedded_sources(self) -> Dict[str, Any]:
+        """Load and optionally aggregate data for all file-based sources.
+
+        Used when embedded=True. Returns dict source_id -> GeoJSON for
+        FileSource and H3-aggregated data. Mutates H3Layer stats.
+        """
+        from .core.utils import (
+            aggregate_h3,
+            compute_value_stats,
+            gdf_to_geojson_dict,
+            load_gdf,
+        )
+        from .layers.h3 import H3Layer
+        from .sources.file import FileSource
+
+        embedded: Dict[str, Any] = {}
+        seen: set = set()
+
+        for layer in self._layers:
+            src = layer.source
+            if not isinstance(src, FileSource) or src.id in seen:
+                continue
+            seen.add(src.id)
+            gdf = load_gdf(src)
+            if gdf is None or gdf.empty:
+                continue
+            if isinstance(layer, H3Layer):
+                gdf = aggregate_h3(
+                    gdf,
+                    resolution=layer.resolution,
+                    aggregation=layer.aggregation,
+                    h3_column=layer.h3_column,
+                    value_field=layer.property_field if layer.aggregation != "count" else None,
+                )
+                layer.set_stats(compute_value_stats(gdf, layer.property_field))
+            geojson = gdf_to_geojson_dict(gdf)
+            if self.use_compression:
+                from .optimizers.compression import compress_geojson_dict
+                embedded[src.id] = compress_geojson_dict(geojson)
+            else:
+                embedded[src.id] = geojson
+
+        return embedded
+
+    def to_html(self) -> str:
+        """Render the map to a standalone HTML string.
+
+        The actual HTML is produced by :mod:`llmaps.core.generator` and
+        the Jinja2 templates under ``llmaps/templates/``. Import is
+        local to keep import times low when only the configuration API
+        is needed.
+        """
+        from .core.generator import render_map_html  # lazy import
+
+        config = self.to_dict()
+        if self.embedded:
+            config["embedded_sources"] = self._build_embedded_sources()
+        return render_map_html(config)
+
+    def save(self, path: str | Path) -> "Map":
+        """Render the map and write it to *path*.
+
+        Returns ``self`` to allow method chaining.
+        """
+
+        html = self.to_html()
+        output_path = Path(path)
+        output_path.write_text(html, encoding="utf-8")
+        return self
+
+    def auto_extent(
+        self,
+        sources: Optional[Sequence[Any]] = None,
+        padding: float = 0.1,
+    ) -> "Map":
+        """Set center and zoom from data bounds.
+
+        Loads geometry from all layer sources (or from *sources* if given),
+        computes the combined bounding box, then sets center and zoom.
+        ApiSource and VectorTile sources are skipped (no local geometry).
+
+        Returns ``self`` for chaining.
+        """
+        from .core.utils import (
+            bounds_center,
+            bounds_to_zoom,
+            load_gdf,
+            aggregate_h3,
+        )
+        from .layers.h3 import H3Layer
+
+        include_ids = {layer.source.id for layer in self._layers}
+        if sources is not None:
+            include_ids = {
+                getattr(s, "id", s) for s in sources
+            }
+
+        bounds_list: List[Sequence[float]] = []
+        for layer in self._layers:
+            if layer.source.id not in include_ids:
+                continue
+            gdf = load_gdf(layer.source)
+            if gdf is None or gdf.empty:
+                continue
+            if isinstance(layer, H3Layer):
+                gdf = aggregate_h3(
+                    gdf,
+                    resolution=layer.resolution,
+                    aggregation=layer.aggregation,
+                    h3_column=layer.h3_column,
+                    value_field=layer.property_field if layer.aggregation != "count" else None,
+                )
+            if gdf is not None and not gdf.empty:
+                bounds_list.append(gdf.total_bounds)
+
+        if not bounds_list:
+            return self
+
+        minx = min(b[0] for b in bounds_list)
+        miny = min(b[1] for b in bounds_list)
+        maxx = max(b[2] for b in bounds_list)
+        maxy = max(b[3] for b in bounds_list)
+        bounds = (minx, miny, maxx, maxy)
+
+        self.center = bounds_center(bounds)
+        self.zoom = float(bounds_to_zoom(bounds, padding=padding))
+        return self
+

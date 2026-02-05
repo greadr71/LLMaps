@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>H3 heatmap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      #map-root {
+        position: absolute;
+        inset: 0;
+      }
+
+      .llmaps-comparison-wrap {
+        position: absolute;
+        inset: 0;
+      }
+      .llmaps-comparison-left,
+      .llmaps-comparison-right {
+        position: absolute;
+        inset: 0;
+      }
+      .llmaps-comparison-left {
+        z-index: 1;
+      }
+      .llmaps-comparison-right {
+        z-index: 0;
+      }
+      .llmaps-comparison-slider {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 8px;
+        margin-left: -4px;
+        background: rgba(0, 0, 0, 0.4);
+        cursor: ew-resize;
+        z-index: 2;
+      }
+      .llmaps-comparison-slider::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 24px;
+        height: 24px;
+        margin: -12px 0 0 -12px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      }
+      .llmaps-comparison-labels {
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        z-index: 3;
+        font-size: 11px;
+        color: #333;
+        text-shadow: 0 0 2px #fff;
+        pointer-events: none;
+      }
+      .llmaps-comparison-labels .left { position: absolute; left: 12px; }
+      .llmaps-comparison-labels .right { position: absolute; right: 12px; }
+
+      .llmaps-legend {
+        position: absolute;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 8px 10px;
+        font-size: 12px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      }
+
+      .llmaps-legend.top-left { top: 10px; left: 10px; }
+      .llmaps-legend.top-right { top: 10px; right: 10px; }
+      .llmaps-legend.bottom-left { bottom: 10px; left: 10px; }
+      .llmaps-legend.bottom-right { bottom: 10px; right: 10px; }
+
+      .llmaps-search-wrap {
+        position: absolute;
+        z-index: 10;
+        padding: 8px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      }
+      .llmaps-search-wrap.top-left { top: 10px; left: 10px; }
+      .llmaps-search-wrap.top-right { top: 10px; right: 10px; }
+      .llmaps-search-wrap input {
+        width: 200px;
+        padding: 6px 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .llmaps-search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 8px;
+        right: 8px;
+        margin-top: 2px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+      }
+      .llmaps-search-suggestions.visible { display: block; }
+      .llmaps-search-suggestions div {
+        padding: 8px;
+        cursor: pointer;
+      }
+      .llmaps-search-suggestions div:hover { background: #f0f0f0; }
+    </style>
+  </head>
+  <body>
+    <div id="map-root"></div>
+    <script id="llmaps-config" type="application/json">
+      {"title": "H3 heatmap", "center": [9.607274177874132, 49.96081811092728], "zoom": 4.0, "tiles": {"id": "osm", "name": "OpenStreetMap", "url_template": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "subdomains": ["a", "b", "c"], "attribution": "\u00a9 OpenStreetMap contributors"}, "layers": [{"id": "h3-heat", "type": "fill", "source": "points", "visible": true, "metadata": {"h3_column": null, "resolution": 5, "aggregation": "count", "property_field": "value"}, "paint": {"fill-color": ["interpolate", ["linear"], ["get", "value"], 0.0, "#ffffcc", 1.0, "#800026"], "fill-opacity": 0.7}}], "components": [{"type": "legend", "position": "top-right", "show_toggle": true, "layer_labels": {"h3-heat": "Point count"}, "layer_counts": {}}], "embedded": true, "sources": {"points": {"id": "points", "type": "file", "path": "/Users/sergeyabramov/Yandex.Disk.localized/llmaps/examples/data/synthetic_points.geojson", "format": "geojson"}}, "embedded_sources": {"points": {"type": "FeatureCollection", "features": [{"id": "0", "type": "Feature", "properties": {"h3_index": "851f8867fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[11.241956062269134, 47.170712890749655], [11.249970596132995, 47.0849142878625], [11.367552628402008, 47.05093864520658], [11.47733960466216, 47.10274080032313], [11.46956848834111, 47.18858115183919], [11.351766717633048, 47.222577748031306], [11.241956062269134, 47.170712890749655]]]}, "bbox": [11.241956062269134, 47.05093864520658, 11.47733960466216, 47.222577748031306]}, {"id": "1", "type": "Feature", "properties": {"h3_index": "851f802bfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[7.284297038619721, 47.81473571973198], [7.29659575876108, 47.73084257308784], [7.414341583258513, 47.70168770650223], [7.520036606778442, 47.75641941292082], [7.50796730873697, 47.84036667025851], [7.389973211351245, 47.86952823905815], [7.284297038619721, 47.81473571973198]]]}, "bbox": [7.284297038619721, 47.70168770650223, 7.520036606778442, 47.86952823905815]}, {"id": "2", "type": "Feature", "properties": {"h3_index": "851fa1affffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[7.7550804863365705, 50.88026122019259], [7.7673993929438145, 50.79956432449236], [7.890409241935247, 50.77207662244327], [8.001367269330355, 50.82527225862496], [7.9893008275813155, 50.9060167378043], [7.866023502185736, 50.93351813914698], [7.7550804863365705, 50.88026122019259]]]}, "bbox": [7.7550804863365705, 50.77207662244327, 8.001367269330355, 50.93351813914698]}, {"id": "3", "type": "Feature", "properties": {"h3_index": "851f18abfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[13.308804634898495, 52.2140956522615], [13.314993589188756, 52.133538047752026], [13.441139165879912, 52.10074983028672], [13.56133040830253, 52.148483575064596], [13.555429547325046, 52.22906965348791], [13.42904909348943, 52.261893686834895], [13.308804634898495, 52.2140956522615]]]}, "bbox": [13.308804634898495, 52.10074983028672, 13.56133040830253, 52.261893686834895]}, {"id": "4", "type": "Feature", "properties": {"h3_index": "851f8557fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[7.134610840684689, 48.814311085819895], [7.147234796609164, 48.731521440698614], [7.266530960866828, 48.7032400388222], [7.373458680531233, 48.757740808472676], [7.3610696289105935, 48.84058332773736], [7.241517582057245, 48.86887233434691], [7.134610840684689, 48.814311085819895]]]}, "bbox": [7.134610840684689, 48.7032400388222, 7.373458680531233, 48.86887233434691]}, {"id": "5", "type": "Feature", "properties": {"h3_index": "851f82a7fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[6.784820787558942, 47.371280936945205], [6.797563490445442, 47.287121783676724], [6.914449057198748, 47.258210658864485], [7.018839517805845, 47.31345469509404], [7.006320917775808, 47.397670262956325], [6.889187397622583, 47.42658550388822], [6.784820787558942, 47.371280936945205]]]}, "bbox": [6.784820787558942, 47.258210658864485, 7.018839517805845, 47.42658550388822]}, {"id": "6", "type": "Feature", "properties": {"h3_index": "851f1e8bfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[10.96990716652441, 52.16717124480334], [10.978810836727735, 52.08707561193671], [11.104806699085813, 52.05689122071913], [11.222153132929105, 52.106774625176186], [11.213527954885178, 52.18690625706016], [11.087277522226739, 52.21711864873996], [10.96990716652441, 52.16717124480334]]]}, "bbox": [10.96990716652441, 52.05689122071913, 11.222153132929105, 52.21711864873996]}, {"id": "7", "type": "Feature", "properties": {"h3_index": "851f841bfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[5.653217947445736, 48.75701234222148], [5.667379822173063, 48.67472269988249], [5.786023364850536, 48.64805430339563], [5.890767641824918, 48.703674036219], [5.876831943615641, 48.78602097223905], [5.757925394412001, 48.812691003327615], [5.653217947445736, 48.75701234222148]]]}, "bbox": [5.653217947445736, 48.64805430339563, 5.890767641824918, 48.812691003327615]}, {"id": "8", "type": "Feature", "properties": {"h3_index": "851f1113fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[10.152882787626307, 52.820365467066125], [10.162822050919646, 52.74129233767961], [10.289961127648874, 52.712513570920386], [10.407426717116467, 52.76278149320405], [10.39776766577305, 52.8418922083169], [10.270362450545761, 52.87069757664797], [10.152882787626307, 52.820365467066125]]]}, "bbox": [10.152882787626307, 52.712513570920386, 10.407426717116467, 52.87069757664797]}, {"id": "9", "type": "Feature", "properties": {"h3_index": "851f1e1bfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[10.99655572066626, 51.926582321151045], [11.005397079421407, 51.84618492618431], [11.130946924221792, 51.81579521164684], [11.247907636285115, 51.865775465360805], [11.23934290316815, 51.94620909799321], [11.11354050799555, 51.97662640189567], [10.99655572066626, 51.926582321151045]]]}, "bbox": [10.99655572066626, 51.81579521164684, 11.247907636285115, 51.97662640189567]}, {"id": "10", "type": "Feature", "properties": {"h3_index": "851f862bfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[5.731737858758018, 47.62408682702104], [5.745604332295771, 47.54059271994836], [5.8624760364187365, 47.51302658834217], [5.965735599614342, 47.568954458253785], [5.952088907288589, 47.65250769980699], [5.834962492179513, 47.68007405501432], [5.731737858758018, 47.62408682702104]]]}, "bbox": [5.731737858758018, 47.51302658834217, 5.965735599614342, 47.68007405501432]}, {"id": "11", "type": "Feature", "properties": {"h3_index": "851f12dbfffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[7.033981012322021, 51.654050914039175], [7.0472360255743665, 51.574509087680134], [7.171415733942333, 51.54840509045449], [7.282618006829599, 51.601830497215], [7.269617120218897, 51.68142065501516], [7.1451594128271845, 51.70753721461669], [7.033981012322021, 51.654050914039175]]]}, "bbox": [7.033981012322021, 51.54840509045449, 7.282618006829599, 51.70753721461669]}, {"id": "12", "type": "Feature", "properties": {"h3_index": "851e3643fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[11.874728385634615, 49.14081323198675], [11.8822545795615, 49.05694964072202], [12.003004575398812, 49.02360291659026], [12.116454878699571, 49.074094224161975], [12.109187686415858, 49.15799479197394], [11.98821092398886, 49.19136723357055], [11.874728385634615, 49.14081323198675]]]}, "bbox": [11.874728385634615, 49.02360291659026, 12.116454878699571, 49.19136723357055]}, {"id": "13", "type": "Feature", "properties": {"h3_index": "851f162ffffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[7.66688504524448, 52.210833886720515], [7.679546354199576, 52.131747947241855], [7.804964751691649, 52.10533947761952], [7.918000150182073, 52.15800090223622], [7.9056009197273145, 52.23713250151903], [7.779903795116105, 52.26355716195566], [7.66688504524448, 52.210833886720515]]]}, "bbox": [7.66688504524448, 52.10533947761952, 7.918000150182073, 52.26355716195566]}, {"id": "14", "type": "Feature", "properties": {"h3_index": "851f8c33fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[10.427799313403435, 48.38868244049798], [10.436831194086906, 48.304378301319986], [10.556221040305237, 48.27212494993829], [10.666811381739372, 48.32415639700497], [10.658027545005668, 48.408503491772436], [10.538405029474113, 48.440776332275505], [10.427799313403435, 48.38868244049798]]]}, "bbox": [10.427799313403435, 48.27212494993829, 10.666811381739372, 48.440776332275505]}, {"id": "15", "type": "Feature", "properties": {"h3_index": "851fad8ffffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[10.462275524400535, 51.270695747063826], [10.471638718709489, 51.189644896139356], [10.595927782641647, 51.15938355893725], [10.711105180515377, 51.21014882406021], [10.702010982311435, 51.29123848185457], [10.577470060166888, 51.32152422560908], [10.462275524400535, 51.270695747063826]]]}, "bbox": [10.462275524400535, 51.15938355893725, 10.711105180515377, 51.32152422560908]}, {"id": "16", "type": "Feature", "properties": {"h3_index": "851fa3a7fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[7.171918284761794, 50.07190423539192], [7.1847249707356164, 49.9904828217631], [7.306139290792851, 49.963064014414115], [7.415011313015395, 50.01705684183383], [7.402448123602467, 50.098528879168725], [7.280769024933694, 50.12595760102613], [7.171918284761794, 50.07190423539192]]]}, "bbox": [7.171918284761794, 49.963064014414115, 7.415011313015395, 50.12595760102613]}, {"id": "17", "type": "Feature", "properties": {"h3_index": "851f8873fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[10.888583138173994, 47.27152920173661], [10.896988468132779, 47.18592899755224], [11.014687543517496, 47.15240953131439], [11.124203794180278, 47.20447063891836], [11.116041142083322, 47.290113724802474], [10.998119291454048, 47.323652968383705], [10.888583138173994, 47.27152920173661]]]}, "bbox": [10.888583138173994, 47.15240953131439, 11.124203794180278, 47.323652968383705]}, {"id": "18", "type": "Feature", "properties": {"h3_index": "851f1eb3fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[11.56735571348925, 52.33567993734368], [11.57558989148336, 52.25564739096068], [11.701950491097435, 52.22491027713878], [11.820327550976046, 52.27417548596953], [11.81237585141834, 52.35424194762153], [11.685764300283925, 52.38500945178067], [11.56735571348925, 52.33567993734368]]]}, "bbox": [11.56735571348925, 52.22491027713878, 11.820327550976046, 52.38500945178067]}, {"id": "19", "type": "Feature", "properties": {"h3_index": "851f84a7fffffff", "value": 1}, "geometry": {"type": "Polygon", "coordinates": [[[6.510773444630376, 49.117610613684455], [6.524108885943642, 49.03537655638752], [6.643683273921884, 49.00800998390639], [6.750183193287214, 49.06287195059244], [6.737081159185398, 49.14516019956336], [6.617245410531128, 49.17253241848262], [6.510773444630376, 49.117610613684455]]]}, "bbox": [6.510773444630376, 49.00800998390639, 6.750183193287214, 49.17253241848262]}], "bbox": [5.653217947445736, 47.05093864520658, 13.56133040830253, 52.87069757664797]}}}
+    </script>
+    <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
+    <script>
+      function readConfig() {
+        const el = document.getElementById("llmaps-config");
+        if (!el) throw new Error("LLMaps config element not found");
+        try {
+          return JSON.parse(el.textContent || "{}");
+        } catch (err) {
+          console.error("Failed to parse LLMaps config JSON", err);
+          return {};
+        }
+      }
+
+      function buildBaseStyle(center, zoom, tiles) {
+        const urlTemplate = (tiles.url_template || "").replace(
+          "{s}",
+          (tiles.subdomains && tiles.subdomains[0]) || "a"
+        );
+        return {
+          version: 8,
+          sources: {
+            "llmaps-base": {
+              type: "raster",
+              tiles: [urlTemplate],
+              tileSize: 256,
+              attribution: tiles.attribution || ""
+            }
+          },
+          layers: [
+            { id: "llmaps-base", type: "raster", source: "llmaps-base" }
+          ]
+        };
+      }
+
+      async function getGeoJsonSource(config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src) return null;
+        if (embeddedSources && embeddedSources[sourceId])
+          return { type: "geojson", data: embeddedSources[sourceId] };
+        if (src.type === "api") {
+          const url = new URL(src.url);
+          if (src.params)
+            Object.entries(src.params).forEach(([k, v]) => url.searchParams.set(k, v));
+          const res = await fetch(url.toString(), { headers: src.headers || {} });
+          const data = await res.json();
+          return { type: "geojson", data };
+        }
+        if (src.type === "file" && src.path) {
+          try {
+            const res = await fetch(src.path);
+            const data = await res.json();
+            return { type: "geojson", data };
+          } catch (e) {
+            console.warn("Could not load file source " + sourceId + ": " + e.message);
+            return null;
+          }
+        }
+        return null;
+      }
+
+      function addSourceFromConfig(map, config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src || map.getSource(sourceId)) return Promise.resolve();
+        if (src.type === "vector") {
+          map.addSource(sourceId, { type: "vector", tiles: src.tiles || [src.tiles_url] });
+          return Promise.resolve();
+        }
+        return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
+          if (geo) map.addSource(sourceId, geo);
+        });
+      }
+
+      function addLayerFromConfig(map, layerConfig, layerIdsToAdd) {
+        if (layerIdsToAdd && !layerIdsToAdd.includes(layerConfig.id)) return;
+        if (map.getLayer(layerConfig.id)) return;
+        const layer = {
+          id: layerConfig.id,
+          type: layerConfig.type || "circle",
+          source: layerConfig.source,
+          paint: layerConfig.paint || {},
+          layout: layerConfig.layout || {}
+        };
+        if (layerConfig["source-layer"] != null)
+          layer["source-layer"] = layerConfig["source-layer"];
+        if (layerConfig.minzoom != null) layer.minzoom = layerConfig.minzoom;
+        if (layerConfig.maxzoom != null) layer.maxzoom = layerConfig.maxzoom;
+        map.addLayer(layer);
+      }
+
+      function createSingleMap(containerId, config, layerIdsFilter, embeddedSources) {
+        const center = config.center || [0, 0];
+        const zoom = config.zoom ?? 10;
+        const tiles = config.tiles || {};
+        const map = new maplibregl.Map({
+          container: containerId,
+          style: buildBaseStyle(center, zoom, tiles),
+          center: center,
+          zoom: zoom
+        });
+
+        const layers = config.layers || [];
+        const sourceIds = new Set(layers.map(l => l.source));
+
+        map.on("load", function() {
+          const embedded = config.embedded_sources || embeddedSources || {};
+          Promise.all(
+            Array.from(sourceIds).map(id =>
+              addSourceFromConfig(map, config, id, embedded)
+            )
+          ).then(() => {
+            layers.forEach(l => addLayerFromConfig(map, l, layerIdsFilter));
+          });
+        });
+
+        return map;
+      }
+
+      function setupComparison(root, config) {
+        const comp = config.comparison;
+        const leftIds = comp.left_layers || [];
+        const rightIds = comp.right_layers || [];
+        root.innerHTML = [
+          '<div class="llmaps-comparison-left" id="llmaps-map-left"></div>',
+          '<div class="llmaps-comparison-right" id="llmaps-map-right"></div>',
+          '<div class="llmaps-comparison-slider" id="llmaps-slider"></div>',
+          '<div class="llmaps-comparison-labels">',
+          '<span class="left">Before</span>',
+          '<span class="right">After</span>',
+          '</div>'
+        ].join("");
+
+        const embedded = config.embedded_sources || {};
+        const mapLeft = createSingleMap("llmaps-map-left", config, leftIds, embedded);
+        const mapRight = createSingleMap("llmaps-map-right", config, rightIds, embedded);
+
+        function sync(from, to) {
+          to.setCenter(from.getCenter());
+          to.setZoom(from.getZoom());
+        }
+        mapLeft.on("moveend", () => sync(mapLeft, mapRight));
+        mapRight.on("moveend", () => sync(mapRight, mapLeft));
+
+        const slider = document.getElementById("llmaps-slider");
+        const leftDiv = root.querySelector(".llmaps-comparison-left");
+        let w = 50;
+        function updateClip() {
+          leftDiv.style.clipPath = "inset(0 " + (100 - w) + "% 0 0)";
+          slider.style.left = w + "%";
+          slider.style.marginLeft = "-4px";
+        }
+        updateClip();
+        let dragging = false;
+        slider.addEventListener("mousedown", () => { dragging = true; });
+        document.addEventListener("mouseup", () => { dragging = false; });
+        document.addEventListener("mousemove", function(e) {
+          if (!dragging) return;
+          const rect = root.getBoundingClientRect();
+          w = Math.max(5, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
+          updateClip();
+        });
+
+        return { mapLeft, mapRight };
+      }
+
+      function addComponents(config, mapOrMaps) {
+        const maps = Array.isArray(mapOrMaps) ? mapOrMaps : [mapOrMaps];
+        const map = maps[0];
+        const components = config.components || [];
+        components.forEach(c => {
+          if (c.type === "controls") {
+            if (c.zoom)
+              map.addControl(new maplibregl.NavigationControl(), "top-left");
+            if (c.fullscreen && maplibregl.FullscreenControl)
+              map.addControl(new maplibregl.FullscreenControl(), "top-left");
+          }
+        });
+
+        const legendConfig = components.find(c => c.type === "legend");
+        if (legendConfig) {
+          const div = document.createElement("div");
+          div.className = "llmaps-legend " + (legendConfig.position || "top-right");
+          const labels = legendConfig.layer_labels || {};
+          const counts = legendConfig.layer_counts || {};
+          const entries = Object.keys(labels);
+          if (entries.length) {
+            const list = document.createElement("ul");
+            list.style.listStyle = "none";
+            list.style.margin = "0";
+            list.style.padding = "0";
+            entries.forEach(layerId => {
+              const li = document.createElement("li");
+              li.textContent = (labels[layerId] || layerId) +
+                (counts[layerId] != null ? " (" + counts[layerId] + ")" : "");
+              list.appendChild(li);
+            });
+            div.appendChild(list);
+          } else {
+            div.textContent = "Legend";
+          }
+          document.body.appendChild(div);
+        }
+
+        const searchConfig = components.find(c => c.type === "search");
+        if (searchConfig && maps.length > 0) {
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-search-wrap " + (searchConfig.position || "top-left");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = searchConfig.placeholder || "Search address...";
+          input.id = "llmaps-address-search";
+          wrap.appendChild(input);
+          const suggestions = document.createElement("div");
+          suggestions.className = "llmaps-search-suggestions";
+          suggestions.id = "llmaps-search-suggestions";
+          wrap.appendChild(suggestions);
+          document.body.appendChild(wrap);
+
+          const zoomOnResult = searchConfig.zoom_on_result ?? 15;
+          const geocoderUrl = searchConfig.geocoder_url;
+          const geocoderParams = searchConfig.geocoder_params || {};
+          const autocomplete = searchConfig.autocomplete !== false;
+
+          function parseCoords(data) {
+            if (Array.isArray(data.center)) return data.center;
+            if (data.lon != null && data.lat != null) return [data.lon, data.lat];
+            if (data.lng != null && data.lat != null) return [data.lng, data.lat];
+            const f = data.features && data.features[0];
+            if (f && f.geometry && f.geometry.coordinates)
+              return f.geometry.coordinates;
+            const m = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+            if (m && m[0]) {
+              const pos = m[0].GeoObject.Point.pos;
+              return pos.split(" ").map(Number);
+            }
+            return null;
+          }
+
+          function buildGeocoderUrl(query, results) {
+            if (!geocoderUrl) return null;
+            const url = new URL(geocoderUrl);
+            url.searchParams.set("geocode", query);
+            if (results != null) url.searchParams.set("results", String(results));
+            Object.entries(geocoderParams).forEach(([k, v]) => url.searchParams.set(k, v));
+            return url.toString();
+          }
+
+          function flyToCoords(lon, lat) {
+            maps.forEach(m => {
+              if (m && m.flyTo) m.flyTo({ center: [lon, lat], zoom: zoomOnResult, duration: 2000 });
+            });
+          }
+
+          let debounceTimer;
+          function doSearch(address) {
+            const url = buildGeocoderUrl(address, 1);
+            if (!url) { console.warn("Search: geocoder_url not set"); return; }
+            fetch(url).then(r => r.json()).then(data => {
+              const coords = parseCoords(data);
+              if (coords) flyToCoords(coords[0], coords[1]);
+            }).catch(e => console.error("Geocoder error", e));
+          }
+
+          function showSuggestions(query) {
+            const url = buildGeocoderUrl(query, 5);
+            if (!url) return;
+            fetch(url).then(r => r.json()).then(data => {
+              const list = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+              suggestions.innerHTML = "";
+              suggestions.classList.remove("visible");
+              if (list && list.length) {
+                list.slice(0, 5).forEach(item => {
+                  const text = item.GeoObject && item.GeoObject.metaDataProperty && item.GeoObject.metaDataProperty.GeocoderMetaData
+                    ? item.GeoObject.metaDataProperty.GeocoderMetaData.text
+                    : (item.GeoObject && item.GeoObject.name) || "";
+                  const div = document.createElement("div");
+                  div.textContent = text;
+                  div.onclick = () => { input.value = text; doSearch(text); suggestions.classList.remove("visible"); };
+                  suggestions.appendChild(div);
+                });
+                suggestions.classList.add("visible");
+              }
+            }).catch(() => {});
+          }
+
+          input.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); doSearch(input.value.trim()); }
+          });
+          if (autocomplete) {
+            input.addEventListener("input", function() {
+              clearTimeout(debounceTimer);
+              const q = input.value.trim();
+              if (q.length < 3) { suggestions.classList.remove("visible"); return; }
+              debounceTimer = setTimeout(() => showSuggestions(q), 300);
+            });
+            input.addEventListener("blur", () => setTimeout(() => suggestions.classList.remove("visible"), 200));
+          }
+        }
+      }
+
+      function createMap() {
+        const MAP_CONFIG = readConfig();
+        const root = document.getElementById("map-root");
+
+        if (MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers) {
+          const { mapLeft, mapRight } = setupComparison(root, MAP_CONFIG);
+          addComponents(MAP_CONFIG, [mapLeft, mapRight]);
+          return;
+        }
+
+        const map = createSingleMap("map-root", MAP_CONFIG, null, MAP_CONFIG.embedded_sources);
+        addComponents(MAP_CONFIG, map);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", createMap);
+      } else {
+        createMap();
+      }
+    </script>
+  </body>
+</html>

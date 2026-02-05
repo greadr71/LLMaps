@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llmaps"
+version = "0.1.0"
+description = "A Python library for creating interactive web maps, optimized for LLM-assisted development."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Sergey Abramov" }
+]
+keywords = ["maps", "maplibre", "geospatial", "visualization", "llm"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Intended Audience :: Developers",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+  "jinja2>=3.1.0",
+]
+
+[project.optional-dependencies]
+h3 = ["h3", "geopandas"]
+compression = ["geobuf"]
+all = ["h3", "geopandas", "geobuf"]
+
+[project.urls]
+Homepage = "https://github.com/sergeyabramov/llmaps"
+Documentation = "https://github.com/sergeyabramov/llmaps"
+Source = "https://github.com/sergeyabramov/llmaps"
+Issues = "https://github.com/sergeyabramov/llmaps/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["llmaps"]
+
+[tool.hatch.version]
+path = "llmaps/__init__.py"

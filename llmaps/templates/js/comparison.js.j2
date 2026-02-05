@@ -1,0 +1,35 @@
+{# Comparison: setupComparison (two maps + maplibre-gl-compare) #}
+      function setupComparison(root, config) {
+        const comp = config.comparison;
+        const leftIds = comp.left_layers || [];
+        const rightIds = comp.right_layers || [];
+        root.id = "llmaps-comparison-container";
+        root.innerHTML = [
+          '<div id="llmaps-compare-before" class="llmaps-compare-map"></div>',
+          '<div id="llmaps-compare-after" class="llmaps-compare-map"></div>'
+        ].join("");
+
+        const embedded = config.embedded_sources || {};
+        const beforeMap = createSingleMap("llmaps-compare-before", config, leftIds, embedded);
+        const afterMap = createSingleMap("llmaps-compare-after", config, rightIds, embedded);
+
+        if (typeof maplibregl.Compare !== "function") {
+          console.warn("maplibre-gl-compare not loaded; comparison uses basic sync only.");
+          beforeMap.on("moveend", function() {
+            afterMap.setCenter(beforeMap.getCenter());
+            afterMap.setZoom(beforeMap.getZoom());
+          });
+          afterMap.on("moveend", function() {
+            beforeMap.setCenter(afterMap.getCenter());
+            beforeMap.setZoom(afterMap.getZoom());
+          });
+          return { mapLeft: beforeMap, mapRight: afterMap };
+        }
+
+        var compare = new maplibregl.Compare(beforeMap, afterMap, "#llmaps-comparison-container", {
+          mousemove: true,
+          orientation: "vertical"
+        });
+
+        return { mapLeft: beforeMap, mapRight: afterMap };
+      }

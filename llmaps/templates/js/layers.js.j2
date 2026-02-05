@@ -1,0 +1,60 @@
+{# Layers: visibility optimization, loadLayers, addLayerFromConfig, createSingleMap #}
+{{ visibility_optimization_js | safe }}
+
+      function loadLayers(map, config, embeddedSources, layerIdsFilter) {
+        const layers = config.layers || [];
+        const sourceIds = new Set(layers.map(l => l.source));
+        const embedded = config.embedded_sources || embeddedSources || {};
+        return Promise.all(
+          Array.from(sourceIds).map(id =>
+            addSourceFromConfig(map, config, id, embedded)
+          )
+        ).then(() => {
+          layers.forEach(l => addLayerFromConfig(map, l, layerIdsFilter));
+        });
+      }
+
+      function addLayerFromConfig(map, layerConfig, layerIdsToAdd) {
+        if (layerIdsToAdd && !layerIdsToAdd.includes(layerConfig.id)) return;
+        if (map.getLayer(layerConfig.id)) return;
+        const layer = {
+          id: layerConfig.id,
+          type: layerConfig.type || "circle",
+          source: layerConfig.source,
+          paint: layerConfig.paint || {},
+          layout: layerConfig.layout || {}
+        };
+        if (layerConfig["source-layer"] != null)
+          layer["source-layer"] = layerConfig["source-layer"];
+        if (layerConfig.minzoom != null) layer.minzoom = layerConfig.minzoom;
+        if (layerConfig.maxzoom != null) layer.maxzoom = layerConfig.maxzoom;
+        map.addLayer(layer);
+      }
+
+      function createSingleMap(containerId, config, layerIdsFilter, embeddedSources) {
+        const center = config.center || [0, 0];
+        const zoom = config.zoom ?? 10;
+        const tiles = config.tiles || {};
+        const map = new maplibregl.Map({
+          container: containerId,
+          style: buildBaseStyle(center, zoom, tiles),
+          center: center,
+          zoom: zoom
+        });
+
+        const layers = config.layers || [];
+        const embedded = config.embedded_sources || embeddedSources || {};
+
+        map._loadLayers = () =>
+          loadLayers(map, config, embedded, layerIdsFilter).then(() => {
+            if (window.llmapsOnLayersReady) window.llmapsOnLayersReady(map);
+          });
+
+        map.on("load", function() {
+          map._loadLayers().then(() => {
+            map._layersLoaded = true;
+          });
+        });
+
+        return map;
+      }

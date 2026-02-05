@@ -1,0 +1,29 @@
+{# Base HTML template for LLMaps. #}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ title or "LLMaps" }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <style>{{ llmaps_css | safe }}</style>
+  </head>
+  <body>
+    <div id="map-root"></div>
+    <script id="llmaps-config" type="application/json">
+      {{ map_config_json | safe }}
+    </script>
+    <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/maplibre/maplibre-gl-compare@main/dist/maplibre-gl-compare.js"></script>
+    {% if use_compression %}
+    <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
+    <script src="https://unpkg.com/pbf@3.2.1/dist/pbf.js"></script>
+    <script src="https://unpkg.com/geobuf@3.0.2/dist/geobuf.js"></script>
+    {% endif %}
+    <script>{{ llmaps_js | safe }}</script>
+  </body>
+</html>

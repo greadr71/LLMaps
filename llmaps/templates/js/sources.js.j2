@@ -1,0 +1,56 @@
+{# Sources: decompression (if use_compression), multipoint explosion, getGeoJsonSource, addSourceFromConfig #}
+{{ decompression_js | safe }}
+{{ multipoint_explosion_js | safe }}
+
+      async function getGeoJsonSource(config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src) return null;
+        if (embeddedSources && embeddedSources[sourceId] !== undefined) {
+          let data = embeddedSources[sourceId];
+          if (typeof data === "string") {
+            if (typeof decompressData === "function") data = await decompressData(data);
+            else return null;
+          }
+          if (data && data.features && typeof explodeMultiPoint === "function" &&
+              data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+            data = await new Promise(r => explodeMultiPoint(data, r));
+          return data ? { type: "geojson", data } : null;
+        }
+        if (src.type === "api") {
+          const url = new URL(src.url);
+          if (src.params)
+            Object.entries(src.params).forEach(([k, v]) => url.searchParams.set(k, v));
+          const res = await fetch(url.toString(), { headers: src.headers || {} });
+          let data = await res.json();
+          if (data && data.features && typeof explodeMultiPoint === "function" &&
+              data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+            data = await new Promise(r => explodeMultiPoint(data, r));
+          return { type: "geojson", data };
+        }
+        if (src.type === "file" && src.path) {
+          try {
+            const res = await fetch(src.path);
+            let data = await res.json();
+            if (data && data.features && typeof explodeMultiPoint === "function" &&
+                data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+              data = await new Promise(r => explodeMultiPoint(data, r));
+            return { type: "geojson", data };
+          } catch (e) {
+            console.warn("Could not load file source " + sourceId + ": " + e.message);
+            return null;
+          }
+        }
+        return null;
+      }
+
+      function addSourceFromConfig(map, config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src || map.getSource(sourceId)) return Promise.resolve();
+        if (src.type === "vector") {
+          map.addSource(sourceId, { type: "vector", tiles: src.tiles || [src.tiles_url] });
+          return Promise.resolve();
+        }
+        return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
+          if (geo) map.addSource(sourceId, geo);
+        });
+      }

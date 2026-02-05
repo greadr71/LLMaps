@@ -1,0 +1,25 @@
+{# Init: createMap and DOMContentLoaded #}
+      function createMap() {
+        const MAP_CONFIG = readConfig();
+        const root = document.getElementById("map-root");
+        const visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+
+        if (MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers) {
+          const { mapLeft, mapRight } = setupComparison(root, MAP_CONFIG);
+          if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+            initVisibilityOptimization([mapLeft, mapRight], visibilityIds);
+          addComponents(MAP_CONFIG, [mapLeft, mapRight]);
+          return;
+        }
+
+        const map = createSingleMap("map-root", MAP_CONFIG, null, MAP_CONFIG.embedded_sources);
+        if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+          initVisibilityOptimization(map, visibilityIds);
+        addComponents(MAP_CONFIG, map);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", createMap);
+      } else {
+        createMap();
+      }

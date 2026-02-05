@@ -1,0 +1,281 @@
+{# Components: addComponents — controls, legend, popup, search #}
+      function addComponents(config, mapOrMaps) {
+        const maps = Array.isArray(mapOrMaps) ? mapOrMaps : [mapOrMaps];
+        const map = maps[0];
+        const components = config.components || [];
+        components.forEach(c => {
+          if (c.type === "controls") {
+            if (c.zoom)
+              map.addControl(new maplibregl.NavigationControl(), "top-left");
+            if (c.scale && typeof maplibregl.ScaleControl === "function")
+              map.addControl(new maplibregl.ScaleControl(), "bottom-left");
+            if (c.fullscreen && maplibregl.FullscreenControl)
+              map.addControl(new maplibregl.FullscreenControl(), "top-left");
+          }
+        });
+
+        const legendConfig = components.find(c => c.type === "legend");
+        const basemapSwitcherConfig = components.find(c => c.type === "basemap_switcher");
+        const hasTileProviders = config.tile_providers && config.tile_providers.length > 0;
+        let basemapInLegend = false;
+
+        function tileUrl(tiles) {
+          const t = (tiles && tiles.url_template) || "";
+          return t.replace("{s}", (tiles.subdomains && tiles.subdomains[0]) || "a");
+        }
+        function switchBasemap(providerId, config, maps) {
+          const provider = config.tile_providers.find(function(p) { return p.id === providerId; });
+          if (!provider) return;
+          const url = tileUrl(provider);
+          maps.forEach(function(m) {
+            if (!m.getLayer || !m.getSource) return;
+            if (m.getLayer("llmaps-base")) m.removeLayer("llmaps-base");
+            if (m.getSource("llmaps-base")) m.removeSource("llmaps-base");
+            m.addSource("llmaps-base", {
+              type: "raster",
+              tiles: [url],
+              tileSize: 256,
+              attribution: provider.attribution || ""
+            });
+            const layers = m.getStyle().layers;
+            const firstId = layers && layers[0] ? layers[0].id : undefined;
+            m.addLayer({ id: "llmaps-base", type: "raster", source: "llmaps-base" }, firstId);
+          });
+        }
+        function createBasemapSelect(config, maps, currentId) {
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-basemap-select-wrap";
+          const select = document.createElement("select");
+          select.className = "llmaps-basemap-select";
+          config.tile_providers.forEach(function(provider) {
+            const opt = document.createElement("option");
+            opt.value = provider.id;
+            opt.textContent = provider.name || provider.id;
+            if (provider.id === currentId) opt.selected = true;
+            select.appendChild(opt);
+          });
+          select.addEventListener("change", function() {
+            switchBasemap(select.value, config, maps);
+          });
+          wrap.appendChild(select);
+          return wrap;
+        }
+
+        if (legendConfig) {
+          const div = document.createElement("div");
+          div.className = "llmaps-legend " + (legendConfig.position || "top-right");
+          const titleEl = document.createElement("div");
+          titleEl.className = "llmaps-legend-title";
+          titleEl.textContent = legendConfig.title != null && legendConfig.title !== "" ? legendConfig.title : (config.title || "Карта");
+          div.appendChild(titleEl);
+          const labels = legendConfig.layer_labels || {};
+          const counts = legendConfig.layer_counts || {};
+          const ramps = legendConfig.layer_color_ramps || {};
+          const entries = Object.keys(labels);
+          if (entries.length) {
+            const list = document.createElement("ul");
+            entries.forEach(layerId => {
+              const li = document.createElement("li");
+              const wrap = document.createElement("span");
+              wrap.className = "llmaps-legend-item-wrap";
+              wrap.textContent = (labels[layerId] || layerId) +
+                (counts[layerId] != null ? " (" + counts[layerId] + ")" : "");
+              li.appendChild(wrap);
+              const rampCfg = ramps[layerId];
+              if (rampCfg && rampCfg.stops && rampCfg.stops.length) {
+                const colors = rampCfg.stops.map(function(s) { return s[1]; });
+                const rampBar = document.createElement("div");
+                rampBar.className = "llmaps-legend-ramp";
+                rampBar.style.background = "linear-gradient(to right, " + colors.join(", ") + ")";
+                li.appendChild(rampBar);
+                const rampLabels = document.createElement("div");
+                rampLabels.className = "llmaps-legend-ramp-labels";
+                const labelMin = document.createElement("span");
+                labelMin.textContent = rampCfg.label_min != null ? String(rampCfg.label_min) : "";
+                const labelMax = document.createElement("span");
+                labelMax.textContent = rampCfg.label_max != null ? String(rampCfg.label_max) : "";
+                rampLabels.appendChild(labelMin);
+                rampLabels.appendChild(labelMax);
+                li.appendChild(rampLabels);
+              }
+              list.appendChild(li);
+            });
+            div.appendChild(list);
+          }
+          if (basemapSwitcherConfig && hasTileProviders) {
+            basemapInLegend = true;
+            const currentTiles = config.tiles || {};
+            const currentId = currentTiles.id || (config.tile_providers[0] && config.tile_providers[0].id);
+            const basemapWrap = document.createElement("div");
+            basemapWrap.className = "llmaps-legend-basemap";
+            const basemapLabel = document.createElement("div");
+            basemapLabel.className = "llmaps-legend-basemap-label";
+            basemapLabel.textContent = "Подложка";
+            basemapWrap.appendChild(basemapLabel);
+            basemapWrap.appendChild(createBasemapSelect(config, maps, currentId));
+            div.appendChild(basemapWrap);
+          }
+          document.body.appendChild(div);
+        }
+
+        if (basemapSwitcherConfig && hasTileProviders && !basemapInLegend) {
+          const currentTiles = config.tiles || {};
+          const currentId = currentTiles.id || (config.tile_providers[0] && config.tile_providers[0].id);
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-basemap-switcher " + (basemapSwitcherConfig.position || "top-left");
+          wrap.style.position = "absolute";
+          wrap.style.zIndex = "10";
+          wrap.appendChild(createBasemapSelect(config, maps, currentId));
+          document.body.appendChild(wrap);
+        }
+
+        const popupConfig = components.find(c => c.type === "popup");
+        if (popupConfig && typeof maplibregl.Popup === "function") {
+          const defaultFields = popupConfig.fields || [];
+          const fieldLabels = popupConfig.field_labels || {};
+          const fieldsByLayer = popupConfig.fields_by_layer || {};
+          const layers = config.layers || [];
+
+          function popupContent(feature, layerId) {
+            const fields = fieldsByLayer[layerId] && fieldsByLayer[layerId].length
+              ? fieldsByLayer[layerId] : defaultFields;
+            const props = feature.properties || {};
+            if (!fields.length) return Object.keys(props).length ? JSON.stringify(props) : "";
+            const rows = fields.map(f => {
+              const label = fieldLabels[f] || f;
+              const val = props[f];
+              return "<tr><td>" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
+            });
+            return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
+          }
+
+          function lngLat(feature) {
+            const g = feature.geometry;
+            if (!g || !g.coordinates) return null;
+            const c = g.coordinates;
+            if (g.type === "Point") return c;
+            if (c[0] != null && typeof c[0] === "number") return c;
+            return c[0] || null;
+          }
+
+          function addPopupToMap(m) {
+            if (!m || !m.getLayer) return;
+            layers.forEach(layerCfg => {
+              const layerId = layerCfg.id;
+              if (!m.getLayer(layerId)) return;
+              m.on("click", layerId, function(ev) {
+                ev.originalEvent.preventDefault();
+                const feat = ev.features && ev.features[0];
+                if (!feat) return;
+                const coords = lngLat(feat);
+                if (!coords) return;
+                new maplibregl.Popup()
+                  .setLngLat(coords)
+                  .setHTML(popupContent(feat, layerId))
+                  .addTo(m);
+              });
+            });
+            m.getCanvas().style.cursor = "pointer";
+          }
+
+          window.llmapsOnLayersReady = function(m) {
+            addPopupToMap(m);
+          };
+        }
+
+        const searchConfig = components.find(c => c.type === "search");
+        if (searchConfig && maps.length > 0) {
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-search-wrap " + (searchConfig.position || "top-left");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = searchConfig.placeholder || "Search address...";
+          input.id = "llmaps-address-search";
+          wrap.appendChild(input);
+          const suggestions = document.createElement("div");
+          suggestions.className = "llmaps-search-suggestions";
+          suggestions.id = "llmaps-search-suggestions";
+          wrap.appendChild(suggestions);
+          document.body.appendChild(wrap);
+
+          const zoomOnResult = searchConfig.zoom_on_result ?? 15;
+          const geocoderUrl = searchConfig.geocoder_url;
+          const geocoderParams = searchConfig.geocoder_params || {};
+          const autocomplete = searchConfig.autocomplete !== false;
+
+          function parseCoords(data) {
+            if (Array.isArray(data.center)) return data.center;
+            if (data.lon != null && data.lat != null) return [data.lon, data.lat];
+            if (data.lng != null && data.lat != null) return [data.lng, data.lat];
+            const f = data.features && data.features[0];
+            if (f && f.geometry && f.geometry.coordinates)
+              return f.geometry.coordinates;
+            const m = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+            if (m && m[0]) {
+              const pos = m[0].GeoObject.Point.pos;
+              return pos.split(" ").map(Number);
+            }
+            return null;
+          }
+
+          function buildGeocoderUrl(query, results) {
+            if (!geocoderUrl) return null;
+            const url = new URL(geocoderUrl);
+            url.searchParams.set("geocode", query);
+            if (results != null) url.searchParams.set("results", String(results));
+            Object.entries(geocoderParams).forEach(([k, v]) => url.searchParams.set(k, v));
+            return url.toString();
+          }
+
+          function flyToCoords(lon, lat) {
+            maps.forEach(m => {
+              if (m && m.flyTo) m.flyTo({ center: [lon, lat], zoom: zoomOnResult, duration: 2000 });
+            });
+          }
+
+          let debounceTimer;
+          function doSearch(address) {
+            const url = buildGeocoderUrl(address, 1);
+            if (!url) { console.warn("Search: geocoder_url not set"); return; }
+            fetch(url).then(r => r.json()).then(data => {
+              const coords = parseCoords(data);
+              if (coords) flyToCoords(coords[0], coords[1]);
+            }).catch(e => console.error("Geocoder error", e));
+          }
+
+          function showSuggestions(query) {
+            const url = buildGeocoderUrl(query, 5);
+            if (!url) return;
+            fetch(url).then(r => r.json()).then(data => {
+              const list = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+              suggestions.innerHTML = "";
+              suggestions.classList.remove("visible");
+              if (list && list.length) {
+                list.slice(0, 5).forEach(item => {
+                  const text = item.GeoObject && item.GeoObject.metaDataProperty && item.GeoObject.metaDataProperty.GeocoderMetaData
+                    ? item.GeoObject.metaDataProperty.GeocoderMetaData.text
+                    : (item.GeoObject && item.GeoObject.name) || "";
+                  const div = document.createElement("div");
+                  div.textContent = text;
+                  div.onclick = () => { input.value = text; doSearch(text); suggestions.classList.remove("visible"); };
+                  suggestions.appendChild(div);
+                });
+                suggestions.classList.add("visible");
+              }
+            }).catch(() => {});
+          }
+
+          input.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); doSearch(input.value.trim()); }
+          });
+          if (autocomplete) {
+            input.addEventListener("input", function() {
+              clearTimeout(debounceTimer);
+              const q = input.value.trim();
+              if (q.length < 3) { suggestions.classList.remove("visible"); return; }
+              debounceTimer = setTimeout(() => showSuggestions(q), 300);
+            });
+            input.addEventListener("blur", () => setTimeout(() => suggestions.classList.remove("visible"), 200));
+          }
+        }
+      }

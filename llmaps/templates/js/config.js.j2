@@ -1,0 +1,32 @@
+{# Config: readConfig, buildBaseStyle #}
+      function readConfig() {
+        const el = document.getElementById("llmaps-config");
+        if (!el) throw new Error("LLMaps config element not found");
+        try {
+          return JSON.parse(el.textContent || "{}");
+        } catch (err) {
+          console.error("Failed to parse LLMaps config JSON", err);
+          return {};
+        }
+      }
+
+      function buildBaseStyle(center, zoom, tiles) {
+        const urlTemplate = (tiles.url_template || "").replace(
+          "{s}",
+          (tiles.subdomains && tiles.subdomains[0]) || "a"
+        );
+        return {
+          version: 8,
+          sources: {
+            "llmaps-base": {
+              type: "raster",
+              tiles: [urlTemplate],
+              tileSize: 256,
+              attribution: tiles.attribution || ""
+            }
+          },
+          layers: [
+            { id: "llmaps-base", type: "raster", source: "llmaps-base" }
+          ]
+        };
+      }

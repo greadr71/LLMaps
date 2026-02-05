@@ -1,0 +1,834 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LLMaps quick start</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <style>/* LLMaps base styles — injected into standalone HTML at render time */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+#map-root {
+  position: absolute;
+  inset: 0;
+}
+
+/* Comparison mode: maplibre-gl-compare plugin */
+#llmaps-comparison-container {
+  position: absolute;
+  inset: 0;
+}
+.llmaps-compare-map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+/* Styles for maplibre-gl-compare slider (from plugin style.css) */
+.maplibregl-compare {
+  background-color: #fff;
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  z-index: 1;
+}
+.maplibregl-compare .compare-swiper-vertical {
+  background-color: #3887be;
+  box-shadow: inset 0 0 0 2px #fff;
+  display: inline-block;
+  border-radius: 50%;
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 50%;
+  left: -30px;
+  margin: -30px 1px 0;
+  color: #fff;
+  cursor: ew-resize;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath fill='%23fff' d='M25 24L16 30L25 36L25 24zM35 24L35 36L44 30L35 24z'/%3E%3C/svg%3E");
+}
+.maplibregl-compare-horizontal {
+  position: relative;
+  width: 100%;
+  height: 2px;
+}
+.maplibregl-compare .compare-swiper-horizontal {
+  background-color: #3887be;
+  box-shadow: inset 0 0 0 2px #fff;
+  display: inline-block;
+  border-radius: 50%;
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 50%;
+  left: 50%;
+  margin: -30px 1px 0;
+  cursor: ns-resize;
+  transform: rotate(90deg);
+}
+
+/* Legend */
+.llmaps-legend {
+  position: absolute;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  padding: 14px 16px;
+  font-size: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.llmaps-legend.top-left {
+  top: 12px;
+  left: 12px;
+}
+.llmaps-legend.top-right {
+  top: 12px;
+  right: 12px;
+}
+.llmaps-legend.bottom-left {
+  bottom: 12px;
+  left: 12px;
+}
+.llmaps-legend.bottom-right {
+  bottom: 12px;
+  right: 12px;
+}
+.llmaps-legend-title {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.3;
+  margin-bottom: 10px;
+  color: #1a1a1a;
+}
+.llmaps-legend ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.llmaps-legend ul li {
+  line-height: 1.45;
+  margin-bottom: 8px;
+  color: #2c2c2c;
+}
+.llmaps-legend ul li:last-child {
+  margin-bottom: 0;
+}
+.llmaps-legend-item-wrap {
+  display: block;
+}
+.llmaps-legend-ramp {
+  margin-top: 6px;
+  height: 10px;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 140px;
+  flex-shrink: 0;
+}
+.llmaps-legend-ramp-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #666;
+  max-width: 140px;
+}
+.llmaps-legend-basemap {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+.llmaps-legend-basemap-label {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 6px;
+}
+.llmaps-legend-basemap select {
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background: #fff;
+  width: 100%;
+}
+.llmaps-legend-basemap select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Basemap switcher (standalone) */
+.llmaps-basemap-switcher {
+  position: absolute;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.llmaps-basemap-switcher select {
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background: #fff;
+}
+.llmaps-basemap-switcher select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+.llmaps-basemap-switcher.top-left {
+  top: 12px;
+  left: 12px;
+}
+.llmaps-basemap-switcher.top-right {
+  top: 12px;
+  right: 12px;
+}
+.llmaps-basemap-switcher.bottom-left {
+  bottom: 12px;
+  left: 12px;
+}
+.llmaps-basemap-switcher.bottom-right {
+  bottom: 12px;
+  right: 12px;
+}
+
+/* Search */
+.llmaps-search-wrap {
+  position: absolute;
+  z-index: 10;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+.llmaps-search-wrap.top-left {
+  top: 10px;
+  left: 10px;
+}
+.llmaps-search-wrap.top-right {
+  top: 10px;
+  right: 10px;
+}
+.llmaps-search-wrap input {
+  width: 200px;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.llmaps-search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 8px;
+  right: 8px;
+  margin-top: 2px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+.llmaps-search-suggestions.visible {
+  display: block;
+}
+.llmaps-search-suggestions div {
+  padding: 8px;
+  cursor: pointer;
+}
+.llmaps-search-suggestions div:hover {
+  background: #f0f0f0;
+}
+</style>
+  </head>
+  <body>
+    <div id="map-root"></div>
+    <script id="llmaps-config" type="application/json">
+      {"title": "LLMaps quick start", "center": [10.0, 50.0], "zoom": 4, "tiles": {"id": "osm", "name": "OpenStreetMap", "url_template": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "subdomains": ["a", "b", "c"], "attribution": "\u00a9 OpenStreetMap contributors"}, "layers": [{"id": "points-layer", "type": "circle", "source": "points", "visible": true, "metadata": {}, "paint": {"circle-radius": 6, "circle-color": "#3182bd", "circle-opacity": 0.8}}], "components": [{"type": "legend", "position": "top-right", "show_toggle": false, "layer_labels": {"points-layer": "Synthetic points"}, "layer_counts": {}}, {"type": "popup", "fields": ["name", "value"], "field_labels": {"name": "Name", "value": "Value"}, "template": null, "fields_by_layer": {}}, {"type": "controls", "zoom": true, "scale": true, "fullscreen": false}], "embedded": false, "use_compression": false, "sources": {"points": {"id": "points", "type": "file", "path": "/Users/sergeyabramov/Yandex.Disk.localized/llmaps/examples/data/synthetic_points.geojson", "format": "geojson"}}, "visibility_optimization_source_ids": ["points"]}
+    </script>
+    <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/maplibre/maplibre-gl-compare@main/dist/maplibre-gl-compare.js"></script>
+    
+    <script>
+      function readConfig() {
+        const el = document.getElementById("llmaps-config");
+        if (!el) throw new Error("LLMaps config element not found");
+        try {
+          return JSON.parse(el.textContent || "{}");
+        } catch (err) {
+          console.error("Failed to parse LLMaps config JSON", err);
+          return {};
+        }
+      }
+
+      function buildBaseStyle(center, zoom, tiles) {
+        const urlTemplate = (tiles.url_template || "").replace(
+          "{s}",
+          (tiles.subdomains && tiles.subdomains[0]) || "a"
+        );
+        return {
+          version: 8,
+          sources: {
+            "llmaps-base": {
+              type: "raster",
+              tiles: [urlTemplate],
+              tileSize: 256,
+              attribution: tiles.attribution || ""
+            }
+          },
+          layers: [
+            { id: "llmaps-base", type: "raster", source: "llmaps-base" }
+          ]
+        };
+      }
+
+
+      function explodeMultiPoint(geojson, callback) {
+        if (!geojson || !geojson.features || !geojson.features.length) {
+          callback(geojson || { type: "FeatureCollection", features: [] });
+          return;
+        }
+        const features = [];
+        let processed = 0;
+        const total = geojson.features.length;
+        const chunkSize = 100;
+        function processChunk() {
+          const end = Math.min(processed + chunkSize, total);
+          for (let i = processed; i < end; i++) {
+            const feature = geojson.features[i];
+            if (feature.geometry && feature.geometry.type === "MultiPoint") {
+              feature.geometry.coordinates.forEach(coord => {
+                features.push({
+                  type: "Feature",
+                  geometry: { type: "Point", coordinates: coord },
+                  properties: feature.properties || {}
+                });
+              });
+            } else {
+              features.push(feature);
+            }
+          }
+          processed = end;
+          if (processed < total) setTimeout(processChunk, 0);
+          else callback({ type: "FeatureCollection", features });
+        }
+        processChunk();
+      }
+
+      async function getGeoJsonSource(config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src) return null;
+        if (embeddedSources && embeddedSources[sourceId] !== undefined) {
+          let data = embeddedSources[sourceId];
+          if (typeof data === "string") {
+            if (typeof decompressData === "function") data = await decompressData(data);
+            else return null;
+          }
+          if (data && data.features && typeof explodeMultiPoint === "function" &&
+              data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+            data = await new Promise(r => explodeMultiPoint(data, r));
+          return data ? { type: "geojson", data } : null;
+        }
+        if (src.type === "api") {
+          const url = new URL(src.url);
+          if (src.params)
+            Object.entries(src.params).forEach(([k, v]) => url.searchParams.set(k, v));
+          const res = await fetch(url.toString(), { headers: src.headers || {} });
+          let data = await res.json();
+          if (data && data.features && typeof explodeMultiPoint === "function" &&
+              data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+            data = await new Promise(r => explodeMultiPoint(data, r));
+          return { type: "geojson", data };
+        }
+        if (src.type === "file" && src.path) {
+          try {
+            const res = await fetch(src.path);
+            let data = await res.json();
+            if (data && data.features && typeof explodeMultiPoint === "function" &&
+                data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+              data = await new Promise(r => explodeMultiPoint(data, r));
+            return { type: "geojson", data };
+          } catch (e) {
+            console.warn("Could not load file source " + sourceId + ": " + e.message);
+            return null;
+          }
+        }
+        return null;
+      }
+
+      function addSourceFromConfig(map, config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src || map.getSource(sourceId)) return Promise.resolve();
+        if (src.type === "vector") {
+          map.addSource(sourceId, { type: "vector", tiles: src.tiles || [src.tiles_url] });
+          return Promise.resolve();
+        }
+        return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
+          if (geo) map.addSource(sourceId, geo);
+        });
+      }
+
+      function initVisibilityOptimization(maps, sourceIds) {
+        const list = Array.isArray(maps) ? maps : [maps];
+        const ids = sourceIds && sourceIds.length ? sourceIds : ['points'];
+        document.addEventListener("visibilitychange", async () => {
+          if (document.hidden) {
+            list.forEach(map => {
+              if (!map || !map._layersLoaded) return;
+              map.stop();
+              ids.forEach(sourceId => {
+                if (!map.getSource(sourceId)) return;
+                const style = map.getStyle();
+                if (style && style.layers) {
+                  style.layers
+                    .filter(layer => layer.source === sourceId)
+                    .forEach(layer => {
+                      try {
+                        if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+                      } catch (e) {}
+                    });
+                }
+                try { map.removeSource(sourceId); } catch (e) {}
+              });
+              map.getCanvas().style.display = "none";
+              map._layersLoaded = false;
+            });
+          } else {
+            list.forEach(async map => {
+              if (!map || map._layersLoaded) { if (map) { map.getCanvas().style.display = "block"; map.resize(); map.triggerRepaint(); } return; }
+              map.getCanvas().style.display = "block";
+              if (map._loadLayers) await map._loadLayers();
+              map._layersLoaded = true;
+              map.resize();
+              map.triggerRepaint();
+            });
+          }
+        });
+      }
+
+      function loadLayers(map, config, embeddedSources, layerIdsFilter) {
+        const layers = config.layers || [];
+        const sourceIds = new Set(layers.map(l => l.source));
+        const embedded = config.embedded_sources || embeddedSources || {};
+        return Promise.all(
+          Array.from(sourceIds).map(id =>
+            addSourceFromConfig(map, config, id, embedded)
+          )
+        ).then(() => {
+          layers.forEach(l => addLayerFromConfig(map, l, layerIdsFilter));
+        });
+      }
+
+      function addLayerFromConfig(map, layerConfig, layerIdsToAdd) {
+        if (layerIdsToAdd && !layerIdsToAdd.includes(layerConfig.id)) return;
+        if (map.getLayer(layerConfig.id)) return;
+        const layer = {
+          id: layerConfig.id,
+          type: layerConfig.type || "circle",
+          source: layerConfig.source,
+          paint: layerConfig.paint || {},
+          layout: layerConfig.layout || {}
+        };
+        if (layerConfig["source-layer"] != null)
+          layer["source-layer"] = layerConfig["source-layer"];
+        if (layerConfig.minzoom != null) layer.minzoom = layerConfig.minzoom;
+        if (layerConfig.maxzoom != null) layer.maxzoom = layerConfig.maxzoom;
+        map.addLayer(layer);
+      }
+
+      function createSingleMap(containerId, config, layerIdsFilter, embeddedSources) {
+        const center = config.center || [0, 0];
+        const zoom = config.zoom ?? 10;
+        const tiles = config.tiles || {};
+        const map = new maplibregl.Map({
+          container: containerId,
+          style: buildBaseStyle(center, zoom, tiles),
+          center: center,
+          zoom: zoom
+        });
+
+        const layers = config.layers || [];
+        const embedded = config.embedded_sources || embeddedSources || {};
+
+        map._loadLayers = () =>
+          loadLayers(map, config, embedded, layerIdsFilter).then(() => {
+            if (window.llmapsOnLayersReady) window.llmapsOnLayersReady(map);
+          });
+
+        map.on("load", function() {
+          map._loadLayers().then(() => {
+            map._layersLoaded = true;
+          });
+        });
+
+        return map;
+      }
+
+      function setupComparison(root, config) {
+        const comp = config.comparison;
+        const leftIds = comp.left_layers || [];
+        const rightIds = comp.right_layers || [];
+        root.id = "llmaps-comparison-container";
+        root.innerHTML = [
+          '<div id="llmaps-compare-before" class="llmaps-compare-map"></div>',
+          '<div id="llmaps-compare-after" class="llmaps-compare-map"></div>'
+        ].join("");
+
+        const embedded = config.embedded_sources || {};
+        const beforeMap = createSingleMap("llmaps-compare-before", config, leftIds, embedded);
+        const afterMap = createSingleMap("llmaps-compare-after", config, rightIds, embedded);
+
+        if (typeof maplibregl.Compare !== "function") {
+          console.warn("maplibre-gl-compare not loaded; comparison uses basic sync only.");
+          beforeMap.on("moveend", function() {
+            afterMap.setCenter(beforeMap.getCenter());
+            afterMap.setZoom(beforeMap.getZoom());
+          });
+          afterMap.on("moveend", function() {
+            beforeMap.setCenter(afterMap.getCenter());
+            beforeMap.setZoom(afterMap.getZoom());
+          });
+          return { mapLeft: beforeMap, mapRight: afterMap };
+        }
+
+        var compare = new maplibregl.Compare(beforeMap, afterMap, "#llmaps-comparison-container", {
+          mousemove: true,
+          orientation: "vertical"
+        });
+
+        return { mapLeft: beforeMap, mapRight: afterMap };
+      }
+
+      function addComponents(config, mapOrMaps) {
+        const maps = Array.isArray(mapOrMaps) ? mapOrMaps : [mapOrMaps];
+        const map = maps[0];
+        const components = config.components || [];
+        components.forEach(c => {
+          if (c.type === "controls") {
+            if (c.zoom)
+              map.addControl(new maplibregl.NavigationControl(), "top-left");
+            if (c.scale && typeof maplibregl.ScaleControl === "function")
+              map.addControl(new maplibregl.ScaleControl(), "bottom-left");
+            if (c.fullscreen && maplibregl.FullscreenControl)
+              map.addControl(new maplibregl.FullscreenControl(), "top-left");
+          }
+        });
+
+        const legendConfig = components.find(c => c.type === "legend");
+        const basemapSwitcherConfig = components.find(c => c.type === "basemap_switcher");
+        const hasTileProviders = config.tile_providers && config.tile_providers.length > 0;
+        let basemapInLegend = false;
+
+        function tileUrl(tiles) {
+          const t = (tiles && tiles.url_template) || "";
+          return t.replace("{s}", (tiles.subdomains && tiles.subdomains[0]) || "a");
+        }
+        function attachBasemapSelect(select, config, maps) {
+          select.addEventListener("change", function() {
+            const id = select.value;
+            const provider = config.tile_providers.find(function(p) { return p.id === id; });
+            if (!provider) return;
+            const url = tileUrl(provider);
+            maps.forEach(function(m) {
+              if (!m.getLayer || !m.getSource) return;
+              if (m.getLayer("llmaps-base")) m.removeLayer("llmaps-base");
+              if (m.getSource("llmaps-base")) m.removeSource("llmaps-base");
+              m.addSource("llmaps-base", {
+                type: "raster",
+                tiles: [url],
+                tileSize: 256,
+                attribution: provider.attribution || ""
+              });
+              const layers = m.getStyle().layers;
+              const firstId = layers && layers[0] ? layers[0].id : undefined;
+              m.addLayer({ id: "llmaps-base", type: "raster", source: "llmaps-base" }, firstId);
+            });
+          });
+        }
+
+        if (legendConfig) {
+          const div = document.createElement("div");
+          div.className = "llmaps-legend " + (legendConfig.position || "top-right");
+          const titleEl = document.createElement("div");
+          titleEl.className = "llmaps-legend-title";
+          titleEl.textContent = legendConfig.title != null && legendConfig.title !== "" ? legendConfig.title : (config.title || "Карта");
+          div.appendChild(titleEl);
+          const labels = legendConfig.layer_labels || {};
+          const counts = legendConfig.layer_counts || {};
+          const ramps = legendConfig.layer_color_ramps || {};
+          const entries = Object.keys(labels);
+          if (entries.length) {
+            const list = document.createElement("ul");
+            entries.forEach(layerId => {
+              const li = document.createElement("li");
+              const wrap = document.createElement("span");
+              wrap.className = "llmaps-legend-item-wrap";
+              wrap.textContent = (labels[layerId] || layerId) +
+                (counts[layerId] != null ? " (" + counts[layerId] + ")" : "");
+              li.appendChild(wrap);
+              const rampCfg = ramps[layerId];
+              if (rampCfg && rampCfg.stops && rampCfg.stops.length) {
+                const colors = rampCfg.stops.map(function(s) { return s[1]; });
+                const rampBar = document.createElement("div");
+                rampBar.className = "llmaps-legend-ramp";
+                rampBar.style.background = "linear-gradient(to right, " + colors.join(", ") + ")";
+                li.appendChild(rampBar);
+                const rampLabels = document.createElement("div");
+                rampLabels.className = "llmaps-legend-ramp-labels";
+                const labelMin = document.createElement("span");
+                labelMin.textContent = rampCfg.label_min != null ? String(rampCfg.label_min) : "";
+                const labelMax = document.createElement("span");
+                labelMax.textContent = rampCfg.label_max != null ? String(rampCfg.label_max) : "";
+                rampLabels.appendChild(labelMin);
+                rampLabels.appendChild(labelMax);
+                li.appendChild(rampLabels);
+              }
+              list.appendChild(li);
+            });
+            div.appendChild(list);
+          }
+          if (basemapSwitcherConfig && hasTileProviders) {
+            basemapInLegend = true;
+            const currentTiles = config.tiles || {};
+            const currentId = currentTiles.id || (config.tile_providers[0] && config.tile_providers[0].id);
+            const basemapWrap = document.createElement("div");
+            basemapWrap.className = "llmaps-legend-basemap";
+            const basemapLabel = document.createElement("div");
+            basemapLabel.className = "llmaps-legend-basemap-label";
+            basemapLabel.textContent = "Подложка";
+            basemapWrap.appendChild(basemapLabel);
+            const select = document.createElement("select");
+            config.tile_providers.forEach(function(provider) {
+              const opt = document.createElement("option");
+              opt.value = provider.id;
+              opt.textContent = provider.name || provider.id;
+              if (provider.id === currentId) opt.selected = true;
+              select.appendChild(opt);
+            });
+            basemapWrap.appendChild(select);
+            div.appendChild(basemapWrap);
+            attachBasemapSelect(select, config, maps);
+          }
+          document.body.appendChild(div);
+        }
+
+        if (basemapSwitcherConfig && hasTileProviders && !basemapInLegend) {
+          const currentTiles = config.tiles || {};
+          const currentId = currentTiles.id || (config.tile_providers[0] && config.tile_providers[0].id);
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-basemap-switcher " + (basemapSwitcherConfig.position || "top-left");
+          wrap.style.position = "absolute";
+          wrap.style.zIndex = "10";
+          const select = document.createElement("select");
+          select.style.padding = "4px 8px";
+          select.style.fontSize = "12px";
+          select.style.cursor = "pointer";
+          config.tile_providers.forEach(function(provider) {
+            const opt = document.createElement("option");
+            opt.value = provider.id;
+            opt.textContent = provider.name || provider.id;
+            if (provider.id === currentId) opt.selected = true;
+            select.appendChild(opt);
+          });
+          wrap.appendChild(select);
+          document.body.appendChild(wrap);
+          attachBasemapSelect(select, config, maps);
+        }
+
+        const popupConfig = components.find(c => c.type === "popup");
+        if (popupConfig && typeof maplibregl.Popup === "function") {
+          const defaultFields = popupConfig.fields || [];
+          const fieldLabels = popupConfig.field_labels || {};
+          const fieldsByLayer = popupConfig.fields_by_layer || {};
+          const layers = config.layers || [];
+
+          function popupContent(feature, layerId) {
+            const fields = fieldsByLayer[layerId] && fieldsByLayer[layerId].length
+              ? fieldsByLayer[layerId] : defaultFields;
+            const props = feature.properties || {};
+            if (!fields.length) return Object.keys(props).length ? JSON.stringify(props) : "";
+            const rows = fields.map(f => {
+              const label = fieldLabels[f] || f;
+              const val = props[f];
+              return "<tr><td>" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
+            });
+            return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
+          }
+
+          function lngLat(feature) {
+            const g = feature.geometry;
+            if (!g || !g.coordinates) return null;
+            const c = g.coordinates;
+            if (g.type === "Point") return c;
+            if (c[0] != null && typeof c[0] === "number") return c;
+            return c[0] || null;
+          }
+
+          function addPopupToMap(m) {
+            if (!m || !m.getLayer) return;
+            layers.forEach(layerCfg => {
+              const layerId = layerCfg.id;
+              if (!m.getLayer(layerId)) return;
+              m.on("click", layerId, function(ev) {
+                ev.originalEvent.preventDefault();
+                const feat = ev.features && ev.features[0];
+                if (!feat) return;
+                const coords = lngLat(feat);
+                if (!coords) return;
+                new maplibregl.Popup()
+                  .setLngLat(coords)
+                  .setHTML(popupContent(feat, layerId))
+                  .addTo(m);
+              });
+            });
+            m.getCanvas().style.cursor = "pointer";
+          }
+
+          window.llmapsOnLayersReady = function(m) {
+            addPopupToMap(m);
+          };
+        }
+
+        const searchConfig = components.find(c => c.type === "search");
+        if (searchConfig && maps.length > 0) {
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-search-wrap " + (searchConfig.position || "top-left");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = searchConfig.placeholder || "Search address...";
+          input.id = "llmaps-address-search";
+          wrap.appendChild(input);
+          const suggestions = document.createElement("div");
+          suggestions.className = "llmaps-search-suggestions";
+          suggestions.id = "llmaps-search-suggestions";
+          wrap.appendChild(suggestions);
+          document.body.appendChild(wrap);
+
+          const zoomOnResult = searchConfig.zoom_on_result ?? 15;
+          const geocoderUrl = searchConfig.geocoder_url;
+          const geocoderParams = searchConfig.geocoder_params || {};
+          const autocomplete = searchConfig.autocomplete !== false;
+
+          function parseCoords(data) {
+            if (Array.isArray(data.center)) return data.center;
+            if (data.lon != null && data.lat != null) return [data.lon, data.lat];
+            if (data.lng != null && data.lat != null) return [data.lng, data.lat];
+            const f = data.features && data.features[0];
+            if (f && f.geometry && f.geometry.coordinates)
+              return f.geometry.coordinates;
+            const m = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+            if (m && m[0]) {
+              const pos = m[0].GeoObject.Point.pos;
+              return pos.split(" ").map(Number);
+            }
+            return null;
+          }
+
+          function buildGeocoderUrl(query, results) {
+            if (!geocoderUrl) return null;
+            const url = new URL(geocoderUrl);
+            url.searchParams.set("geocode", query);
+            if (results != null) url.searchParams.set("results", String(results));
+            Object.entries(geocoderParams).forEach(([k, v]) => url.searchParams.set(k, v));
+            return url.toString();
+          }
+
+          function flyToCoords(lon, lat) {
+            maps.forEach(m => {
+              if (m && m.flyTo) m.flyTo({ center: [lon, lat], zoom: zoomOnResult, duration: 2000 });
+            });
+          }
+
+          let debounceTimer;
+          function doSearch(address) {
+            const url = buildGeocoderUrl(address, 1);
+            if (!url) { console.warn("Search: geocoder_url not set"); return; }
+            fetch(url).then(r => r.json()).then(data => {
+              const coords = parseCoords(data);
+              if (coords) flyToCoords(coords[0], coords[1]);
+            }).catch(e => console.error("Geocoder error", e));
+          }
+
+          function showSuggestions(query) {
+            const url = buildGeocoderUrl(query, 5);
+            if (!url) return;
+            fetch(url).then(r => r.json()).then(data => {
+              const list = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+              suggestions.innerHTML = "";
+              suggestions.classList.remove("visible");
+              if (list && list.length) {
+                list.slice(0, 5).forEach(item => {
+                  const text = item.GeoObject && item.GeoObject.metaDataProperty && item.GeoObject.metaDataProperty.GeocoderMetaData
+                    ? item.GeoObject.metaDataProperty.GeocoderMetaData.text
+                    : (item.GeoObject && item.GeoObject.name) || "";
+                  const div = document.createElement("div");
+                  div.textContent = text;
+                  div.onclick = () => { input.value = text; doSearch(text); suggestions.classList.remove("visible"); };
+                  suggestions.appendChild(div);
+                });
+                suggestions.classList.add("visible");
+              }
+            }).catch(() => {});
+          }
+
+          input.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); doSearch(input.value.trim()); }
+          });
+          if (autocomplete) {
+            input.addEventListener("input", function() {
+              clearTimeout(debounceTimer);
+              const q = input.value.trim();
+              if (q.length < 3) { suggestions.classList.remove("visible"); return; }
+              debounceTimer = setTimeout(() => showSuggestions(q), 300);
+            });
+            input.addEventListener("blur", () => setTimeout(() => suggestions.classList.remove("visible"), 200));
+          }
+        }
+      }
+
+      function createMap() {
+        const MAP_CONFIG = readConfig();
+        const root = document.getElementById("map-root");
+        const visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+
+        if (MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers) {
+          const { mapLeft, mapRight } = setupComparison(root, MAP_CONFIG);
+          if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+            initVisibilityOptimization([mapLeft, mapRight], visibilityIds);
+          addComponents(MAP_CONFIG, [mapLeft, mapRight]);
+          return;
+        }
+
+        const map = createSingleMap("map-root", MAP_CONFIG, null, MAP_CONFIG.embedded_sources);
+        if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+          initVisibilityOptimization(map, visibilityIds);
+        addComponents(MAP_CONFIG, map);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", createMap);
+      } else {
+        createMap();
+      }</script>
+  </body>
+</html>
