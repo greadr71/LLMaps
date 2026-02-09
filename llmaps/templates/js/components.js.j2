@@ -64,23 +64,90 @@
         if (legendConfig) {
           const div = document.createElement("div");
           div.className = "llmaps-legend " + (legendConfig.position || "top-right");
+
+          const header = document.createElement("div");
+          header.className = "llmaps-legend-header";
+
           const titleEl = document.createElement("div");
           titleEl.className = "llmaps-legend-title";
           titleEl.textContent = legendConfig.title != null && legendConfig.title !== "" ? legendConfig.title : (config.title || "Карта");
-          div.appendChild(titleEl);
+          header.appendChild(titleEl);
+
+          if (legendConfig.show_toggle !== false) {
+            const toggleBtn = document.createElement("div");
+            toggleBtn.className = "llmaps-legend-toggle-btn";
+            toggleBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+            header.appendChild(toggleBtn);
+            header.onclick = () => div.classList.toggle("collapsed");
+          }
+
+          div.appendChild(header);
+
+          const content = document.createElement("div");
+          content.className = "llmaps-legend-content";
+
           const labels = legendConfig.layer_labels || {};
           const counts = legendConfig.layer_counts || {};
           const ramps = legendConfig.layer_color_ramps || {};
           const entries = Object.keys(labels);
+
           if (entries.length) {
             const list = document.createElement("ul");
             entries.forEach(layerId => {
               const li = document.createElement("li");
-              const wrap = document.createElement("span");
-              wrap.className = "llmaps-legend-item-wrap";
-              wrap.textContent = (labels[layerId] || layerId) +
+
+              const item = document.createElement("div");
+              item.className = "llmaps-legend-item";
+
+              // Try to find layer color and type for the icon
+              let color = "#ccc";
+              let typeClass = "circle";
+
+              const mLayer = map.getLayer(layerId);
+              if (mLayer) {
+                const type = mLayer.type;
+                if (type === "circle") {
+                  color = map.getPaintProperty(layerId, "circle-color") || color;
+                  typeClass = "circle";
+                } else if (type === "line") {
+                  color = map.getPaintProperty(layerId, "line-color") || color;
+                  typeClass = "line";
+                } else if (type === "fill") {
+                  color = map.getPaintProperty(layerId, "fill-color") || color;
+                  typeClass = "fill";
+                }
+                // Handle cases where color might be an expression (simplified)
+                if (Array.isArray(color)) color = "#666";
+              }
+
+              const icon = document.createElement("div");
+              icon.className = "llmaps-legend-icon " + typeClass;
+              icon.style.backgroundColor = color;
+              item.appendChild(icon);
+
+              const label = document.createElement("span");
+              label.className = "llmaps-legend-item-label";
+              label.textContent = (labels[layerId] || layerId) +
                 (counts[layerId] != null ? " (" + counts[layerId] + ")" : "");
-              li.appendChild(wrap);
+              item.appendChild(label);
+
+              // Toggle visibility
+              item.onclick = () => {
+                let next = "visible";
+                maps.forEach((m, idx) => {
+                  if (!m.getLayer(layerId)) return;
+                  if (idx === 0) {
+                    const visibility = m.getLayoutProperty(layerId, "visibility") || "visible";
+                    next = visibility === "visible" ? "none" : "visible";
+                  }
+                  m.setLayoutProperty(layerId, "visibility", next);
+                });
+                if (next === "none") item.classList.add("hidden");
+                else item.classList.remove("hidden");
+              };
+
+              li.appendChild(item);
+
               const rampCfg = ramps[layerId];
               if (rampCfg && rampCfg.stops && rampCfg.stops.length) {
                 const colors = rampCfg.stops.map(function(s) { return s[1]; });
@@ -100,7 +167,7 @@
               }
               list.appendChild(li);
             });
-            div.appendChild(list);
+            content.appendChild(list);
           }
           if (basemapSwitcherConfig && hasTileProviders) {
             basemapInLegend = true;
@@ -113,8 +180,9 @@
             basemapLabel.textContent = "Подложка";
             basemapWrap.appendChild(basemapLabel);
             basemapWrap.appendChild(createBasemapSelect(config, maps, currentId));
-            div.appendChild(basemapWrap);
+            content.appendChild(basemapWrap);
           }
+          div.appendChild(content);
           document.body.appendChild(div);
         }
 

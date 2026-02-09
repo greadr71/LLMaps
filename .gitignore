@@ -34,3 +34,5 @@ htmlcov/
 # Environment
 .env
 .env.local
+
+CLAUDE.MD
