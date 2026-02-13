@@ -69,7 +69,9 @@ FillLayer(
 | `fill_color` | str | `"#3182bd"` | Fill color. |
 | `fill_opacity` | float | 0.6 | Fill opacity (0–1). |
 | `stroke_color` | str or None | `"#08519c"` | Outline color; None to omit. |
-| `stroke_width` | float or None | 1.0 | Outline width in pixels. |
+| `stroke_width` | float or None | 1.0 | Outline width in pixels (see note below). |
+
+**Note on stroke_width:** MapLibre GL JS natively supports only 1px outlines via `fill-outline-color`. For `stroke_width <= 1`, the standard fill outline is used. For `stroke_width > 1`, LLMaps automatically generates an additional line layer `{id}-outline` with the specified width.
 
 ---
 

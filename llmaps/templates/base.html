@@ -14,6 +14,7 @@
   </head>
   <body>
     <div id="map-root"></div>
+{{ legend_html | safe }}
     <script id="llmaps-config" type="application/json">
       {{ map_config_json | safe }}
     </script>

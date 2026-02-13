@@ -42,10 +42,17 @@ class FillLayer(BaseLayer):
             "fill-opacity": self.fill_opacity,
         }
 
+        # MapLibre GL JS поддерживает только fill-outline-color (ширина всегда 1px)
+        # Для толстой обводки (>1px) нужен отдельный line слой
         if self.stroke_color is not None:
-            paint["outline-color"] = self.stroke_color
-        if self.stroke_width is not None:
-            paint["outline-width"] = self.stroke_width
+            if self.stroke_width is None or self.stroke_width <= 1:
+                # Тонкая обводка: используем fill-outline-color
+                paint["fill-outline-color"] = self.stroke_color
+            else:
+                # Толстая обводка: сохраняем в metadata для генерации line слоя
+                base["metadata"]["needs_outline_layer"] = True
+                base["metadata"]["outline_color"] = self.stroke_color
+                base["metadata"]["outline_width"] = self.stroke_width
 
         base["paint"] = paint
         return base

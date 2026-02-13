@@ -1,4 +1,4 @@
-{# Components: addComponents — controls, legend, popup, search #}
+{# Components: addComponents — controls, popup, search, basemap switcher (legend now server-rendered) #}
       function addComponents(config, mapOrMaps) {
         const maps = Array.isArray(mapOrMaps) ? mapOrMaps : [mapOrMaps];
         const map = maps[0];
@@ -11,19 +11,54 @@
               map.addControl(new maplibregl.ScaleControl(), "bottom-left");
             if (c.fullscreen && maplibregl.FullscreenControl)
               map.addControl(new maplibregl.FullscreenControl(), "top-left");
+            
+            // Hash-навигация: синхронизация позиции с URL (#zoom/lat/lon)
+            if (c.hash) {
+              function updateHash() {
+                const z = map.getZoom().toFixed(2);
+                const center = map.getCenter();
+                const hash = `#${z}/${center.lat.toFixed(6)}/${center.lng.toFixed(6)}`;
+                history.replaceState(null, null, hash);
+              }
+              
+              function readHash() {
+                const hash = window.location.hash;
+                if (!hash) return null;
+                const parts = hash.replace('#', '').split('/');
+                if (parts.length === 3) {
+                  const zoom = parseFloat(parts[0]);
+                  const lat = parseFloat(parts[1]);
+                  const lng = parseFloat(parts[2]);
+                  if (!isNaN(zoom) && !isNaN(lat) && !isNaN(lng)) {
+                    return { zoom, lat, lng };
+                  }
+                }
+                return null;
+              }
+              
+              // При загрузке - читаем hash и устанавливаем позицию
+              const initial = readHash();
+              if (initial) {
+                map.setCenter([initial.lng, initial.lat]);
+                map.setZoom(initial.zoom);
+              }
+              
+              // При навигации - обновляем hash
+              map.on('moveend', updateHash);
+            }
           }
         });
 
-        const legendConfig = components.find(c => c.type === "legend");
         const basemapSwitcherConfig = components.find(c => c.type === "basemap_switcher");
         const hasTileProviders = config.tile_providers && config.tile_providers.length > 0;
-        let basemapInLegend = false;
 
         function tileUrl(tiles) {
           const t = (tiles && tiles.url_template) || "";
           return t.replace("{s}", (tiles.subdomains && tiles.subdomains[0]) || "a");
         }
-        function switchBasemap(providerId, config, maps) {
+        
+        // Make switchBasemap available globally for server-rendered legend
+        window.llmaps_switchBasemap = function(providerId) {
           const provider = config.tile_providers.find(function(p) { return p.id === providerId; });
           if (!provider) return;
           const url = tileUrl(provider);
@@ -41,7 +76,8 @@
             const firstId = layers && layers[0] ? layers[0].id : undefined;
             m.addLayer({ id: "llmaps-base", type: "raster", source: "llmaps-base" }, firstId);
           });
-        }
+        };
+        
         function createBasemapSelect(config, maps, currentId) {
           const wrap = document.createElement("div");
           wrap.className = "llmaps-basemap-select-wrap";
@@ -55,136 +91,17 @@
             select.appendChild(opt);
           });
           select.addEventListener("change", function() {
-            switchBasemap(select.value, config, maps);
+            window.llmaps_switchBasemap(select.value);
           });
           wrap.appendChild(select);
           return wrap;
         }
 
-        if (legendConfig) {
-          const div = document.createElement("div");
-          div.className = "llmaps-legend " + (legendConfig.position || "top-right");
+        // Legend is now server-rendered, skip client-side generation
 
-          const header = document.createElement("div");
-          header.className = "llmaps-legend-header";
-
-          const titleEl = document.createElement("div");
-          titleEl.className = "llmaps-legend-title";
-          titleEl.textContent = legendConfig.title != null && legendConfig.title !== "" ? legendConfig.title : (config.title || "Карта");
-          header.appendChild(titleEl);
-
-          if (legendConfig.show_toggle !== false) {
-            const toggleBtn = document.createElement("div");
-            toggleBtn.className = "llmaps-legend-toggle-btn";
-            toggleBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
-            header.appendChild(toggleBtn);
-            header.onclick = () => div.classList.toggle("collapsed");
-          }
-
-          div.appendChild(header);
-
-          const content = document.createElement("div");
-          content.className = "llmaps-legend-content";
-
-          const labels = legendConfig.layer_labels || {};
-          const counts = legendConfig.layer_counts || {};
-          const ramps = legendConfig.layer_color_ramps || {};
-          const entries = Object.keys(labels);
-
-          if (entries.length) {
-            const list = document.createElement("ul");
-            entries.forEach(layerId => {
-              const li = document.createElement("li");
-
-              const item = document.createElement("div");
-              item.className = "llmaps-legend-item";
-
-              // Try to find layer color and type for the icon
-              let color = "#ccc";
-              let typeClass = "circle";
-
-              const mLayer = map.getLayer(layerId);
-              if (mLayer) {
-                const type = mLayer.type;
-                if (type === "circle") {
-                  color = map.getPaintProperty(layerId, "circle-color") || color;
-                  typeClass = "circle";
-                } else if (type === "line") {
-                  color = map.getPaintProperty(layerId, "line-color") || color;
-                  typeClass = "line";
-                } else if (type === "fill") {
-                  color = map.getPaintProperty(layerId, "fill-color") || color;
-                  typeClass = "fill";
-                }
-                // Handle cases where color might be an expression (simplified)
-                if (Array.isArray(color)) color = "#666";
-              }
-
-              const icon = document.createElement("div");
-              icon.className = "llmaps-legend-icon " + typeClass;
-              icon.style.backgroundColor = color;
-              item.appendChild(icon);
-
-              const label = document.createElement("span");
-              label.className = "llmaps-legend-item-label";
-              label.textContent = (labels[layerId] || layerId) +
-                (counts[layerId] != null ? " (" + counts[layerId] + ")" : "");
-              item.appendChild(label);
-
-              // Toggle visibility
-              item.onclick = () => {
-                let next = "visible";
-                maps.forEach((m, idx) => {
-                  if (!m.getLayer(layerId)) return;
-                  if (idx === 0) {
-                    const visibility = m.getLayoutProperty(layerId, "visibility") || "visible";
-                    next = visibility === "visible" ? "none" : "visible";
-                  }
-                  m.setLayoutProperty(layerId, "visibility", next);
-                });
-                if (next === "none") item.classList.add("hidden");
-                else item.classList.remove("hidden");
-              };
-
-              li.appendChild(item);
-
-              const rampCfg = ramps[layerId];
-              if (rampCfg && rampCfg.stops && rampCfg.stops.length) {
-                const colors = rampCfg.stops.map(function(s) { return s[1]; });
-                const rampBar = document.createElement("div");
-                rampBar.className = "llmaps-legend-ramp";
-                rampBar.style.background = "linear-gradient(to right, " + colors.join(", ") + ")";
-                li.appendChild(rampBar);
-                const rampLabels = document.createElement("div");
-                rampLabels.className = "llmaps-legend-ramp-labels";
-                const labelMin = document.createElement("span");
-                labelMin.textContent = rampCfg.label_min != null ? String(rampCfg.label_min) : "";
-                const labelMax = document.createElement("span");
-                labelMax.textContent = rampCfg.label_max != null ? String(rampCfg.label_max) : "";
-                rampLabels.appendChild(labelMin);
-                rampLabels.appendChild(labelMax);
-                li.appendChild(rampLabels);
-              }
-              list.appendChild(li);
-            });
-            content.appendChild(list);
-          }
-          if (basemapSwitcherConfig && hasTileProviders) {
-            basemapInLegend = true;
-            const currentTiles = config.tiles || {};
-            const currentId = currentTiles.id || (config.tile_providers[0] && config.tile_providers[0].id);
-            const basemapWrap = document.createElement("div");
-            basemapWrap.className = "llmaps-legend-basemap";
-            const basemapLabel = document.createElement("div");
-            basemapLabel.className = "llmaps-legend-basemap-label";
-            basemapLabel.textContent = "Подложка";
-            basemapWrap.appendChild(basemapLabel);
-            basemapWrap.appendChild(createBasemapSelect(config, maps, currentId));
-            content.appendChild(basemapWrap);
-          }
-          div.appendChild(content);
-          document.body.appendChild(div);
-        }
+        // Standalone basemap switcher (if not embedded in legend)
+        const legendConfig = components.find(c => c.type === "legend");
+        const basemapInLegend = legendConfig && hasTileProviders;
 
         if (basemapSwitcherConfig && hasTileProviders && !basemapInLegend) {
           const currentTiles = config.tiles || {};
@@ -194,7 +111,9 @@
           wrap.style.position = "absolute";
           wrap.style.zIndex = "10";
           wrap.appendChild(createBasemapSelect(config, maps, currentId));
-          document.body.appendChild(wrap);
+          // Add to map container for fullscreen support
+          const mapContainer = document.querySelector('.maplibregl-map') || document.getElementById('map-root');
+          mapContainer.appendChild(wrap);
         }
 
         const popupConfig = components.find(c => c.type === "popup");
@@ -212,7 +131,7 @@
             const rows = fields.map(f => {
               const label = fieldLabels[f] || f;
               const val = props[f];
-              return "<tr><td>" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
+              return "<tr><td style=\"font-weight:600;padding-right:12px;\">" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
             });
             return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
           }
@@ -228,21 +147,49 @@
 
           function addPopupToMap(m) {
             if (!m || !m.getLayer) return;
-            layers.forEach(layerCfg => {
-              const layerId = layerCfg.id;
-              if (!m.getLayer(layerId)) return;
-              m.on("click", layerId, function(ev) {
-                ev.originalEvent.preventDefault();
-                const feat = ev.features && ev.features[0];
-                if (!feat) return;
-                const coords = lngLat(feat);
-                if (!coords) return;
-                new maplibregl.Popup()
-                  .setLngLat(coords)
-                  .setHTML(popupContent(feat, layerId))
-                  .addTo(m);
+            
+            // Собираем ID слоёв с попапами
+            const popupLayerIds = layers
+              .map(l => l.id)
+              .filter(id => m.getLayer(id));
+            
+            // Приоритет типов слоёв: точки > линии > полигоны
+            const typePriority = { circle: 0, symbol: 1, line: 2, fill: 3 };
+            
+            // Текущий открытый popup (для закрытия перед открытием нового)
+            let currentPopup = null;
+            
+            // Единый обработчик клика с приоритизацией
+            m.on("click", function(ev) {
+              // Закрываем предыдущий popup
+              if (currentPopup) {
+                currentPopup.remove();
+                currentPopup = null;
+              }
+              
+              if (!popupLayerIds.length) return;
+              
+              const features = m.queryRenderedFeatures(ev.point, { layers: popupLayerIds });
+              if (!features.length) return;
+              
+              // Сортируем по приоритету типа слоя (точки выше полигонов)
+              features.sort((a, b) => {
+                const typeA = m.getLayer(a.layer.id)?.type || "fill";
+                const typeB = m.getLayer(b.layer.id)?.type || "fill";
+                return (typePriority[typeA] ?? 99) - (typePriority[typeB] ?? 99);
               });
+              
+              const feat = features[0];
+              const layerId = feat.layer.id;
+              const coords = lngLat(feat);
+              if (!coords) return;
+              
+              currentPopup = new maplibregl.Popup()
+                .setLngLat(coords)
+                .setHTML(popupContent(feat, layerId))
+                .addTo(m);
             });
+            
             m.getCanvas().style.cursor = "pointer";
           }
 
@@ -264,7 +211,9 @@
           suggestions.className = "llmaps-search-suggestions";
           suggestions.id = "llmaps-search-suggestions";
           wrap.appendChild(suggestions);
-          document.body.appendChild(wrap);
+          // Add to map container for fullscreen support
+          const searchMapContainer = document.querySelector('.maplibregl-map') || document.getElementById('map-root');
+          searchMapContainer.appendChild(wrap);
 
           const zoomOnResult = searchConfig.zoom_on_result ?? 15;
           const geocoderUrl = searchConfig.geocoder_url;
@@ -302,13 +251,57 @@
           }
 
           let debounceTimer;
+          let selectedSuggestionIndex = -1;
+          
           function doSearch(address) {
             const url = buildGeocoderUrl(address, 1);
             if (!url) { console.warn("Search: geocoder_url not set"); return; }
+            suggestions.classList.remove("visible");
+            selectedSuggestionIndex = -1;
             fetch(url).then(r => r.json()).then(data => {
               const coords = parseCoords(data);
               if (coords) flyToCoords(coords[0], coords[1]);
             }).catch(e => console.error("Geocoder error", e));
+          }
+          
+          function updateSelectedSuggestion() {
+            const items = suggestions.querySelectorAll("div");
+            items.forEach((item, idx) => {
+              if (idx === selectedSuggestionIndex) {
+                item.classList.add("selected");
+                item.scrollIntoView({ block: "nearest" });
+              } else {
+                item.classList.remove("selected");
+              }
+            });
+          }
+          
+          function handleSuggestionKeydown(e) {
+            if (!suggestions.classList.contains("visible")) return false;
+            const items = suggestions.querySelectorAll("div");
+            if (!items.length) return false;
+            
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, items.length - 1);
+              updateSelectedSuggestion();
+              return true;
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+              updateSelectedSuggestion();
+              return true;
+            } else if (e.key === "Enter" && selectedSuggestionIndex >= 0) {
+              e.preventDefault();
+              const selectedItem = items[selectedSuggestionIndex];
+              if (selectedItem) selectedItem.click();
+              return true;
+            } else if (e.key === "Escape") {
+              suggestions.classList.remove("visible");
+              selectedSuggestionIndex = -1;
+              return true;
+            }
+            return false;
           }
 
           function showSuggestions(query) {
@@ -318,6 +311,7 @@
               const list = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
               suggestions.innerHTML = "";
               suggestions.classList.remove("visible");
+              selectedSuggestionIndex = -1;
               if (list && list.length) {
                 list.slice(0, 5).forEach(item => {
                   const text = item.GeoObject && item.GeoObject.metaDataProperty && item.GeoObject.metaDataProperty.GeocoderMetaData
@@ -333,7 +327,10 @@
             }).catch(() => {});
           }
 
-          input.addEventListener("keypress", function(e) {
+          input.addEventListener("keydown", function(e) {
+            // Handle arrow navigation first
+            if (handleSuggestionKeydown(e)) return;
+            // Handle Enter
             if (e.key === "Enter") { e.preventDefault(); doSearch(input.value.trim()); }
           });
           if (autocomplete) {

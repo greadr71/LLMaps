@@ -100,12 +100,39 @@ class Map:
         intentionally conservative: plain dicts, lists and primitives only.
         """
 
+        # Сериализуем слои, генерируя дополнительные outline слои при необходимости
+        layers_list = []
+        for layer in self._layers:
+            layer_dict = layer.to_dict()
+            layers_list.append(layer_dict)
+            
+            # Если fill слой требует толстую обводку, создаём line слой
+            metadata = layer_dict.get("metadata", {})
+            if metadata.get("needs_outline_layer"):
+                outline_layer = {
+                    "id": f"{layer_dict['id']}-outline",
+                    "type": "line",
+                    "source": layer_dict["source"],
+                    "visible": layer_dict.get("visible", True),
+                    "metadata": {},
+                    "paint": {
+                        "line-color": metadata["outline_color"],
+                        "line-width": metadata["outline_width"],
+                    },
+                    "layout": {},
+                }
+                if layer_dict.get("minzoom") is not None:
+                    outline_layer["minzoom"] = layer_dict["minzoom"]
+                if layer_dict.get("maxzoom") is not None:
+                    outline_layer["maxzoom"] = layer_dict["maxzoom"]
+                layers_list.append(outline_layer)
+
         out: Dict[str, Any] = {
             "title": self.title,
             "center": list(self.center),
             "zoom": self.zoom,
             "tiles": self._tile_config(),
-            "layers": [layer.to_dict() for layer in self._layers],
+            "layers": layers_list,
         }
         if self.tile_providers is not None:
             out["tile_providers"] = [

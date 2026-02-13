@@ -42,6 +42,7 @@ def _render_base_js(config: Dict[str, Any]) -> str:
     from llmaps.optimizers.compression import generate_decompression_js
     from llmaps.optimizers.visibility import generate_visibility_optimization_js
     from llmaps.optimizers.multipoint import generate_multipoint_explosion_js
+    from .legend_generator import generate_legend_js
 
     env = _create_environment()
     use_compression = config.get("use_compression", False)
@@ -57,20 +58,30 @@ def _render_base_js(config: Dict[str, Any]) -> str:
     for name in _JS_TEMPLATES:
         template = env.get_template(name)
         parts.append(template.render(**context))
+    
+    # Add server-rendered legend JS
+    parts.append(generate_legend_js())
+    
     return "\n".join(parts)
 
 
 def render_map_html(config: Dict[str, Any]) -> str:
     """Render a map *config* to HTML using the base template."""
+    from .legend_generator import generate_legend_html
 
     env = _create_environment()
     template = env.get_template("base.html")
     use_compression = config.get("use_compression", False)
+    
+    # Generate server-side legend HTML
+    legend_html = generate_legend_html(config)
+    
     return template.render(
         title=config.get("title") or "LLMaps",
         map_config_json=json.dumps(config),
         llmaps_css=_load_base_css(),
         llmaps_js=_render_base_js(config),
         use_compression=use_compression,
+        legend_html=legend_html,
     )
 

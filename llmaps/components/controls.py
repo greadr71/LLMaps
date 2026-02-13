@@ -20,11 +20,15 @@ class Controls(BaseComponent):
         Show scale bar.
     fullscreen:
         Show fullscreen toggle.
+    hash:
+        Sync map position with URL hash (#zoom/lat/lon).
+        Enables sharing and bookmarking map positions.
     """
 
     zoom: bool = True
     scale: bool = True
     fullscreen: bool = False
+    hash: bool = True
 
     def __post_init__(self) -> None:
         self.component_type = "controls"
@@ -36,6 +40,7 @@ class Controls(BaseComponent):
                 "zoom": self.zoom,
                 "scale": self.scale,
                 "fullscreen": self.fullscreen,
+                "hash": self.hash,
             }
         )
         return base

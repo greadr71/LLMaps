@@ -32,6 +32,14 @@ class Legend(BaseComponent):
         Optional mapping from layer id to a dict with ``stops``
         (list of [value, "#hex"]), ``label_min`` and ``label_max``,
         to show a color scale in the legend (e.g. for population).
+    layer_descriptions:
+        Optional mapping from layer id to text descriptions displayed
+        under each layer in the legend.
+    instructions:
+        Optional list of tip strings to display in a collapsible
+        "Tips" section at the bottom of the legend.
+    collapsed:
+        Whether the Tips section should be collapsed by default.
     """
 
     position: str = "top-right"
@@ -40,6 +48,9 @@ class Legend(BaseComponent):
     layer_labels: Mapping[str, str] = field(default_factory=dict)
     layer_counts: Mapping[str, int] = field(default_factory=dict)
     layer_color_ramps: Optional[Mapping[str, Dict[str, object]]] = None
+    layer_descriptions: Mapping[str, str] = field(default_factory=dict)
+    instructions: Optional[list[str]] = None
+    collapsed: bool = True
 
     def __post_init__(self) -> None:
         self.component_type = "legend"
@@ -52,11 +63,15 @@ class Legend(BaseComponent):
                 "show_toggle": self.show_toggle,
                 "layer_labels": dict(self.layer_labels),
                 "layer_counts": dict(self.layer_counts),
+                "layer_descriptions": dict(self.layer_descriptions),
+                "collapsed": self.collapsed,
             }
         )
         if self.title is not None:
             base["title"] = self.title
         if self.layer_color_ramps:
             base["layer_color_ramps"] = dict(self.layer_color_ramps)
+        if self.instructions:
+            base["instructions"] = list(self.instructions)
         return base
 
