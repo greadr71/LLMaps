@@ -55,6 +55,21 @@
         map.setFeatureState({ source: sourceId, id: featureId }, state);
       };
 
+      /**
+       * Public utility: retrieve GeoJSON data for a source.
+       * Works with embedded (+ compressed) and remote sources.
+       * Returns a Promise resolving to a GeoJSON object or null.
+       *
+       * Usage: const data = await window.llmapsGetSourceData("my-source");
+       */
+      window.llmapsGetSourceData = function(sourceId) {
+        const config = readConfig();
+        const embedded = config.embedded_sources || {};
+        return getGeoJsonSource(config, sourceId, embedded).then(function(geo) {
+          return geo && geo.data ? geo.data : null;
+        });
+      };
+
       function addSourceFromConfig(map, config, sourceId, embeddedSources) {
         const src = config.sources && config.sources[sourceId];
         if (!src || map.getSource(sourceId)) return Promise.resolve();

@@ -9,8 +9,10 @@ Abstract base. Concrete sources: `FileSource`, `ApiSource`, `VectorTileSource`.
 ```python
 from llmaps.sources.base import BaseSource
 
-# BaseSource(id: str)
+# BaseSource(id: str, *, promote_id: Optional[str] = None)
 ```
+
+All concrete sources inherit `promote_id` (keyword-only). When set, MapLibre uses this property as a stable feature id, enabling `setFeatureState` / `feature-state` expressions for GPU-side dynamic styling.
 
 ---
 
@@ -25,6 +27,8 @@ FileSource(
     id: str,
     path: str,
     file_format: Optional[Literal["geojson", "csv", "parquet"]] = None,
+    *,
+    promote_id: Optional[str] = None,
 )
 ```
 
@@ -33,6 +37,7 @@ FileSource(
 | `id` | str | required | Source identifier (used by layers). |
 | `path` | str | required | Path to file (.geojson/.json, .csv, .parquet/.pq). |
 | `file_format` | str or None | None | Explicit format; if None, inferred from path. |
+| `promote_id` | str or None | None | Feature property to use as feature id (keyword-only). Required for `setFeatureState`. |
 
 **When to use:** Local static data, embedded maps. With `Map(embedded=True)` the data is inlined in HTML (optionally compressed).
 
@@ -50,6 +55,8 @@ ApiSource(
     url: str,
     headers: Optional[Dict[str, str]] = None,
     params: Optional[Dict[str, str]] = None,
+    *,
+    promote_id: Optional[str] = None,
 )
 ```
 
@@ -59,6 +66,7 @@ ApiSource(
 | `url` | str | required | URL that returns GeoJSON (FeatureCollection, Feature, or list of features). |
 | `headers` | dict or None | None | Optional HTTP headers (e.g. Authorization). |
 | `params` | dict or None | None | Optional query parameters. |
+| `promote_id` | str or None | None | Feature property for feature id (keyword-only). Required for `setFeatureState`. |
 
 **When to use:** External APIs, dynamic data, CORS-enabled endpoints.
 
@@ -74,6 +82,8 @@ from llmaps.sources import VectorTileSource
 VectorTileSource(
     id: str,
     tiles_url: str,
+    *,
+    promote_id: Optional[str] = None,
 )
 ```
 
@@ -81,6 +91,7 @@ VectorTileSource(
 |-----------|------|---------|-------------|
 | `id` | str | required | Source identifier. |
 | `tiles_url` | str | required | URL template with `{z}`, `{x}`, `{y}` placeholders (e.g. `https://example.com/tiles/{z}/{x}/{y}.pbf`). |
+| `promote_id` | str or None | None | Feature property for feature id (keyword-only). Required for `setFeatureState`. |
 
 **When to use:** Large datasets served as vector tiles; on-demand loading.
 
@@ -91,3 +102,12 @@ VectorTileSource(
 - [Layers](layers.md) — layers consume sources
 - [Map](map.md) — embedded mode and config
 - [API_GUIDE.md](../../API_GUIDE.md) — index and keywords
+
+## Frontend access
+
+In custom JS, use `window.llmapsGetSourceData(sourceId)` to retrieve the GeoJSON data for any source (works with embedded, compressed, and remote sources). Returns a `Promise<GeoJSON | null>`.
+
+```javascript
+const data = await window.llmapsGetSourceData("my-source");
+console.log(data.features.length);
+```

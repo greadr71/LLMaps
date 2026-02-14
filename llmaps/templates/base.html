@@ -10,11 +10,13 @@
       href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css"
       rel="stylesheet"
     />
-    <style>{{ llmaps_css | safe }}</style>
+    <style>{{ llmaps_css | safe }}{% if custom_css %}
+{{ custom_css | safe }}{% endif %}</style>
   </head>
   <body>
     <div id="map-root"></div>
 {{ legend_html | safe }}
+{% if custom_html %}{{ custom_html | safe }}{% endif %}
     <script id="llmaps-config" type="application/json">
       {{ map_config_json | safe }}
     </script>
@@ -25,6 +27,8 @@
     <script src="https://unpkg.com/pbf@3.2.1/dist/pbf.js"></script>
     <script src="https://unpkg.com/geobuf@3.0.2/dist/geobuf.js"></script>
     {% endif %}
+    {% if user_data_json %}<script>window.llmapsData = {{ user_data_json | safe }};</script>{% endif %}
     <script>{{ llmaps_js | safe }}</script>
+    {% if custom_js %}<script>{{ custom_js | safe }}</script>{% endif %}
   </body>
 </html>

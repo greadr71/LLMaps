@@ -55,8 +55,8 @@ from llmaps.layers import FillLayer
 FillLayer(
     id: str,
     source: BaseSource,
-    fill_color: str = "#3182bd",
-    fill_opacity: float = 0.6,
+    fill_color: Union[str, List[Any]] = "#3182bd",
+    fill_opacity: Union[float, List[Any]] = 0.6,
     stroke_color: Optional[str] = "#08519c",
     stroke_width: Optional[float] = 1.0,
 )
@@ -66,12 +66,14 @@ FillLayer(
 |-----------|------|---------|-------------|
 | `id` | str | required | Unique layer id. |
 | `source` | BaseSource | required | Source with polygon geometries. |
-| `fill_color` | str | `"#3182bd"` | Fill color. |
-| `fill_opacity` | float | 0.6 | Fill opacity (0–1). |
+| `fill_color` | str or list | `"#3182bd"` | Fill color. Accepts a CSS color string or a MapLibre expression (e.g. `feature-state` interpolation). |
+| `fill_opacity` | float or list | 0.6 | Fill opacity (0–1). Accepts a number or a MapLibre expression. |
 | `stroke_color` | str or None | `"#08519c"` | Outline color; None to omit. |
 | `stroke_width` | float or None | 1.0 | Outline width in pixels (see note below). |
 
 **Note on stroke_width:** MapLibre GL JS natively supports only 1px outlines via `fill-outline-color`. For `stroke_width <= 1`, the standard fill outline is used. For `stroke_width > 1`, LLMaps automatically generates an additional line layer `{id}-outline` with the specified width.
+
+**Expressions:** `fill_color` and `fill_opacity` accept MapLibre expressions for dynamic styling. Use with `feature-state` for GPU-efficient highlighting — see [feature-state recipe](../recipes/feature-state-highlighting.md) and `llmaps.expressions` helpers (`feature_state_color`, `feature_state_value`).
 
 ---
 

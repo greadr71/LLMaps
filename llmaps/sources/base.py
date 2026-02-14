@@ -21,10 +21,14 @@ class BaseSource:
     promote_id:
         Feature property to use as the feature id (MapLibre promoteId).
         Required for setFeatureState / feature-state expressions.
+        Keyword-only to avoid conflicts with positional args in subclasses.
     """
 
     id: str
-    promote_id: Optional[str] = field(default=None, repr=False)
+
+    # keyword-only (after KW_ONLY sentinel) so subclasses with required
+    # positional fields don't break dataclass inheritance rules.
+    promote_id: Optional[str] = field(default=None, repr=False, kw_only=True)
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a serialisable source configuration."""

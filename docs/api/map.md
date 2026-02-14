@@ -83,6 +83,41 @@ Render the map and write it to a file. `path` can be a string or `pathlib.Path`.
 map.save("output.html")
 ```
 
+### add_custom_js(js)
+
+Inject custom JavaScript. `js` is a `str` (inline code) or `pathlib.Path` (file to read). Appended after the core llmaps JS. Multiple calls are cumulative. Returns `self`.
+
+```python
+m.add_custom_js(Path("interactivity.js"))       # from file
+m.add_custom_js("console.log('hello');")         # inline
+```
+
+### add_custom_css(css)
+
+Inject custom CSS. `css` is a `str` or `pathlib.Path`. Appended after base llmaps CSS inside `<style>`. Returns `self`.
+
+```python
+m.add_custom_css(Path("sidebar.css"))
+m.add_custom_css("body { background: #222; }")
+```
+
+### add_custom_html(html)
+
+Inject custom HTML before `</body>`, after the map container and before scripts. Useful for sidebars, overlays, custom UI. Returns `self`.
+
+```python
+m.add_custom_html('<div id="sidebar">...</div>')
+```
+
+### embed_data(key, data)
+
+Embed arbitrary JSON-serialisable data into the HTML. Available on the frontend as `window.llmapsData.<key>`. Returns `self`.
+
+```python
+m.embed_data("deliveryStats", {"avg_hours": 24, "regions": 85})
+# In JS: window.llmapsData.deliveryStats.avg_hours
+```
+
 ### to_dict()
 
 Return a serialisable configuration dict (used internally by the generator). Useful for debugging or custom pipelines.

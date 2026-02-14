@@ -11,9 +11,10 @@ feature-complete mapping framework.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from .components.base import BaseComponent
 from .layers.base import BaseLayer
@@ -49,6 +50,10 @@ class Map:
     _comparison: Optional[Dict[str, List[str]]] = field(
         default=None, init=False, repr=False
     )
+    _custom_js: List[str] = field(default_factory=list, init=False, repr=False)
+    _custom_css: List[str] = field(default_factory=list, init=False, repr=False)
+    _custom_html: List[str] = field(default_factory=list, init=False, repr=False)
+    _user_data: Dict[str, Any] = field(default_factory=dict, init=False, repr=False)
 
     def add_layer(self, layer: BaseLayer) -> "Map":
         """Attach a visual layer to the map.
@@ -85,6 +90,57 @@ class Map:
         if missing:
             raise ValueError(f"Layers not found: {', '.join(sorted(missing))}")
         self._comparison = {"left_layers": list(left_layers), "right_layers": list(right_layers)}
+        return self
+
+    def add_custom_js(self, js: Union[str, Path]) -> "Map":
+        """Inject custom JavaScript into the generated HTML.
+
+        *js* can be a ``Path`` to a ``.js`` file (contents will be read)
+        or a plain string with inline JS code.  Multiple calls are
+        cumulative — all snippets are appended in order after the core
+        llmaps JS.
+
+        Returns ``self`` for chaining.
+        """
+        if isinstance(js, Path):
+            js = js.read_text(encoding="utf-8")
+        self._custom_js.append(js)
+        return self
+
+    def add_custom_css(self, css: Union[str, Path]) -> "Map":
+        """Inject custom CSS into the generated HTML.
+
+        *css* can be a ``Path`` to a ``.css`` file or an inline CSS string.
+        Appended inside ``<style>`` after the base llmaps CSS.
+
+        Returns ``self`` for chaining.
+        """
+        if isinstance(css, Path):
+            css = css.read_text(encoding="utf-8")
+        self._custom_css.append(css)
+        return self
+
+    def add_custom_html(self, html: str) -> "Map":
+        """Inject custom HTML into the ``<body>`` of the generated page.
+
+        The HTML is inserted before ``</body>``, after the map container
+        and before scripts.  Useful for sidebars, overlays, or custom
+        UI elements.
+
+        Returns ``self`` for chaining.
+        """
+        self._custom_html.append(html)
+        return self
+
+    def embed_data(self, key: str, data: Any) -> "Map":
+        """Embed arbitrary JSON-serialisable data into the HTML.
+
+        The data is available on the frontend as
+        ``window.llmapsData.<key>``.
+
+        Returns ``self`` for chaining.
+        """
+        self._user_data[key] = data
         return self
 
     # ------------------------------------------------------------------
@@ -219,7 +275,13 @@ class Map:
         config = self.to_dict()
         if self.embedded:
             config["embedded_sources"] = self._build_embedded_sources()
-        return render_map_html(config)
+        return render_map_html(
+            config,
+            custom_js=self._custom_js,
+            custom_css=self._custom_css,
+            custom_html=self._custom_html,
+            user_data=self._user_data,
+        )
 
     def save(self, path: str | Path) -> "Map":
         """Render the map and write it to *path*.

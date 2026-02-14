@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from importlib import resources
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -65,7 +65,14 @@ def _render_base_js(config: Dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def render_map_html(config: Dict[str, Any]) -> str:
+def render_map_html(
+    config: Dict[str, Any],
+    *,
+    custom_js: Optional[List[str]] = None,
+    custom_css: Optional[List[str]] = None,
+    custom_html: Optional[List[str]] = None,
+    user_data: Optional[Dict[str, Any]] = None,
+) -> str:
     """Render a map *config* to HTML using the base template."""
     from .legend_generator import generate_legend_html
 
@@ -75,6 +82,18 @@ def render_map_html(config: Dict[str, Any]) -> str:
     
     # Generate server-side legend HTML
     legend_html = generate_legend_html(config)
+
+    # Combine custom JS snippets
+    custom_js_str = "\n".join(custom_js) if custom_js else ""
+
+    # Combine custom CSS
+    custom_css_str = "\n".join(custom_css) if custom_css else ""
+
+    # Combine custom HTML blocks
+    custom_html_str = "\n".join(custom_html) if custom_html else ""
+
+    # Serialize user data for window.llmapsData
+    user_data_json = json.dumps(user_data, ensure_ascii=False) if user_data else ""
     
     return template.render(
         title=config.get("title") or "LLMaps",
@@ -83,5 +102,9 @@ def render_map_html(config: Dict[str, Any]) -> str:
         llmaps_js=_render_base_js(config),
         use_compression=use_compression,
         legend_html=legend_html,
+        custom_js=custom_js_str,
+        custom_css=custom_css_str,
+        custom_html=custom_html_str,
+        user_data_json=user_data_json,
     )
 

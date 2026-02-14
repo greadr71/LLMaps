@@ -2,9 +2,19 @@
 
 from .basemap_switcher import BasemapSwitcher
 from .controls import Controls
+from .feature_search import FeatureSearch
 from .legend import Legend
 from .popup import Popup
 from .search import Search
+from .sidebar import Sidebar
 
-__all__ = ["BasemapSwitcher", "Controls", "Legend", "Popup", "Search"]
+__all__ = [
+    "BasemapSwitcher",
+    "Controls",
+    "FeatureSearch",
+    "Legend",
+    "Popup",
+    "Search",
+    "Sidebar",
+]
 

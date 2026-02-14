@@ -84,7 +84,13 @@
           const defaultFields = popupConfig.fields || [];
           const fieldLabels = popupConfig.field_labels || {};
           const fieldsByLayer = popupConfig.fields_by_layer || {};
+          const popupTrigger = popupConfig.trigger || "click";
           const layers = config.layers || [];
+
+          // Layers managed by sidebar — popup should not handle them
+          const _sidebarCfg = components.find(c => c.type === "sidebar");
+          const sidebarLayerIds = _sidebarCfg && _sidebarCfg.fields_by_layer
+            ? new Set(Object.keys(_sidebarCfg.fields_by_layer)) : new Set();
 
           function popupContent(feature, layerId) {
             const fields = fieldsByLayer[layerId] && fieldsByLayer[layerId].length
@@ -110,27 +116,314 @@
 
           function addPopupToMap(m) {
             if (!m || !m.getLayer) return;
-            layers.forEach(layerCfg => {
-              const layerId = layerCfg.id;
-              if (!m.getLayer(layerId)) return;
-              m.on("click", layerId, function(ev) {
-                ev.originalEvent.preventDefault();
-                const feat = ev.features && ev.features[0];
-                if (!feat) return;
-                const coords = lngLat(feat);
-                if (!coords) return;
-                new maplibregl.Popup()
-                  .setLngLat(coords)
-                  .setHTML(popupContent(feat, layerId))
-                  .addTo(m);
+
+            if (popupTrigger === "hover") {
+              var hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+              layers.forEach(layerCfg => {
+                const layerId = layerCfg.id;
+                if (sidebarLayerIds.has(layerId)) return;
+                if (!m.getLayer(layerId)) return;
+                m.on("mousemove", layerId, function(ev) {
+                  const feat = ev.features && ev.features[0];
+                  if (!feat) return;
+                  var html = popupContent(feat, layerId);
+                  if (!html) return;
+                  m.getCanvas().style.cursor = "pointer";
+                  hoverPopup.setLngLat(ev.lngLat).setHTML(html).addTo(m);
+                });
+                m.on("mouseleave", layerId, function() {
+                  m.getCanvas().style.cursor = "";
+                  hoverPopup.remove();
+                });
               });
-            });
-            m.getCanvas().style.cursor = "pointer";
+            } else {
+              layers.forEach(layerCfg => {
+                const layerId = layerCfg.id;
+                if (sidebarLayerIds.has(layerId)) return;
+                if (!m.getLayer(layerId)) return;
+                m.on("click", layerId, function(ev) {
+                  ev.originalEvent.preventDefault();
+                  const feat = ev.features && ev.features[0];
+                  if (!feat) return;
+                  const coords = lngLat(feat);
+                  if (!coords) return;
+                  new maplibregl.Popup()
+                    .setLngLat(coords)
+                    .setHTML(popupContent(feat, layerId))
+                    .addTo(m);
+                });
+              });
+              m.getCanvas().style.cursor = "pointer";
+            }
           }
 
           window.llmapsOnLayersReady(function(m) {
             addPopupToMap(m);
           });
+        }
+
+        // Sidebar
+        const sidebarConfig = components.find(c => c.type === "sidebar");
+        if (sidebarConfig) {
+          const sbWidth = sidebarConfig.width || 400;
+          const sbPosition = sidebarConfig.position || "right";
+          const sbFieldsByLayer = sidebarConfig.fields_by_layer || {};
+          const sbFieldLabels = sidebarConfig.field_labels || {};
+          const sbTitleField = sidebarConfig.title_field || null;
+          const sbTitleByLayer = sidebarConfig.title_by_layer || {};
+          const sbCloseOnMapClick = sidebarConfig.close_on_map_click !== false;
+          const sbZoomOnClick = sidebarConfig.zoom_on_click;
+          const layers = config.layers || [];
+
+          // Create sidebar DOM
+          const sbEl = document.createElement("div");
+          sbEl.id = "llmaps-sidebar";
+          sbEl.className = "llmaps-sidebar " + sbPosition;
+          sbEl.style.setProperty("--llmaps-sidebar-width", sbWidth + "px");
+          document.body.appendChild(sbEl);
+
+          function sidebarOpen(layerId, feature) {
+            const props = feature.properties || {};
+            const fields = sbFieldsByLayer[layerId] || Object.keys(props);
+            const title = (sbTitleField && props[sbTitleField])
+              ? String(props[sbTitleField])
+              : (sbTitleByLayer[layerId] || "Feature info");
+
+            let html = '<div class="llmaps-sidebar-header">'
+              + '<h2 class="llmaps-sidebar-title">' + _sbEsc(title) + '</h2>'
+              + '<button class="llmaps-sidebar-close" title="Close">&times;</button>'
+              + '</div>'
+              + '<div class="llmaps-sidebar-content"><div class="llmaps-sidebar-section">';
+
+            fields.forEach(function(f) {
+              const label = sbFieldLabels[f] || f;
+              const val = props[f];
+              html += '<div class="llmaps-sidebar-field">'
+                + '<span class="llmaps-sidebar-field-label">' + _sbEsc(label) + '</span>'
+                + '<span class="llmaps-sidebar-field-value">' + _sbEsc(val != null ? String(val) : "") + '</span>'
+                + '</div>';
+            });
+
+            html += '</div></div>';
+            sbEl.innerHTML = html;
+            sbEl.classList.add("open");
+
+            sbEl.querySelector(".llmaps-sidebar-close").addEventListener("click", sidebarClose);
+          }
+
+          function sidebarClose() {
+            sbEl.classList.remove("open");
+          }
+
+          function _sbEsc(str) {
+            var d = document.createElement("div");
+            d.textContent = str;
+            return d.innerHTML;
+          }
+
+          // Expose API globally
+          window.llmapsSidebarOpen = sidebarOpen;
+          window.llmapsSidebarClose = sidebarClose;
+
+          // Register click handlers
+          window.llmapsOnLayersReady(function(m) {
+            var layerIds = Object.keys(sbFieldsByLayer);
+            if (!layerIds.length) {
+              layerIds = layers.map(function(l) { return l.id; });
+            }
+            layerIds.forEach(function(layerId) {
+              if (!m.getLayer(layerId)) return;
+              m.on("click", layerId, function(ev) {
+                var feat = ev.features && ev.features[0];
+                if (!feat) return;
+                ev.originalEvent.stopPropagation();
+                sidebarOpen(layerId, feat);
+                if (sbZoomOnClick != null) {
+                  var g = feat.geometry;
+                  if (g && g.type === "Point" && g.coordinates) {
+                    m.flyTo({ center: g.coordinates, zoom: sbZoomOnClick, duration: 1500 });
+                  }
+                }
+              });
+            });
+
+            if (sbCloseOnMapClick) {
+              m.on("click", function(ev) {
+                if (!ev.defaultPrevented) sidebarClose();
+              });
+            }
+          });
+        }
+
+        // FeatureSearch — search within map data attributes
+        const featureSearchConfig = components.find(c => c.type === "feature_search");
+        if (featureSearchConfig) {
+          const fsPosition = featureSearchConfig.position || "top-center";
+          const fsPlaceholder = featureSearchConfig.placeholder || "Search...";
+          const fsSearchFields = featureSearchConfig.search_fields || {};
+          const fsFieldLabels = featureSearchConfig.field_labels || {};
+          const fsMaxResults = featureSearchConfig.max_results || 15;
+          const fsZoom = featureSearchConfig.zoom_on_select || 8;
+          const fsDebounce = featureSearchConfig.debounce_ms || 200;
+          const fsMinChars = featureSearchConfig.min_chars || 2;
+
+          // Build DOM
+          const fsWrap = document.createElement("div");
+          fsWrap.className = "llmaps-feature-search " + fsPosition;
+          const fsInput = document.createElement("input");
+          fsInput.type = "text";
+          fsInput.placeholder = fsPlaceholder;
+          fsInput.autocomplete = "off";
+          fsInput.className = "llmaps-feature-search-input";
+          fsWrap.appendChild(fsInput);
+          const fsDropdown = document.createElement("div");
+          fsDropdown.className = "llmaps-feature-search-dropdown";
+          fsWrap.appendChild(fsDropdown);
+          map.getContainer().appendChild(fsWrap);
+
+          // Cache source data for searching
+          var _fsCache = {};
+
+          function fsBuildCache() {
+            var sourceIds = Object.keys(fsSearchFields);
+            sourceIds.forEach(function(sourceId) {
+              if (_fsCache[sourceId]) return;
+              if (typeof window.llmapsGetSourceData === "function") {
+                window.llmapsGetSourceData(sourceId).then(function(geojson) {
+                  if (geojson && geojson.features) {
+                    _fsCache[sourceId] = geojson.features;
+                  }
+                });
+              }
+            });
+          }
+
+          function fsSearch(query) {
+            var results = [];
+            var qLower = query.toLowerCase();
+            var sourceIds = Object.keys(fsSearchFields);
+
+            for (var si = 0; si < sourceIds.length; si++) {
+              if (results.length >= fsMaxResults) break;
+              var sourceId = sourceIds[si];
+              var fields = fsSearchFields[sourceId] || [];
+              var features = _fsCache[sourceId] || [];
+
+              for (var fi = 0; fi < features.length; fi++) {
+                if (results.length >= fsMaxResults) break;
+                var feat = features[fi];
+                var props = feat.properties || {};
+
+                for (var ki = 0; ki < fields.length; ki++) {
+                  var fieldName = fields[ki];
+                  var val = props[fieldName];
+                  if (val == null) continue;
+                  if (String(val).toLowerCase().includes(qLower)) {
+                    var label = String(val);
+                    var secondary = "";
+                    for (var xi = 0; xi < fields.length; xi++) {
+                      if (xi === ki) continue;
+                      var sv = props[fields[xi]];
+                      if (sv != null) { secondary = String(sv); break; }
+                    }
+                    results.push({
+                      sourceId: sourceId,
+                      feature: feat,
+                      label: label,
+                      secondary: secondary,
+                      fieldLabel: fsFieldLabels[fieldName] || fieldName,
+                    });
+                    break;
+                  }
+                }
+              }
+            }
+            return results;
+          }
+
+          function fsRenderResults(results) {
+            fsDropdown.innerHTML = "";
+            if (results.length === 0) {
+              fsDropdown.innerHTML = '<div class="llmaps-feature-search-empty">No results</div>';
+              fsDropdown.classList.add("visible");
+              return;
+            }
+            results.forEach(function(r) {
+              var div = document.createElement("div");
+              div.className = "llmaps-feature-search-item";
+              var text = r.label;
+              if (r.secondary) text += " \u2014 " + r.secondary;
+              div.textContent = text;
+              var badge = document.createElement("span");
+              badge.className = "llmaps-feature-search-item-source";
+              badge.textContent = r.fieldLabel;
+              div.appendChild(badge);
+              div.addEventListener("click", function() {
+                fsDropdown.classList.remove("visible");
+                fsInput.value = "";
+                fsFlyToFeature(r.feature);
+                if (typeof window.llmapsSidebarOpen === "function") {
+                  var layerCfg = (config.layers || []).find(function(l) { return l.source === r.sourceId; });
+                  if (layerCfg) window.llmapsSidebarOpen(layerCfg.id, r.feature);
+                }
+              });
+              fsDropdown.appendChild(div);
+            });
+            fsDropdown.classList.add("visible");
+          }
+
+          function fsFlyToFeature(feature) {
+            var g = feature.geometry;
+            if (!g) return;
+            if (g.type === "Point" && g.coordinates) {
+              maps.forEach(function(m) {
+                m.flyTo({ center: g.coordinates, zoom: fsZoom, duration: 1500 });
+              });
+            } else {
+              var bounds = new maplibregl.LngLatBounds();
+              _fsForEachCoord(g, function(c) { bounds.extend(c); });
+              if (!bounds.isEmpty()) {
+                maps.forEach(function(m) {
+                  m.fitBounds(bounds, { padding: 50, maxZoom: fsZoom });
+                });
+              }
+            }
+          }
+
+          function _fsForEachCoord(geometry, fn) {
+            if (geometry.type === "Point") { fn(geometry.coordinates); return; }
+            if (geometry.type === "MultiPoint") { geometry.coordinates.forEach(fn); return; }
+            if (geometry.type === "LineString") { geometry.coordinates.forEach(fn); return; }
+            if (geometry.type === "Polygon") { geometry.coordinates[0].forEach(fn); return; }
+            if (geometry.type === "MultiPolygon") {
+              geometry.coordinates.forEach(function(poly) { poly[0].forEach(fn); });
+              return;
+            }
+            if (geometry.type === "MultiLineString") {
+              geometry.coordinates.forEach(function(line) { line.forEach(fn); });
+            }
+          }
+
+          var fsTimer;
+          fsInput.addEventListener("input", function() {
+            clearTimeout(fsTimer);
+            var q = fsInput.value.trim();
+            if (q.length < fsMinChars) { fsDropdown.classList.remove("visible"); return; }
+            fsTimer = setTimeout(function() { fsRenderResults(fsSearch(q)); }, fsDebounce);
+          });
+          fsInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              var firstItem = fsDropdown.querySelector(".llmaps-feature-search-item");
+              if (firstItem) firstItem.click();
+            }
+            if (e.key === "Escape") { fsDropdown.classList.remove("visible"); fsInput.blur(); }
+          });
+          document.addEventListener("click", function(e) {
+            if (!fsWrap.contains(e.target)) fsDropdown.classList.remove("visible");
+          });
+
+          window.llmapsOnLayersReady(function() { fsBuildCache(); });
         }
 
         const searchConfig = components.find(c => c.type === "search");
