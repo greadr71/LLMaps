@@ -11,41 +11,6 @@
               map.addControl(new maplibregl.ScaleControl(), "bottom-left");
             if (c.fullscreen && maplibregl.FullscreenControl)
               map.addControl(new maplibregl.FullscreenControl(), "top-left");
-            
-            // Hash-навигация: синхронизация позиции с URL (#zoom/lat/lon)
-            if (c.hash) {
-              function updateHash() {
-                const z = map.getZoom().toFixed(2);
-                const center = map.getCenter();
-                const hash = `#${z}/${center.lat.toFixed(6)}/${center.lng.toFixed(6)}`;
-                history.replaceState(null, null, hash);
-              }
-              
-              function readHash() {
-                const hash = window.location.hash;
-                if (!hash) return null;
-                const parts = hash.replace('#', '').split('/');
-                if (parts.length === 3) {
-                  const zoom = parseFloat(parts[0]);
-                  const lat = parseFloat(parts[1]);
-                  const lng = parseFloat(parts[2]);
-                  if (!isNaN(zoom) && !isNaN(lat) && !isNaN(lng)) {
-                    return { zoom, lat, lng };
-                  }
-                }
-                return null;
-              }
-              
-              // При загрузке - читаем hash и устанавливаем позицию
-              const initial = readHash();
-              if (initial) {
-                map.setCenter([initial.lng, initial.lat]);
-                map.setZoom(initial.zoom);
-              }
-              
-              // При навигации - обновляем hash
-              map.on('moveend', updateHash);
-            }
           }
         });
 
@@ -111,9 +76,7 @@
           wrap.style.position = "absolute";
           wrap.style.zIndex = "10";
           wrap.appendChild(createBasemapSelect(config, maps, currentId));
-          // Add to map container for fullscreen support
-          const mapContainer = document.querySelector('.maplibregl-map') || document.getElementById('map-root');
-          mapContainer.appendChild(wrap);
+          document.body.appendChild(wrap);
         }
 
         const popupConfig = components.find(c => c.type === "popup");
@@ -131,7 +94,7 @@
             const rows = fields.map(f => {
               const label = fieldLabels[f] || f;
               const val = props[f];
-              return "<tr><td style=\"font-weight:600;padding-right:12px;\">" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
+              return "<tr><td>" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
             });
             return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
           }
@@ -147,49 +110,21 @@
 
           function addPopupToMap(m) {
             if (!m || !m.getLayer) return;
-            
-            // Собираем ID слоёв с попапами
-            const popupLayerIds = layers
-              .map(l => l.id)
-              .filter(id => m.getLayer(id));
-            
-            // Приоритет типов слоёв: точки > линии > полигоны
-            const typePriority = { circle: 0, symbol: 1, line: 2, fill: 3 };
-            
-            // Текущий открытый popup (для закрытия перед открытием нового)
-            let currentPopup = null;
-            
-            // Единый обработчик клика с приоритизацией
-            m.on("click", function(ev) {
-              // Закрываем предыдущий popup
-              if (currentPopup) {
-                currentPopup.remove();
-                currentPopup = null;
-              }
-              
-              if (!popupLayerIds.length) return;
-              
-              const features = m.queryRenderedFeatures(ev.point, { layers: popupLayerIds });
-              if (!features.length) return;
-              
-              // Сортируем по приоритету типа слоя (точки выше полигонов)
-              features.sort((a, b) => {
-                const typeA = m.getLayer(a.layer.id)?.type || "fill";
-                const typeB = m.getLayer(b.layer.id)?.type || "fill";
-                return (typePriority[typeA] ?? 99) - (typePriority[typeB] ?? 99);
+            layers.forEach(layerCfg => {
+              const layerId = layerCfg.id;
+              if (!m.getLayer(layerId)) return;
+              m.on("click", layerId, function(ev) {
+                ev.originalEvent.preventDefault();
+                const feat = ev.features && ev.features[0];
+                if (!feat) return;
+                const coords = lngLat(feat);
+                if (!coords) return;
+                new maplibregl.Popup()
+                  .setLngLat(coords)
+                  .setHTML(popupContent(feat, layerId))
+                  .addTo(m);
               });
-              
-              const feat = features[0];
-              const layerId = feat.layer.id;
-              const coords = lngLat(feat);
-              if (!coords) return;
-              
-              currentPopup = new maplibregl.Popup()
-                .setLngLat(coords)
-                .setHTML(popupContent(feat, layerId))
-                .addTo(m);
             });
-            
             m.getCanvas().style.cursor = "pointer";
           }
 
@@ -211,9 +146,7 @@
           suggestions.className = "llmaps-search-suggestions";
           suggestions.id = "llmaps-search-suggestions";
           wrap.appendChild(suggestions);
-          // Add to map container for fullscreen support
-          const searchMapContainer = document.querySelector('.maplibregl-map') || document.getElementById('map-root');
-          searchMapContainer.appendChild(wrap);
+          document.body.appendChild(wrap);
 
           const zoomOnResult = searchConfig.zoom_on_result ?? 15;
           const geocoderUrl = searchConfig.geocoder_url;
@@ -251,57 +184,13 @@
           }
 
           let debounceTimer;
-          let selectedSuggestionIndex = -1;
-          
           function doSearch(address) {
             const url = buildGeocoderUrl(address, 1);
             if (!url) { console.warn("Search: geocoder_url not set"); return; }
-            suggestions.classList.remove("visible");
-            selectedSuggestionIndex = -1;
             fetch(url).then(r => r.json()).then(data => {
               const coords = parseCoords(data);
               if (coords) flyToCoords(coords[0], coords[1]);
             }).catch(e => console.error("Geocoder error", e));
-          }
-          
-          function updateSelectedSuggestion() {
-            const items = suggestions.querySelectorAll("div");
-            items.forEach((item, idx) => {
-              if (idx === selectedSuggestionIndex) {
-                item.classList.add("selected");
-                item.scrollIntoView({ block: "nearest" });
-              } else {
-                item.classList.remove("selected");
-              }
-            });
-          }
-          
-          function handleSuggestionKeydown(e) {
-            if (!suggestions.classList.contains("visible")) return false;
-            const items = suggestions.querySelectorAll("div");
-            if (!items.length) return false;
-            
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, items.length - 1);
-              updateSelectedSuggestion();
-              return true;
-            } else if (e.key === "ArrowUp") {
-              e.preventDefault();
-              selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
-              updateSelectedSuggestion();
-              return true;
-            } else if (e.key === "Enter" && selectedSuggestionIndex >= 0) {
-              e.preventDefault();
-              const selectedItem = items[selectedSuggestionIndex];
-              if (selectedItem) selectedItem.click();
-              return true;
-            } else if (e.key === "Escape") {
-              suggestions.classList.remove("visible");
-              selectedSuggestionIndex = -1;
-              return true;
-            }
-            return false;
           }
 
           function showSuggestions(query) {
@@ -311,7 +200,6 @@
               const list = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
               suggestions.innerHTML = "";
               suggestions.classList.remove("visible");
-              selectedSuggestionIndex = -1;
               if (list && list.length) {
                 list.slice(0, 5).forEach(item => {
                   const text = item.GeoObject && item.GeoObject.metaDataProperty && item.GeoObject.metaDataProperty.GeocoderMetaData
@@ -327,10 +215,7 @@
             }).catch(() => {});
           }
 
-          input.addEventListener("keydown", function(e) {
-            // Handle arrow navigation first
-            if (handleSuggestionKeydown(e)) return;
-            // Handle Enter
+          input.addEventListener("keypress", function(e) {
             if (e.key === "Enter") { e.preventDefault(); doSearch(input.value.trim()); }
           });
           if (autocomplete) {

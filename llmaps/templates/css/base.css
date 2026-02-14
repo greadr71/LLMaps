@@ -116,6 +116,9 @@ body {
   letter-spacing: -0.01em;
   color: #0a0a0a;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .llmaps-legend.collapsed .llmaps-legend-title,
 .llmaps-legend.collapsed .llmaps-legend-content {
@@ -314,11 +317,11 @@ body {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
-.llmaps-search-wrap.top-left { top: 12px; left: 50px; }
+.llmaps-search-wrap.top-left { top: 12px; left: 12px; }
 .llmaps-search-wrap.top-right { top: 12px; right: 12px; }
 .llmaps-search-wrap input {
   width: 220px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   font-size: 13px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -351,9 +354,8 @@ body {
   padding: 8px;
   cursor: pointer;
 }
-.llmaps-search-suggestions div:hover,
-.llmaps-search-suggestions div.selected {
-  background: #e0e0e0;
+.llmaps-search-suggestions div:hover {
+  background: #f0f0f0;
 }
 
 /* Server-rendered legend: new elements (wibemaps-inspired, llmaps aesthetics) */
@@ -508,23 +510,5 @@ body {
 .llmaps-legend-instructions-list strong {
   font-weight: 500;
   color: #374151;
-}
-
-/* Popup styles */
-.maplibregl-popup-content {
-  max-width: 300px;
-  word-wrap: break-word;
-}
-.maplibregl-popup-content table {
-  width: 100%;
-}
-.maplibregl-popup-content td:first-child {
-  max-width: 120px;
-  font-weight: 600;
-  padding-right: 12px;
-  vertical-align: top;
-}
-.maplibregl-popup-content td:last-child {
-  word-break: break-word;
 }
 

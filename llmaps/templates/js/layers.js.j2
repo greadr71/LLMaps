@@ -45,10 +45,20 @@
         const layers = config.layers || [];
         const embedded = config.embedded_sources || embeddedSources || {};
 
-        map._loadLayers = () =>
-          loadLayers(map, config, embedded, layerIdsFilter).then(() => {
+        map._loadLayers = () => {
+          if (map._layersLoading) {
+            console.warn('Layers are already loading, skipping duplicate call');
+            return Promise.resolve();
+          }
+          map._layersLoading = true;
+          return loadLayers(map, config, embedded, layerIdsFilter).then(() => {
+            map._layersLoading = false;
             if (window.llmapsOnLayersReady) window.llmapsOnLayersReady(map);
+          }).catch(err => {
+            map._layersLoading = false;
+            throw err;
           });
+        };
 
         map.on("load", function() {
           map._loadLayers().then(() => {

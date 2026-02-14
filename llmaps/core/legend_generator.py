@@ -134,7 +134,12 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
     # Build HTML sections
     sections = []
 
-    # Layer sections (title уже есть в header, не дублируем)
+    # 1. Map title section (with border-bottom separator)
+    sections.append(f'''        <div class="llmaps-legend-section llmaps-legend-map-title-section">
+            <div class="llmaps-legend-map-title">{title}</div>
+        </div>''')
+
+    # 2. Layer sections
     for i, info in enumerate(layers_info):
         is_last_layer = (i == len(layers_info) - 1)
         layer_id = info["layer_id"]
@@ -260,10 +265,10 @@ def generate_legend_js() -> str:
             const legendEl = document.querySelector('.llmaps-legend');
             if (!legendEl) return;
 
-            // Toggle legend collapse/expand (click on entire header)
-            const legendHeader = legendEl.querySelector('.llmaps-legend-header');
-            if (legendHeader) {
-                legendHeader.addEventListener('click', function() {
+            // Toggle legend collapse/expand
+            const toggleBtn = document.getElementById('llmaps-legend-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
                     legendEl.classList.toggle('collapsed');
                 });
             }
@@ -278,16 +283,8 @@ def generate_legend_js() -> str:
                     // Apply to all maps (supports comparison mode)
                     const maps = window.llmaps_maps || [window.llmaps_map];
                     maps.forEach(function(map) {
-                        if (map && map.getLayer) {
-                            // Toggle main layer
-                            if (map.getLayer(layerId)) {
-                                map.setLayoutProperty(layerId, 'visibility', visibility);
-                            }
-                            // Toggle outline layer if exists (for fill layers with thick stroke)
-                            const outlineId = layerId + '-outline';
-                            if (map.getLayer(outlineId)) {
-                                map.setLayoutProperty(outlineId, 'visibility', visibility);
-                            }
+                        if (map && map.getLayer && map.getLayer(layerId)) {
+                            map.setLayoutProperty(layerId, 'visibility', visibility);
                         }
                     });
                 });
@@ -309,11 +306,5 @@ def generate_legend_js() -> str:
                     tipsHeader.classList.toggle('collapsed');
                     tipsContent.classList.toggle('collapsed');
                 });
-            }
-
-            // Move legend inside map container for fullscreen support
-            const mapContainer = document.querySelector('.maplibregl-map');
-            if (mapContainer && legendEl) {
-                mapContainer.appendChild(legendEl);
             }
         })();'''

@@ -1,14 +1,4 @@
 {# Init: createMap and DOMContentLoaded #}
-      // Move UI elements inside map container for fullscreen support
-      function moveElementsToMapContainer() {
-        const mapContainer = document.querySelector('.maplibregl-map');
-        if (!mapContainer) return;
-        
-        // Move legend
-        const legendEl = document.querySelector('.llmaps-legend');
-        if (legendEl) mapContainer.appendChild(legendEl);
-      }
-      
       function createMap() {
         const MAP_CONFIG = readConfig();
         const root = document.getElementById("map-root");
@@ -20,8 +10,6 @@
           if (visibilityIds.length && typeof initVisibilityOptimization === "function")
             initVisibilityOptimization([mapLeft, mapRight], visibilityIds);
           addComponents(MAP_CONFIG, [mapLeft, mapRight]);
-          // Move legend after map is ready
-          mapLeft.on('load', moveElementsToMapContainer);
           return;
         }
 
@@ -31,8 +19,6 @@
         if (visibilityIds.length && typeof initVisibilityOptimization === "function")
           initVisibilityOptimization(map, visibilityIds);
         addComponents(MAP_CONFIG, map);
-        // Move legend after map is ready
-        map.on('load', moveElementsToMapContainer);
       }
 
       if (document.readyState === "loading") {

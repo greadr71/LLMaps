@@ -47,10 +47,28 @@
         const src = config.sources && config.sources[sourceId];
         if (!src || map.getSource(sourceId)) return Promise.resolve();
         if (src.type === "vector") {
-          map.addSource(sourceId, { type: "vector", tiles: src.tiles || [src.tiles_url] });
+          try {
+            map.addSource(sourceId, { type: "vector", tiles: src.tiles || [src.tiles_url] });
+          } catch (e) {
+            if (e.message && e.message.includes("already exists")) {
+              console.warn(`Source ${sourceId} already exists, skipping`);
+              return Promise.resolve();
+            }
+            throw e;
+          }
           return Promise.resolve();
         }
         return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
-          if (geo) map.addSource(sourceId, geo);
+          if (geo) {
+            try {
+              map.addSource(sourceId, geo);
+            } catch (e) {
+              if (e.message && e.message.includes("already exists")) {
+                console.warn(`Source ${sourceId} already exists, skipping`);
+                return;
+              }
+              throw e;
+            }
+          }
         });
       }
