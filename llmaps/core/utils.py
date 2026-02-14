@@ -28,7 +28,13 @@ def load_gdf_from_file_source(source: Any) -> Any:
     if fmt == "geojson":
         return gpd.read_file(path)
     if fmt == "parquet":
-        return gpd.read_parquet(path)
+        try:
+            return gpd.read_parquet(path)
+        except ValueError:
+            # Fallback: load as regular pandas DataFrame (e.g., for H3 data without geometry)
+            df = pd.read_parquet(path)
+            # Return as GeoDataFrame without geometry for compatibility
+            return gpd.GeoDataFrame(df)
     if fmt == "csv":
         df = pd.read_csv(path)
         if "lon" in df.columns and "lat" in df.columns:
