@@ -43,12 +43,26 @@
         return null;
       }
 
+      // Feature state utilities (require promoteId on the source)
+      window.llmapsClearFeatureStates = function(sourceId) {
+        const map = window.llmaps_map;
+        if (!map || !map.getSource(sourceId)) return;
+        map.removeFeatureState({ source: sourceId });
+      };
+      window.llmapsSetFeatureState = function(sourceId, featureId, state) {
+        const map = window.llmaps_map;
+        if (!map || !map.getSource(sourceId)) return;
+        map.setFeatureState({ source: sourceId, id: featureId }, state);
+      };
+
       function addSourceFromConfig(map, config, sourceId, embeddedSources) {
         const src = config.sources && config.sources[sourceId];
         if (!src || map.getSource(sourceId)) return Promise.resolve();
         if (src.type === "vector") {
           try {
-            map.addSource(sourceId, { type: "vector", tiles: src.tiles || [src.tiles_url] });
+            const vectorOpts = { type: "vector", tiles: src.tiles || [src.tiles_url] };
+            if (src.promoteId) vectorOpts.promoteId = src.promoteId;
+            map.addSource(sourceId, vectorOpts);
           } catch (e) {
             if (e.message && e.message.includes("already exists")) {
               console.warn(`Source ${sourceId} already exists, skipping`);
@@ -60,6 +74,7 @@
         }
         return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
           if (geo) {
+            if (src.promoteId) geo.promoteId = src.promoteId;
             try {
               map.addSource(sourceId, geo);
             } catch (e) {

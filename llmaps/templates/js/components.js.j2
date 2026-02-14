@@ -128,9 +128,9 @@
             m.getCanvas().style.cursor = "pointer";
           }
 
-          window.llmapsOnLayersReady = function(m) {
+          window.llmapsOnLayersReady(function(m) {
             addPopupToMap(m);
-          };
+          });
         }
 
         const searchConfig = components.find(c => c.type === "search");

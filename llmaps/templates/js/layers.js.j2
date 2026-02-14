@@ -31,6 +31,20 @@
         map.addLayer(layer);
       }
 
+      // Event queue for llmapsOnLayersReady callbacks
+      window._llmapsReadyCallbacks = window._llmapsReadyCallbacks || [];
+      window._llmapsLayersReady = false;
+      window._llmapsReadyMap = null;
+      window.llmapsOnLayersReady = function(fn) {
+        if (typeof fn === 'function') {
+          window._llmapsReadyCallbacks.push(fn);
+          // If layers already loaded, call immediately
+          if (window._llmapsLayersReady && window._llmapsReadyMap) {
+            fn(window._llmapsReadyMap);
+          }
+        }
+      };
+
       function createSingleMap(containerId, config, layerIdsFilter, embeddedSources) {
         const center = config.center || [0, 0];
         const zoom = config.zoom ?? 10;
@@ -53,7 +67,9 @@
           map._layersLoading = true;
           return loadLayers(map, config, embedded, layerIdsFilter).then(() => {
             map._layersLoading = false;
-            if (window.llmapsOnLayersReady) window.llmapsOnLayersReady(map);
+            window._llmapsLayersReady = true;
+            window._llmapsReadyMap = map;
+            window._llmapsReadyCallbacks.forEach(fn => fn(map));
           }).catch(err => {
             map._layersLoading = false;
             throw err;

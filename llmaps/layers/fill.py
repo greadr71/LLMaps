@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .base import BaseLayer
 
@@ -19,17 +19,18 @@ class FillLayer(BaseLayer):
     source:
         Underlying data source containing polygon geometries.
     fill_color:
-        CSS color string for the polygon fill.
+        CSS color string or MapLibre expression (list) for the polygon fill.
+        Supports feature-state expressions for dynamic styling.
     fill_opacity:
-        Opacity for the fill, between 0 and 1.
+        Opacity 0–1 (number) or MapLibre expression (list) for the fill.
     stroke_color:
         CSS color string for the polygon outline.
     stroke_width:
         Line width in pixels for the polygon outline.
     """
 
-    fill_color: str = "#3182bd"
-    fill_opacity: float = 0.6
+    fill_color: Union[str, List[Any]] = "#3182bd"
+    fill_opacity: Union[float, List[Any]] = 0.6
     stroke_color: Optional[str] = "#08519c"
     stroke_width: Optional[float] = 1.0
 
