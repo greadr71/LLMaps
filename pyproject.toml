@@ -43,6 +43,7 @@ Issues = "https://github.com/sergeyabramov/llmaps/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["llmaps"]
+force-include = { "llmaps/LLM_CONTEXT.md" = "llmaps/LLM_CONTEXT.md" }
 
 [tool.hatch.version]
 path = "llmaps/__init__.py"

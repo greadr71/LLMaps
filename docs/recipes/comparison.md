@@ -63,5 +63,4 @@ m.save("comparison.html")
 ## See also
 
 - [Map: enable_comparison](../api/map.md#enable_comparisonleft_layers-right_layers)
-- [API_GUIDE: Map](../../API_GUIDE.md#map-and-core)
 - [Embedded map recipe](embedded-map.md)

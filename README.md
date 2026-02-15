@@ -35,7 +35,7 @@ Encapsulates best practices for interactive web map development behind a predict
 - **Feature-state expressions** — GPU-efficient dynamic styling (`fill_color`, `opacity`) via `setFeatureState`.
 - **Extensible** — custom JS/CSS/HTML injection, `embed_data()` for arbitrary JSON.
 - **Built-in attribution** — automatic LLMaps branding with GitHub link (customizable or removable).
-- **LLM-friendly** — predictable names, stable contracts, and a keyword-indexed [API Guide](API_GUIDE.md).
+- **LLM-friendly** — predictable names, stable contracts; use `get_llm_context()` for a compact reference in chat.
 
 **Available building blocks:**
 
@@ -57,6 +57,12 @@ Optional extras:
 pip install llmaps[h3]           # H3 aggregation (h3, geopandas)
 pip install llmaps[compression]  # Geobuf + Gzip for embedded data
 pip install llmaps[all]          # h3 + compression
+```
+
+**Context for LLM:** To give your LLM the right context when generating map code, run this in your project directory once. Then in chat use `@llmaps_context.md`:
+
+```bash
+python -c "import llmaps; open('llmaps_context.md','w').write(llmaps.get_llm_context())"
 ```
 
 ## Quick Start
@@ -157,7 +163,7 @@ Everything reduces to a serializable dict — no framework magic. The generator 
 
 ## Documentation
 
-- **[API_GUIDE.md](API_GUIDE.md)** — LLM-friendly index of all components (keywords, when to use, alternatives).
+- **LLM context** — run `python -c "import llmaps; open('llmaps_context.md','w').write(llmaps.get_llm_context())"` and use @llmaps_context.md in chat for a compact API reference.
 - **[PHILOSOPHY.md](PHILOSOPHY.md)** — Concept, design principles, comparison with alternatives.
 - **[docs/api/](docs/api/)** — Map, layers, sources, components (parameters and examples).
 - **[docs/recipes/](docs/recipes/)** — Heatmap, comparison, embedded map, feature-state highlighting.

@@ -157,5 +157,4 @@ VectorTileLayer(
 ## See also
 
 - [Sources](sources.md) — FileSource, ApiSource, VectorTileSource
-- [API_GUIDE.md](../../API_GUIDE.md) — index and keywords
 - [Recipes: Heatmap](../recipes/heatmap.md)

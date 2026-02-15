@@ -54,5 +54,4 @@ Requires: `pip install llmaps[compression]` (geobuf). The frontend will decompre
 ## See also
 
 - [Map: embedded, use_compression](../api/map.md#constructor)
-- [API_GUIDE: Map and Core](../../API_GUIDE.md#map-and-core)
 - [Heatmap recipe](heatmap.md) — often used with embedded + compression

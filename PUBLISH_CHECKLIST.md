@@ -22,7 +22,7 @@ Use this list before publishing LLMaps to GitHub and PyPI.
 
 ## Documentation
 
-- [ ] **API_GUIDE.md** — LLM-friendly index with Keywords, Related, Alternatives; aligned with public API.
+- [ ] **LLM_CONTEXT.md** (in package) — Compact reference aligned with public API; `get_llm_context()` returns it.
 - [ ] **PHILOSOPHY.md** — Concept, design principles, comparison with alternatives, vibe coding.
 - [ ] **docs/api/** — map.md, layers.md, sources.md, components.md up to date.
 - [ ] **docs/recipes/** — heatmap.md, comparison.md, embedded-map.md with working examples.

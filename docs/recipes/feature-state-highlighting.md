@@ -118,4 +118,4 @@ Produces this MapLibre expression:
 
 - [Layers API — FillLayer](../api/layers.md#filllayer) — expression support
 - [Sources API — promote_id](../api/sources.md#basesource)
-- [API Guide — Expressions](../../API_GUIDE.md#expressions)
+- Expressions: `feature_state_color`, `feature_state_value`, `compute_color_stops` — in `llmaps.expressions`; compact ref in `get_llm_context()` output

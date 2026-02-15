@@ -21,7 +21,7 @@ LLMaps is a **Python library** for creating interactive web maps, designed for L
 1. **Predictable names** — `Map`, `CircleLayer`, `FillLayer`, `FileSource`, `Legend`, `Popup`, `Controls`, `Search`. No magic or overloaded meanings.
 2. **Stable contracts** — Constructors and methods have clear signatures; `to_dict()` produces a serialisable config. This makes it easy for an LLM to suggest correct code.
 3. **Composable pieces** — One map, many layers, many components. Add what you need: `map.add_layer(...).add_component(...).save(...)`.
-4. **Documentation as product** — `API_GUIDE.md` is an LLM-friendly index with Keywords, Related, Alternatives so that grep and context retrieval lead to the right component.
+4. **Documentation as product** — `get_llm_context()` yields a compact reference (signatures, scenarios, JS utilities) for LLM-assisted code; humans use `docs/api/`.
 
 The goal is: *fewer edits, fewer bugs* when generating map code with an LLM.
 
@@ -29,7 +29,7 @@ The goal is: *fewer edits, fewer bugs* when generating map code with an LLM.
 
 ## Design Principles
 
-1. **LLM-first** — Structure and naming are chosen so that both humans and LLMs can find and use the right abstraction quickly (see `API_GUIDE.md` and `docs/api/`).
+1. **LLM-first** — Structure and naming are chosen so that both humans and LLMs can find and use the right abstraction quickly (see `get_llm_context()` / LLM_CONTEXT and `docs/api/`).
 2. **Component-based** — Clear abstractions: `Map`, `Layer`, `Source`, `Component`, `Optimizer`. Each does one job and combines with others.
 3. **KISS** — Configuration via parameters, dataclasses, or dicts. Complex logic (H3 aggregation, compression, comparison mode) lives inside the library, not in user code.
 4. **Don’t reinvent the wheel** — Build on proven tools: MapLibre GL JS for the map, Jinja2 for HTML, optional geopandas/h3/geobuf for data and optimizations. Use official plugins (e.g. maplibre-gl-compare) where they fit.

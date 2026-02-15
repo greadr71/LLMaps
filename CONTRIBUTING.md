@@ -22,11 +22,11 @@ Thank you for considering contributing to LLMaps.
 - Follow PEP 8.
 - Use type hints for public API (constructors, method signatures).
 - Prefer dataclasses for configuration objects (Map, layers, sources, components).
-- Keep the public API stable and documented in `API_GUIDE.md` and `docs/api/`.
+- Keep the public API stable and documented in `llmaps/LLM_CONTEXT.md` (and thus `get_llm_context()`) and `docs/api/`.
 
 ## Documentation
 
-- **API_GUIDE.md** — Keep the index in sync with the public API; update Keywords, Related, Alternatives when adding or changing components.
+- **llmaps/LLM_CONTEXT.md** — Compact reference for LLMs; keep in sync with the public API (signatures, scenarios, JS utilities).
 - **docs/api/** — Update the relevant file (map.md, layers.md, sources.md, components.md) when changing parameters or behaviour.
 - **docs/recipes/** — Add or update recipes when introducing new patterns (e.g. new layer type, new mode).
 
@@ -34,7 +34,7 @@ Thank you for considering contributing to LLMaps.
 
 - Describe the change and why it is needed.
 - Ensure existing tests pass and add tests for new behaviour where appropriate.
-- Update documentation (API_GUIDE, docs/api, or recipes) if the public API or usage changes.
+- Update documentation (LLM_CONTEXT.md, docs/api, or recipes) if the public API or usage changes.
 
 ## Scope
 

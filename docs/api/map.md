@@ -148,4 +148,3 @@ m.save("my_map.html")
 - [Layers](layers.md)
 - [Sources](sources.md)
 - [Components](components.md)
-- [API_GUIDE.md](../../API_GUIDE.md) — index and keywords

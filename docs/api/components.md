@@ -191,4 +191,3 @@ Controls(
 ## See also
 
 - [Map](map.md) — add_component()
-- [API_GUIDE.md](../../API_GUIDE.md) — index and keywords

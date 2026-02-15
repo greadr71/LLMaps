@@ -101,7 +101,6 @@ VectorTileSource(
 
 - [Layers](layers.md) — layers consume sources
 - [Map](map.md) — embedded mode and config
-- [API_GUIDE.md](../../API_GUIDE.md) — index and keywords
 
 ## Frontend access
 

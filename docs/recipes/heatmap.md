@@ -56,5 +56,4 @@ m.save("heatmap.html")
 ## See also
 
 - [Layers: H3Layer](../api/layers.md#h3layer)
-- [API_GUIDE: H3Layer](../../API_GUIDE.md#layers)
 - [Embedded map recipe](embedded-map.md) — for `embedded=True` and `use_compression=True`

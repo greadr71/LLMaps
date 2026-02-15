@@ -49,19 +49,21 @@ def main() -> None:
     # Radius interpolation: mag 5→3px, 6→8px, 7→20px, 8→40px
     radius_expr = ["interpolate", ["linear"], ["get", "mag"], 5, 3, 6, 8, 7, 20, 8, 40]
 
-    # Color interpolation (magma reversed): depth 0→yellow, 70→orange, 300→purple, 700→dark purple
+    # Color interpolation (plasma): depth 0→yellow (shallow), 700→dark blue (deep)
     color_expr = [
         "interpolate",
         ["linear"],
         ["get", "depth"],
         0,
-        "#fcfdbf",
-        70,
-        "#fb8861",
+        "#f0f921",  # shallow - bright yellow
+        150,
+        "#fca636",  # orange
         300,
-        "#b73779",
+        "#e16462",  # red
+        500,
+        "#b12a90",  # purple
         700,
-        "#51127c",
+        "#0d0887",  # deep - dark blue
     ]
 
     # Create circle layer with interpolated properties
@@ -83,9 +85,9 @@ def main() -> None:
         },
         layer_color_ramps={
             "earthquakes-layer": {
-                "stops": [[0, "#fcfdbf"], [70, "#fb8861"], [300, "#b73779"], [700, "#51127c"]],
-                "label_min": "0 km",
-                "label_max": "700+ km",
+                "stops": [[0, "#f0f921"], [150, "#fca636"], [300, "#e16462"], [500, "#b12a90"], [700, "#0d0887"]],
+                "label_min": "0 km (shallow)",
+                "label_max": "700+ km (deep)",
             }
         },
     )
@@ -147,7 +149,7 @@ def main() -> None:
     controls = Controls(zoom=True, scale=True, fullscreen=True)
 
     # Create map and add components
-    m = Map(center=[0, 0], zoom=2, title="Earthquakes 2021-2026", tiles="carto-light")
+    m = Map(center=[0, 0], zoom=2, title="Earthquakes 2021-2026", tiles="carto-dark")
     m.add_layer(layer)
     m.add_component(legend)
     m.add_component(popup)
@@ -155,7 +157,7 @@ def main() -> None:
     m.add_component(controls)
 
     # Auto-fit map to data bounds
-    m.auto_extent()
+    # m.auto_extent()  # Временно отключено из-за PROJ database issue
 
     # Save with embedded data and compression
     m.embedded = True
