@@ -21,6 +21,7 @@ Encapsulates best practices for interactive web map development behind a predict
 - [Documentation](#documentation)
 - [Tile Providers](#tile-providers)
 - [License](#license)
+- [Contact](#contact)
 - [Contributing](#contributing)
 
 </details>
@@ -33,6 +34,7 @@ Encapsulates best practices for interactive web map development behind a predict
 - **Comparison mode** — before/after slider using the MapLibre compare plugin.
 - **Feature-state expressions** — GPU-efficient dynamic styling (`fill_color`, `opacity`) via `setFeatureState`.
 - **Extensible** — custom JS/CSS/HTML injection, `embed_data()` for arbitrary JSON.
+- **Built-in attribution** — automatic LLMaps branding with GitHub link (customizable or removable).
 - **LLM-friendly** — predictable names, stable contracts, and a keyword-indexed [API Guide](API_GUIDE.md).
 
 **Available building blocks:**
@@ -82,6 +84,27 @@ m.add_component(Controls(zoom=True, scale=True))
 
 m.auto_extent()
 m.save("my_map.html")
+```
+
+## Attribution
+
+By default, all maps include a LLMaps attribution with a link to the GitHub repository:
+
+```python
+# Default LLMaps attribution
+m = Map(center=[10.0, 50.0], zoom=5)
+# Result: "© OpenStreetMap contributors | © LLMaps"
+```
+
+You can customize or disable the attribution:
+
+```python
+# Custom attribution
+m = Map(center=[10.0, 50.0], zoom=5, custom_attribution='© My Company')
+
+# Disable custom attribution
+m = Map(center=[10.0, 50.0], zoom=5, custom_attribution=None)
+# Result: "© OpenStreetMap contributors"
 ```
 
 ## Examples
@@ -154,6 +177,13 @@ Use the `tiles` argument when creating the map:
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Contact
+
+**Sergey Abramov**
+
+[![Telegram](https://img.shields.io/badge/Telegram-@sergey__abr-2CA5E0?logo=telegram&logoColor=white)](https://t.me/sergey_abr)
+[![Email](https://img.shields.io/badge/Email-sergey.abr71@gmail.com-D14836?logo=gmail&logoColor=white)](mailto:sergey.abr71@gmail.com)
 
 ## Contributing
 

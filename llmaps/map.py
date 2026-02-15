@@ -44,6 +44,7 @@ class Map:
     tile_providers: Optional[Sequence[str]] = None
     embedded: bool = False
     use_compression: bool = False
+    custom_attribution: Optional[str] = '© <a href="https://github.com/greadr71/LLMaps" target="_blank">LLMaps</a>'
 
     _layers: List[BaseLayer] = field(default_factory=list, init=False, repr=False)
     _components: List[BaseComponent] = field(default_factory=list, init=False, repr=False)
@@ -147,7 +148,28 @@ class Map:
     # Serialisation helpers
     # ------------------------------------------------------------------
     def _tile_config(self) -> Dict[str, Any]:
-        return resolve_tile_provider(self.tiles)
+        config = dict(resolve_tile_provider(self.tiles))
+        if self.custom_attribution:
+            # Объединяем атрибуции через разделитель " | "
+            provider_attr = config.get("attribution", "")
+            config["attribution"] = (
+                f"{provider_attr} | {self.custom_attribution}"
+                if provider_attr
+                else self.custom_attribution
+            )
+        return config
+
+    def _apply_custom_attribution(self, provider_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Apply custom attribution to provider config."""
+        config = dict(provider_config)
+        if self.custom_attribution:
+            provider_attr = config.get("attribution", "")
+            config["attribution"] = (
+                f"{provider_attr} | {self.custom_attribution}"
+                if provider_attr
+                else self.custom_attribution
+            )
+        return config
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a serialisable representation of the map.
@@ -192,7 +214,8 @@ class Map:
         }
         if self.tile_providers is not None:
             out["tile_providers"] = [
-                resolve_tile_provider(pid) for pid in self.tile_providers
+                self._apply_custom_attribution(resolve_tile_provider(pid))
+                for pid in self.tile_providers
             ]
         out["components"] = [component.to_dict() for component in self._components]
         out["embedded"] = self.embedded
@@ -223,6 +246,8 @@ class Map:
 
         Used when embedded=True. Returns dict source_id -> GeoJSON for
         FileSource and H3-aggregated data. Mutates H3Layer stats.
+        For .geojson/.json with non-H3 layers, reads raw JSON to preserve
+        all properties (e.g. time_readable) without GeoPandas roundtrip.
         """
         from .core.utils import (
             aggregate_h3,
@@ -241,6 +266,23 @@ class Map:
             if not isinstance(src, FileSource) or src.id in seen:
                 continue
             seen.add(src.id)
+            path = Path(src.path)
+            suffix = path.suffix.lower()
+
+            # GeoJSON/JSON with non-H3 layer: embed raw JSON to preserve all properties
+            if suffix in (".geojson", ".json") and not isinstance(layer, H3Layer):
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        geojson = json.load(f)
+                    if self.use_compression:
+                        from .optimizers.compression import compress_geojson_dict
+                        embedded[src.id] = compress_geojson_dict(geojson)
+                    else:
+                        embedded[src.id] = geojson
+                except (OSError, json.JSONDecodeError):
+                    pass  # fall through to load_gdf if read fails
+                continue
+
             gdf = load_gdf(src)
             if gdf is None or gdf.empty:
                 continue

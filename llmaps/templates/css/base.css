@@ -495,14 +495,17 @@ body {
 }
 .llmaps-legend-instructions-list {
   margin: 0;
-  padding: 12px;
+  padding: 12px 16px;
   list-style: none;
-  font-size: 11px;
-  color: #6b7280;
-  line-height: 1.6;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.8;
 }
 .llmaps-legend-instructions-list li {
-  margin-bottom: 6px;
+  margin-bottom: 10px;
+  padding: 6px 0;
+  white-space: normal;
+  word-break: break-word;
 }
 .llmaps-legend-instructions-list li:last-child {
   margin-bottom: 0;
@@ -608,6 +611,28 @@ body {
 .llmaps-sidebar-field-value {
   color: #0a0a0a;
   text-align: right;
+}
+.llmaps-sidebar-field-value a {
+  color: #2563eb;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+/* Popup (MapLibre) content */
+.maplibregl-popup-content {
+  max-width: 300px;
+  word-wrap: break-word;
+}
+.maplibregl-popup-content table {
+  width: 100%;
+}
+.maplibregl-popup-content td:first-child {
+  max-width: 120px;
+  font-weight: 600;
+  padding-right: 12px;
+  vertical-align: top;
+}
+.maplibregl-popup-content td:last-child {
   word-break: break-word;
 }
 

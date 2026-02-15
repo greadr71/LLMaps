@@ -134,12 +134,7 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
     # Build HTML sections
     sections = []
 
-    # 1. Map title section (with border-bottom separator)
-    sections.append(f'''        <div class="llmaps-legend-section llmaps-legend-map-title-section">
-            <div class="llmaps-legend-map-title">{title}</div>
-        </div>''')
-
-    # 2. Layer sections
+    # Layer sections (title is only in legend header, no duplicate section)
     for i, info in enumerate(layers_info):
         is_last_layer = (i == len(layers_info) - 1)
         layer_id = info["layer_id"]

@@ -20,14 +20,14 @@ _TILE_PRESETS: Dict[str, Dict[str, Any]] = {
     "carto-light": {
         "id": "carto-light",
         "name": "Carto Light",
-        "url_template": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "url_template": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
         "subdomains": ["a", "b", "c", "d"],
         "attribution": "© OpenStreetMap contributors, © CARTO",
     },
     "carto-dark": {
         "id": "carto-dark",
         "name": "Carto Dark",
-        "url_template": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "url_template": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
         "subdomains": ["a", "b", "c", "d"],
         "attribution": "© OpenStreetMap contributors, © CARTO",
     },
