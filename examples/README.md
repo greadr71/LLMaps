@@ -34,7 +34,7 @@ python build_map.py
 open map.html
 ```
 
-**Live demo**: [View map](https://yourusername.github.io/llmaps/examples/cafes/map.html)
+**Live demo**: [View map](https://greadr71.github.io/llmaps/examples/cafes/map.html)
 
 ---
 
@@ -58,7 +58,7 @@ python build_map.py
 open map.html
 ```
 
-**Live demo**: [View map](https://yourusername.github.io/llmaps/examples/world_population/map.html)
+**Live demo**: [View map](https://greadr71.github.io/llmaps/examples/world_population/map.html)
 
 ---
 
@@ -82,7 +82,7 @@ python build_map.py
 open map.html
 ```
 
-**Live demo**: [View map](https://yourusername.github.io/llmaps/examples/taxi_heatmap/map.html)
+**Live demo**: [View map](https://greadr71.github.io/llmaps/examples/taxi_heatmap/map.html)
 
 ---
 
@@ -107,7 +107,7 @@ python build_map.py
 open map.html
 ```
 
-**Live demo**: [View map](https://yourusername.github.io/llmaps/examples/earthquakes/map.html)
+**Live demo**: [View map](https://greadr71.github.io/llmaps/examples/earthquakes/map.html)
 
 ---
 
@@ -148,7 +148,7 @@ Every public feature of llmaps is demonstrated across these examples:
 
 ## GitHub Pages
 
-All examples are published at: [https://yourusername.github.io/llmaps/examples/](https://yourusername.github.io/llmaps/examples/)
+All examples are published at: [https://greadr71.github.io/llmaps/examples/](https://greadr71.github.io/llmaps/examples/)
 
 See [index.html](index.html) for an interactive gallery.
 
