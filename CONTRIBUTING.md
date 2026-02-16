@@ -24,11 +24,48 @@ Thank you for considering contributing to LLMaps.
 - Prefer dataclasses for configuration objects (Map, layers, sources, components).
 - Keep the public API stable and documented in `llmaps/LLM_CONTEXT.md` (and thus `get_llm_context()`) and `docs/api/`.
 
-## Documentation
+## Documentation checklist
 
-- **llmaps/LLM_CONTEXT.md** — Compact reference for LLMs; keep in sync with the public API (signatures, scenarios, JS utilities).
-- **docs/api/** — Update the relevant file (map.md, layers.md, sources.md, components.md) when changing parameters or behaviour.
-- **docs/recipes/** — Add or update recipes when introducing new patterns (e.g. new layer type, new mode).
+For any public API change, update the documentation. Below is a complete list of files and dependency matrix.
+
+### Documentation files
+
+| File | Purpose |
+|------|---------|
+| `llmaps/LLM_CONTEXT.md` | Compact reference for LLMs (`get_llm_context()`). **Most important** — update for ANY API change |
+| `docs/api/map.md` | Map class API (constructor, methods) |
+| `docs/api/layers.md` | Layer API (CircleLayer, FillLayer, H3Layer, VectorTileLayer) |
+| `docs/api/sources.md` | Source API (FileSource, ApiSource, VectorTileSource) |
+| `docs/api/components.md` | Component API (Legend, Popup, Sidebar, FeatureSearch, Search, Controls, BasemapSwitcher) |
+| `docs/recipes/*.md` | Recipes: heatmap, embedded-map, comparison, feature-state-highlighting |
+| `README.md` | Main page — tables of layers, components, tile providers |
+| `examples/README.md` | Examples overview |
+| Docstrings in `*.py` | Class and method documentation in source code |
+
+**Note:** `CHANGELOG.md` is updated only on new releases, not on every commit.
+
+### Matrix: what to update
+
+| Change type | Must update |
+|------------|-------------|
+| Map parameter | `map.md`, `LLM_CONTEXT.md`, docstring in `map.py` |
+| Map method | `map.md`, `LLM_CONTEXT.md`, docstring in `map.py` |
+| New/changed layer | `layers.md`, `LLM_CONTEXT.md`, docstring, `layers/__init__.py` |
+| New/changed source | `sources.md`, `LLM_CONTEXT.md`, docstring, `sources/__init__.py` |
+| New/changed component | `components.md`, `LLM_CONTEXT.md`, docstring, `components/__init__.py` |
+| Expression helper | `LLM_CONTEXT.md`, docstring in `expressions.py`, `feature-state-highlighting.md` |
+| Tile provider | `map.md`, `LLM_CONTEXT.md`, `tiles.py` |
+| JS API (frontend) | `LLM_CONTEXT.md`, `sources.md`, `feature-state-highlighting.md` |
+| Embedded/compression | `embedded-map.md`, `map.md`, `LLM_CONTEXT.md` |
+| Breaking change | All of the above + BREAKING mark |
+
+### Quick pre-commit checklist
+
+- [ ] Docstrings updated in modified classes/methods
+- [ ] `LLM_CONTEXT.md` reflects the change (constructors, scenarios, JS API)
+- [ ] Corresponding file in `docs/api/` updated
+- [ ] `docs/recipes/` updated if pattern affected
+- [ ] Examples in `examples/` work with new API
 
 ## Pull requests
 

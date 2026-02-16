@@ -10,19 +10,19 @@
         function formatValue(val) {
           if (val == null) return "";
 
-          // Если это число, форматируем с разделителями согласно локали
+          // If value is a number, format with locale-aware separators
           if (typeof val === 'number') {
             return val.toLocaleString(locale, {
               maximumFractionDigits: 2
             });
           }
 
-          // Если это строка, которая выглядит как число, парсим и форматируем
+          // If value is a string that looks like a number, parse and format it
           if (typeof val === 'string') {
             const trimmed = val.trim();
             const parsed = Number(trimmed);
 
-            // Проверяем, что парсинг успешен и строка не пустая
+            // Ensure parsing succeeded and the string is not empty
             if (!isNaN(parsed) && trimmed !== '' && /^-?\d+\.?\d*$/.test(trimmed)) {
               return parsed.toLocaleString(locale, {
                 maximumFractionDigits: 2
@@ -30,7 +30,7 @@
             }
           }
 
-          // Иначе возвращаем как строку
+          // Otherwise return as string
           return String(val);
         }
         components.forEach(c => {

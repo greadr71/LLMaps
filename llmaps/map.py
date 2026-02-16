@@ -155,8 +155,11 @@ class Map:
     # ------------------------------------------------------------------
     def _tile_config(self) -> Dict[str, Any]:
         config = dict(resolve_tile_provider(self.tiles))
+        # Substitute {lang} placeholder with locale (BCP 47 → underscore)
+        lang_tag = self.locale.replace("-", "_")
+        config["url_template"] = config["url_template"].replace("{lang}", lang_tag)
         if self.custom_attribution:
-            # Объединяем атрибуции через разделитель " | "
+            # Merge provider attribution with custom attribution
             provider_attr = config.get("attribution", "")
             config["attribution"] = (
                 f"{provider_attr} | {self.custom_attribution}"
@@ -184,13 +187,13 @@ class Map:
         intentionally conservative: plain dicts, lists and primitives only.
         """
 
-        # Сериализуем слои, генерируя дополнительные outline слои при необходимости
+        # Serialize layers, generating additional outline layers when needed
         layers_list = []
         for layer in self._layers:
             layer_dict = layer.to_dict()
             layers_list.append(layer_dict)
             
-            # Если fill слой требует толстую обводку, создаём line слой
+            # If a fill layer needs a thick stroke, create a separate line layer
             metadata = layer_dict.get("metadata", {})
             if metadata.get("needs_outline_layer"):
                 outline_layer = {

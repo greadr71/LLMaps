@@ -35,7 +35,7 @@ _TILE_PRESETS: Dict[str, Dict[str, Any]] = {
     "yandex": {
         "id": "yandex",
         "name": "Yandex Maps",
-        "url_template": "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU&projection=web_mercator&scale=4",
+        "url_template": "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang={lang}&projection=web_mercator&scale=4",
         "subdomains": [],
         "attribution": "© Yandex Maps",
     },

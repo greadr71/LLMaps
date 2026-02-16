@@ -35,7 +35,7 @@ htmlcov/
 .env
 .env.local
 
-CLAUDE.MD
+CLAUDE.md
 
 # Examples data (downloaded/generated)
 examples/*/data/*.geojson

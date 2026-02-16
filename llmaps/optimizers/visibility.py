@@ -59,7 +59,7 @@ def generate_visibility_optimization_js(geojson_source_ids: List[str]) -> str:
             list.forEach(async map => {{
               if (!map || map._layersLoaded) {{ if (map) {{ map.getCanvas().style.display = "block"; map.resize(); map.triggerRepaint(); }} return; }}
               map.getCanvas().style.display = "block";
-              // Проверяем, что источники действительно удалены перед повторной загрузкой
+              // Verify that sources are actually removed before reloading
               const allRemoved = ids.every(sourceId => !map.getSource(sourceId));
               if (allRemoved && map._loadLayers) {{
                 await map._loadLayers();

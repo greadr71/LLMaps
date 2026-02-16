@@ -19,7 +19,7 @@ class Legend(BaseComponent):
         ``"bottom-left"`` or ``"bottom-right"``.
     title:
         Optional title for the legend panel. If not set, the map title
-        (config.title) or "Карта" is used.
+        (config.title) or "Map" is used.
     description:
         Optional description text displayed under the title.
     entries:
