@@ -100,6 +100,9 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
     # Extract legend configuration
     position = legend_config.get("position", "top-right")
     title = legend_config.get("title") or config.get("title") or "Map"
+    description = legend_config.get("description")
+    entries = legend_config.get("entries")
+    color_ramp = legend_config.get("color_ramp")
     show_toggle = legend_config.get("show_toggle", True)
     layer_labels = legend_config.get("layer_labels", {})
     layer_counts = legend_config.get("layer_counts", {})
@@ -109,11 +112,14 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
     collapsed_tips = legend_config.get("collapsed", True)
 
     # Build layer information
+    # A layer appears in the legend if it has a label OR a color ramp
     layers_info = []
     for layer in config.get("layers", []):
         layer_id = layer.get("id")
-        if not layer_id or layer_id not in layer_labels:
-            continue  # Skip layers not in legend
+        if not layer_id:
+            continue
+        if layer_id not in layer_labels and layer_id not in layer_color_ramps:
+            continue  # Skip layers not mentioned in legend config
 
         info = _get_layer_display_info(layer)
         info["label"] = layer_labels.get(layer_id, layer_id)
@@ -133,6 +139,43 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
 
     # Build HTML sections
     sections = []
+
+    # Simple entries section (if provided)
+    if entries:
+        for i, entry in enumerate(entries):
+            label = entry.get("label", "Unnamed")
+            color = entry.get("color", "#999")
+            is_last_entry = (i == len(entries) - 1)
+            
+            # Add separator if not last entry or there are layers/basemap/instructions after
+            separator_class = ""
+            if not is_last_entry or layers_info or has_basemap or instructions:
+                separator_class = " llmaps-legend-section-separator"
+            
+            sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
+            <div class="llmaps-legend-layer-header">
+                <div class="llmaps-legend-icon circle" style="background-color: {color};"></div>
+                <div class="llmaps-legend-item-label">{label}</div>
+            </div>
+        </div>''')
+
+    # Global color ramp (if provided and no per-layer ramps)
+    if color_ramp and color_ramp.get("colors") and color_ramp.get("labels"):
+        colors = color_ramp["colors"]
+        labels = color_ramp["labels"]
+        gradient = f"linear-gradient(to right, {', '.join(colors)})"
+        
+        separator_class = ""
+        if layers_info or has_basemap or instructions:
+            separator_class = " llmaps-legend-section-separator"
+        
+        sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
+            <div class="llmaps-legend-ramp" style="background: {gradient};"></div>
+            <div class="llmaps-legend-ramp-labels">
+                <span class="llmaps-legend-ramp-min">{labels[0]}</span>
+                <span class="llmaps-legend-ramp-max">{labels[-1]}</span>
+            </div>
+        </div>''')
 
     # Layer sections (title is only in legend header, no duplicate section)
     for i, info in enumerate(layers_info):
@@ -227,6 +270,10 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
         </div>''')
 
     # Assemble final legend HTML
+    description_html = ""
+    if description:
+        description_html = f'\n            <div class="llmaps-legend-description" style="padding: 0 20px 12px 20px; font-size: 13px; color: #6b7280;">{description}</div>'
+    
     return f'''    <!-- Legend (server-rendered) -->
     <div class="llmaps-legend {position}">
         <div class="llmaps-legend-header">
@@ -239,7 +286,7 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
                     <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
             </div>
-        </div>
+        </div>{description_html}
         <div class="llmaps-legend-content">
 {chr(10).join(sections)}
         </div>

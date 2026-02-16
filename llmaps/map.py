@@ -35,6 +35,11 @@ class Map:
         Optional map title used in HTML.
     tiles:
         Tile provider identifier, e.g. ``"osm"`` or ``"carto-light"``.
+    locale:
+        Locale identifier for number formatting in UI components (Popup, Sidebar).
+        Default is ``"en-US"`` (uses commas as thousand separators: 1,000,000).
+        Use ``"ru-RU"`` for Russian format (spaces as separators: 1 000 000).
+        Supports any valid BCP 47 language tag.
     """
 
     center: Sequence[float]
@@ -45,6 +50,7 @@ class Map:
     embedded: bool = False
     use_compression: bool = False
     custom_attribution: Optional[str] = '© <a href="https://github.com/greadr71/LLMaps" target="_blank">LLMaps</a>'
+    locale: str = "en-US"
 
     _layers: List[BaseLayer] = field(default_factory=list, init=False, repr=False)
     _components: List[BaseComponent] = field(default_factory=list, init=False, repr=False)
@@ -211,6 +217,7 @@ class Map:
             "zoom": self.zoom,
             "tiles": self._tile_config(),
             "layers": layers_list,
+            "locale": self.locale,
         }
         if self.tile_providers is not None:
             out["tile_providers"] = [

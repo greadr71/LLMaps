@@ -36,3 +36,20 @@ htmlcov/
 .env.local
 
 CLAUDE.MD
+
+# Examples data (downloaded/generated)
+examples/*/data/*.geojson
+examples/*/data/*.csv
+examples/*/data/*.parquet
+examples/*/data/*.zip
+examples/*/data/*.shp
+examples/*/data/*.dbf
+examples/*/data/*.shx
+examples/*/data/*.prj
+examples/*/data/*.cpg
+
+# Keep .gitkeep to preserve directory structure
+!examples/*/data/.gitkeep
+
+# HTML outputs are committed (for GitHub Pages)
+# Do NOT ignore *.html in examples/

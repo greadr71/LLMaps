@@ -1,4 +1,14 @@
-"""Earthquakes map with depth and magnitude interpolation."""
+"""Build an interactive map of global earthquakes with depth and magnitude visualization.
+
+This example demonstrates:
+- CircleLayer with MapLibre interpolate expressions for radius and color
+- compute_color_stops with Jenks natural breaks classification
+- Legend with color ramp for depth visualization
+- Popup with hover trigger
+- Sidebar with comprehensive earthquake information
+- Embedded mode with compression
+- Dark theme basemap
+"""
 
 from __future__ import annotations
 
@@ -8,29 +18,41 @@ from pathlib import Path
 
 from llmaps import Map
 from llmaps.components import Controls, Legend, Popup, Sidebar
+from llmaps.expressions import compute_color_stops
 from llmaps.layers.circle import CircleLayer
 from llmaps.sources.file import FileSource
 
 
 def main() -> None:
-    examples_dir = Path(__file__).resolve().parent
-    data_dir = examples_dir / "data"
+    """Build the earthquake map."""
+    # Define paths
+    script_dir = Path(__file__).parent
+    data_dir = script_dir / "data"
     input_path = data_dir / "earthquakes_2021_2026.geojson"
-    output_geojson_path = examples_dir / "earthquakes_with_depth.geojson"
-    output_map_path = examples_dir / "earthquakes_map.html"
+    processed_path = data_dir / "earthquakes_with_depth.geojson"
+    output_path = script_dir / "map.html"
+    
+    # Verify input exists
+    if not input_path.exists():
+        print(f"Error: {input_path} not found. Run prepare_data.py first.")
+        return
 
-    # Load GeoJSON and add depth + formatted time to properties
+    # Load GeoJSON and enrich with depth and formatted time
+    print("Processing earthquake data...")
     with open(input_path, "r", encoding="utf-8") as f:
         geojson_data = json.load(f)
 
     for feature in geojson_data["features"]:
         props = feature["properties"]
         coords = feature["geometry"]["coordinates"]
+
+        # Extract depth from coordinates (third dimension)
         if len(coords) > 2:
             props["depth"] = coords[2]
         else:
             props["depth"] = 0
-        # Formatted date for popup and sidebar (time is Unix ms)
+
+        # Format timestamp for display
         ts = props.get("time")
         if ts is not None:
             dt = datetime.fromtimestamp(ts / 1000.0, tz=timezone.utc)
@@ -38,35 +60,49 @@ def main() -> None:
         else:
             props["time_readable"] = ""
 
-    # Save updated GeoJSON with depth and time_readable
-    with open(output_geojson_path, "w", encoding="utf-8") as f:
+    # Save processed GeoJSON
+    with open(processed_path, "w", encoding="utf-8") as f:
         json.dump(geojson_data, f)
+        
+    print(f"✓ Processed {len(geojson_data['features'])} earthquakes")
 
     # Create data source
-    source = FileSource(id="earthquakes", path=str(output_geojson_path))
+    source = FileSource(
+        id="earthquakes", 
+        path=str(processed_path)
+    )
 
-    # Create MapLibre expressions for interpolation
-    # Radius interpolation: mag 5→3px, 6→8px, 7→20px, 8→40px
-    radius_expr = ["interpolate", ["linear"], ["get", "mag"], 5, 3, 6, 8, 7, 20, 8, 40]
-
-    # Color interpolation (plasma): depth 0→yellow (shallow), 700→dark blue (deep)
-    color_expr = [
+    # Create MapLibre expression for radius interpolation
+    # Magnitude 5→3px, 6→8px, 7→20px, 8→40px
+    radius_expr = [
         "interpolate",
         ["linear"],
-        ["get", "depth"],
-        0,
-        "#f0f921",  # shallow - bright yellow
-        150,
-        "#fca636",  # orange
-        300,
-        "#e16462",  # red
-        500,
-        "#b12a90",  # purple
-        700,
-        "#0d0887",  # deep - dark blue
+        ["get", "mag"],
+        5, 3,
+        6, 8,
+        7, 20,
+        8, 40,
     ]
 
-    # Create circle layer with interpolated properties
+    # Compute color stops for depth using Jenks natural breaks
+    depths = [f["properties"]["depth"] for f in geojson_data["features"]]
+    color_stops = compute_color_stops(
+        depths,
+        method="jenks",
+        cmap="plasma_r",
+        n_stops=5,
+    )
+    
+    print(f"\nColor stops (depth in km):")
+    for value, color in color_stops:
+        print(f"  {value:6.1f} km → {color}")
+
+    # Create MapLibre expression for color interpolation
+    color_expr = ["interpolate", ["linear"], ["get", "depth"]]
+    for value, color in color_stops:
+        color_expr.extend([value, color])
+
+    # Create circle layer
     layer = CircleLayer(
         id="earthquakes-layer",
         source=source,
@@ -75,24 +111,24 @@ def main() -> None:
         opacity=0.8,
     )
 
-    # Create legend
+    # Create legend with color ramp
     legend = Legend(
         position="top-right",
         show_toggle=True,
         layer_labels={"earthquakes-layer": "Earthquake epicenters"},
         layer_descriptions={
-            "earthquakes-layer": "Size — magnitude; color — epicenter depth",
+            "earthquakes-layer": "Size = magnitude; Color = depth",
         },
         layer_color_ramps={
             "earthquakes-layer": {
-                "stops": [[0, "#f0f921"], [150, "#fca636"], [300, "#e16462"], [500, "#b12a90"], [700, "#0d0887"]],
-                "label_min": "0 km (shallow)",
-                "label_max": "700+ km (deep)",
+                "stops": [[v, c] for v, c in color_stops],
+                "label_min": f"{color_stops[0][0]:.0f} km (shallow)",
+                "label_max": f"{color_stops[-1][0]:.0f}+ km (deep)",
             }
         },
     )
 
-    # Popup on hover: formatted date required, plus place, mag, depth, alert, tsunami
+    # Create popup (hover trigger)
     popup = Popup(
         trigger="hover",
         fields=["place", "mag", "depth", "time_readable", "alert", "tsunami"],
@@ -106,7 +142,7 @@ def main() -> None:
         },
     )
 
-    # Sidebar on click: full details
+    # Create sidebar (click trigger with full details)
     sidebar = Sidebar(
         position="right",
         width=400,
@@ -146,26 +182,35 @@ def main() -> None:
     )
 
     # Create controls
-    controls = Controls(zoom=True, scale=True, fullscreen=True)
+    controls = Controls(
+        zoom=True,
+        scale=True,
+        fullscreen=True
+    )
 
-    # Create map and add components
-    m = Map(center=[0, 0], zoom=2, title="Earthquakes 2021-2026", tiles="carto-dark")
+    # Create map
+    m = Map(
+        center=[0, 0],
+        zoom=2,
+        title="Global Earthquakes 2021-2026 (M5.0+)",
+        tiles="carto-dark",
+    )
+
     m.add_layer(layer)
     m.add_component(legend)
     m.add_component(popup)
     m.add_component(sidebar)
     m.add_component(controls)
-
-    # Auto-fit map to data bounds
-    # m.auto_extent()  # Временно отключено из-за PROJ database issue
-
-    # Save with embedded data and compression
+    
     m.embedded = True
     m.use_compression = True
-    m.save(output_map_path)
 
-    print(f"Map saved to {output_map_path}")
-    print(f"GeoJSON with depth saved to {output_geojson_path}")
+    # Save
+    m.save(output_path)
+
+    file_size_kb = output_path.stat().st_size / 1024
+    print(f"\n✓ Map saved to {output_path.relative_to(script_dir)}")
+    print(f"  File size: {file_size_kb:.1f} KB")
 
 
 if __name__ == "__main__":

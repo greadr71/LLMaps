@@ -45,6 +45,44 @@
         }
       };
 
+      /**
+       * Apply feature-state bindings declared in layer configs.
+       * For each layer with a ``featureState`` dict, iterates over the
+       * source GeoJSON features and calls ``map.setFeatureState``.
+       *
+       * String values in the dict are treated as GeoJSON property names;
+       * all other values (bool, number) are used as constants.
+       */
+      function applyFeatureStates(map, config) {
+        var layers = config.layers || [];
+        var sources = config.sources || {};
+        layers.forEach(function(lc) {
+          if (!lc.featureState) return;
+          var sourceId = lc.source;
+          var srcConfig = sources[sourceId];
+          var promoteId = srcConfig && srcConfig.promoteId;
+          var geojson = window._llmapsSourceGeoJson && window._llmapsSourceGeoJson[sourceId];
+          if (!geojson || !geojson.features) {
+            console.warn("applyFeatureStates: no GeoJSON data for source '" + sourceId + "'");
+            return;
+          }
+          var bindings = lc.featureState;
+          var count = 0;
+          geojson.features.forEach(function(f) {
+            var id = promoteId ? f.properties[promoteId] : f.id;
+            if (id == null) return;
+            var state = {};
+            for (var key in bindings) {
+              var val = bindings[key];
+              state[key] = (typeof val === "string") ? f.properties[val] : val;
+            }
+            map.setFeatureState({ source: sourceId, id: id }, state);
+            count++;
+          });
+          console.log("Feature states set for " + count + " features in source '" + sourceId + "'");
+        });
+      }
+
       function createSingleMap(containerId, config, layerIdsFilter, embeddedSources) {
         const center = config.center || [0, 0];
         const zoom = config.zoom ?? 10;
@@ -66,6 +104,7 @@
           }
           map._layersLoading = true;
           return loadLayers(map, config, embedded, layerIdsFilter).then(() => {
+            applyFeatureStates(map, config);
             map._layersLoading = false;
             window._llmapsLayersReady = true;
             window._llmapsReadyMap = map;

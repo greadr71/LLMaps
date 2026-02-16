@@ -53,6 +53,7 @@ class Sidebar(BaseComponent):
     show_on_click: bool = True
     close_on_map_click: bool = True
     zoom_on_click: Optional[float] = None
+    hide_empty_fields: bool = False
 
     def __post_init__(self) -> None:
         self.component_type = "sidebar"
@@ -70,6 +71,7 @@ class Sidebar(BaseComponent):
                 "show_on_click": self.show_on_click,
                 "close_on_map_click": self.close_on_map_click,
                 "zoom_on_click": self.zoom_on_click,
+                "hide_empty_fields": self.hide_empty_fields,
             }
         )
         return base

@@ -24,11 +24,21 @@ class CircleLayer(BaseLayer):
         Fill color (hex string) or MapLibre expression (list).
     opacity:
         Fill opacity 0–1 (number) or MapLibre expression (list).
+    stroke_width:
+        Stroke width in pixels (number) or MapLibre expression (list).
+        Default is 0 (no stroke).
+    stroke_color:
+        Stroke color (hex string) or MapLibre expression (list).
+    stroke_opacity:
+        Stroke opacity 0–1 (number) or MapLibre expression (list).
     """
 
     radius: Union[float, List[Any]] = 6.0
     color: Union[str, List[Any]] = "#3182bd"
     opacity: Union[float, List[Any]] = 0.8
+    stroke_width: Union[float, List[Any]] = 0
+    stroke_color: Union[str, List[Any]] = "#000000"
+    stroke_opacity: Union[float, List[Any]] = 1.0
 
     layer_type: str = "circle"
 
@@ -38,6 +48,9 @@ class CircleLayer(BaseLayer):
             "circle-radius": self.radius,
             "circle-color": self.color,
             "circle-opacity": self.opacity,
+            "circle-stroke-width": self.stroke_width,
+            "circle-stroke-color": self.stroke_color,
+            "circle-stroke-opacity": self.stroke_opacity,
         }
         return base
 

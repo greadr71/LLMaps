@@ -33,7 +33,8 @@ dependencies = [
 [project.optional-dependencies]
 h3 = ["h3", "geopandas"]
 compression = ["geobuf"]
-all = ["h3", "geopandas", "geobuf"]
+classify = ["jenkspy", "matplotlib"]
+all = ["h3", "geopandas", "geobuf", "jenkspy", "matplotlib"]
 
 [project.urls]
 Homepage = "https://github.com/sergeyabramov/llmaps"

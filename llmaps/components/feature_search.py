@@ -25,8 +25,14 @@ class FeatureSearch(BaseComponent):
         Where to place the search bar on the map.
     placeholder:
         Placeholder text for the search input.
+    layer_id:
+        Simplified API: specify a single layer ID to search in.
+        Will be converted to search_fields internally.
+    search_field:
+        Simplified API: specify a single field name to search in.
+        Used together with layer_id.
     search_fields:
-        Mapping from **source id** to list of attribute names to
+        Advanced API: Mapping from **source id** to list of attribute names to
         search in.  For example::
 
             {"warehouses": ["id", "name", "city"],
@@ -47,6 +53,8 @@ class FeatureSearch(BaseComponent):
 
     position: Position = "top-center"
     placeholder: str = "Search..."
+    layer_id: Optional[str] = None
+    search_field: Optional[str] = None
     search_fields: Mapping[str, List[str]] = field(default_factory=dict)
     field_labels: Mapping[str, str] = field(default_factory=dict)
     max_results: int = 15
@@ -56,6 +64,13 @@ class FeatureSearch(BaseComponent):
 
     def __post_init__(self) -> None:
         self.component_type = "feature_search"
+        
+        # Convert simplified API (layer_id + search_field) to search_fields
+        if self.layer_id and self.search_field:
+            # Extract source_id from layer_id (remove "-layer" suffix if present)
+            source_id = self.layer_id.replace("-layer", "")
+            if not self.search_fields:
+                self.search_fields = {source_id: [self.search_field]}
 
     def to_dict(self) -> Dict[str, Any]:
         base = super().to_dict()

@@ -70,6 +70,9 @@
         });
       };
 
+      // Store parsed GeoJSON data per source for feature-state binding
+      window._llmapsSourceGeoJson = window._llmapsSourceGeoJson || {};
+
       function addSourceFromConfig(map, config, sourceId, embeddedSources) {
         const src = config.sources && config.sources[sourceId];
         if (!src || map.getSource(sourceId)) return Promise.resolve();
@@ -90,6 +93,8 @@
         return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
           if (geo) {
             if (src.promoteId) geo.promoteId = src.promoteId;
+            // Keep a reference to parsed GeoJSON for feature-state binding
+            if (geo.data) window._llmapsSourceGeoJson[sourceId] = geo.data;
             try {
               map.addSource(sourceId, geo);
             } catch (e) {

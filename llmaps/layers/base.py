@@ -28,6 +28,19 @@ class BaseLayer:
         Initial visibility flag.
     minzoom, maxzoom:
         Optional zoom constraints for the layer.
+    feature_state:
+        Optional dict mapping feature-state keys to GeoJSON property names
+        (strings) or constant values (bool/number).  When set, the library
+        automatically generates JS that iterates over source features after
+        loading and calls ``map.setFeatureState`` for each one.
+
+        Example::
+
+            feature_state={"active": True, "color": "POP_EST"}
+
+        Here ``active`` is a constant ``True`` for every feature, while
+        ``color`` reads the ``POP_EST`` property from each GeoJSON feature.
+        Requires ``promote_id`` on the corresponding source.
     """
 
     id: str
@@ -36,6 +49,7 @@ class BaseLayer:
     minzoom: Optional[float] = None
     maxzoom: Optional[float] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+    feature_state: Optional[Dict[str, Any]] = None
 
     layer_type: str = "base"
 
@@ -58,6 +72,8 @@ class BaseLayer:
             config["minzoom"] = self.minzoom
         if self.maxzoom is not None:
             config["maxzoom"] = self.maxzoom
+        if self.feature_state is not None:
+            config["featureState"] = self.feature_state
 
         return config
 

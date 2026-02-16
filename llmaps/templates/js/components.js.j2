@@ -3,6 +3,36 @@
         const maps = Array.isArray(mapOrMaps) ? mapOrMaps : [mapOrMaps];
         const map = maps[0];
         const components = config.components || [];
+
+        // Get locale from config, default to en-US
+        const locale = config.locale || "en-US";
+
+        function formatValue(val) {
+          if (val == null) return "";
+
+          // Если это число, форматируем с разделителями согласно локали
+          if (typeof val === 'number') {
+            return val.toLocaleString(locale, {
+              maximumFractionDigits: 2
+            });
+          }
+
+          // Если это строка, которая выглядит как число, парсим и форматируем
+          if (typeof val === 'string') {
+            const trimmed = val.trim();
+            const parsed = Number(trimmed);
+
+            // Проверяем, что парсинг успешен и строка не пустая
+            if (!isNaN(parsed) && trimmed !== '' && /^-?\d+\.?\d*$/.test(trimmed)) {
+              return parsed.toLocaleString(locale, {
+                maximumFractionDigits: 2
+              });
+            }
+          }
+
+          // Иначе возвращаем как строку
+          return String(val);
+        }
         components.forEach(c => {
           if (c.type === "controls") {
             if (c.zoom)
@@ -100,7 +130,7 @@
             const rows = fields.map(f => {
               const label = fieldLabels[f] || f;
               const val = props[f];
-              return "<tr><td>" + label + "</td><td>" + (val != null ? String(val) : "") + "</td></tr>";
+              return "<tr><td>" + label + "</td><td>" + formatValue(val) + "</td></tr>";
             });
             return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
           }
@@ -184,6 +214,7 @@
           const sbTitleByLayer = sidebarConfig.title_by_layer || {};
           const sbCloseOnMapClick = sidebarConfig.close_on_map_click !== false;
           const sbZoomOnClick = sidebarConfig.zoom_on_click;
+          const sbHideEmptyFields = sidebarConfig.hide_empty_fields !== false;
           const layers = config.layers || [];
 
           // Create sidebar DOM
@@ -211,8 +242,13 @@
             fields.forEach(function(f) {
               const label = sbFieldLabels[f] || f;
               const val = props[f];
+              // Skip empty/null/whitespace-only values if enabled
+              if (sbHideEmptyFields) {
+                if (val == null) return;
+                if (typeof val === "string" && val.trim() === "") return;
+              }
               var linkHtml = _sbLinkField(f, val);
-              var valueHtml = linkHtml !== false ? linkHtml : _sbEsc(val != null ? String(val) : "");
+              var valueHtml = linkHtml !== false ? linkHtml : _sbEsc(formatValue(val));
               html += '<div class="llmaps-sidebar-field">'
                 + '<span class="llmaps-sidebar-field-label">' + _sbEsc(label) + '</span>'
                 + '<span class="llmaps-sidebar-field-value">' + valueHtml + '</span>'

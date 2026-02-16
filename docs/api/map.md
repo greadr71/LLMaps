@@ -14,6 +14,7 @@ Map(
     tiles: str = "osm",
     embedded: bool = False,
     use_compression: bool = False,
+    locale: str = "en-US",
 )
 ```
 
@@ -25,6 +26,7 @@ Map(
 | `tiles` | str | `"osm"` | Tile provider: `"osm"`, `"carto-light"`, `"carto-dark"`, `"yandex"`, `"2gis"`. |
 | `embedded` | bool | False | If True, data is inlined in HTML (works via `file://`). |
 | `use_compression` | bool | False | If True and embedded, GeoJSON is compressed (Geobuf + Gzip). |
+| `locale` | str | `"en-US"` | Locale for number formatting in Popup and Sidebar. Use `"ru-RU"` for Russian (spaces as thousand separators), or any BCP 47 language tag. |
 
 ## Methods
 

@@ -6,7 +6,47 @@ GPU-efficient dynamic recoloring of polygons via MapLibre `setFeatureState`. Tho
 
 1. **`promote_id`** on the source → each feature gets a stable ID from a property
 2. **`feature-state` expressions** in paint → `fill-color` interpolates by a numeric state key
-3. **`setFeatureState`** on click → polygons instantly recolor (GPU-side, no re-upload)
+3. **Setting state** — either declarative (`feature_state` on the layer, no JS) or via **`setFeatureState`** in custom JS (e.g. on click)
+
+---
+
+## Static data (automatic, no custom JS)
+
+When colors come from a GeoJSON property and do not change at runtime, use the layer's **`feature_state`** parameter. The library auto-generates the JS that sets feature state for every feature after the source loads.
+
+```python
+from llmaps import Map
+from llmaps.sources import FileSource
+from llmaps.layers import FillLayer
+from llmaps.expressions import feature_state_color, compute_color_stops
+
+src = FileSource(id="countries", path="data/countries.geojson", promote_id="ISO_A3")
+populations = [f["properties"]["POP_EST"] for f in geojson["features"] if f["properties"].get("POP_EST", 0) > 0]
+color_stops = compute_color_stops(populations, method="jenks", cmap="YlOrRd", n_stops=7)
+
+layer = FillLayer(
+    id="population-layer",
+    source=src,
+    fill_color=feature_state_color(
+        state_key="active",
+        color_ramp_key="color",
+        color_stops=color_stops,
+        inactive="#f0f0f0",
+        default="#e0e0e0",
+    ),
+    fill_opacity=0.8,
+    feature_state={"active": True, "color": "POP_EST"},  # no add_custom_js
+)
+m = Map(center=[0, 20], zoom=2, embedded=True, use_compression=True)
+m.add_layer(layer)
+m.save("map.html")
+```
+
+---
+
+## Dynamic highlighting (custom JS)
+
+For interactive recoloring (e.g. click a polygon to highlight it), use **`add_custom_js`** and the JS utilities.
 
 ## Python setup
 

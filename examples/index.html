@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLMaps Examples Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .links {
+            margin-top: 20px;
+        }
+
+        .links a {
+            margin: 0 10px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .example-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-preview {
+            width: 100%;
+            height: 300px;
+            border: none;
+            display: block;
+        }
+
+        .card-content {
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #222;
+        }
+
+        .card-description {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: #e8eaf6;
+            color: #5c6bc0;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #ebebeb;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .card-preview {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LLMaps Examples</h1>
+            <p class="subtitle">Beautiful, interactive maps with Python — real-world examples</p>
+            <div class="links">
+                <a href="https://github.com/yourusername/llmaps" target="_blank">GitHub</a>
+                <a href="https://pypi.org/project/llmaps/" target="_blank">PyPI</a>
+                <a href="../docs/" target="_blank">Documentation</a>
+            </div>
+        </header>
+
+        <div class="gallery">
+            <!-- Cafes Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="cafes/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">Paris Cafes & Restaurants</h2>
+                    <p class="card-description">
+                        2,000+ cafes and restaurants in Paris from OpenStreetMap. 
+                        Features geocoding search, attribute filtering, and basemap switching.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">CircleLayer</span>
+                        <span class="tag">Search</span>
+                        <span class="tag">FeatureSearch</span>
+                        <span class="tag">Sidebar</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="cafes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/yourusername/llmaps/tree/main/examples/cafes" 
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- World Population Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="world_population/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">World Population</h2>
+                    <p class="card-description">
+                        Choropleth map of 177 countries colored by population using Jenks natural breaks. 
+                        Demonstrates GPU-efficient feature-state styling.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">FillLayer</span>
+                        <span class="tag">feature-state</span>
+                        <span class="tag">Jenks</span>
+                        <span class="tag">color ramps</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="world_population/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/yourusername/llmaps/tree/main/examples/world_population" 
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taxi Heatmap Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="taxi_heatmap/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">NYC Taxi Heatmap</h2>
+                    <p class="card-description">
+                        10,000 taxi pickups in NYC aggregated into H3 hexagons. 
+                        Shows trip density patterns across Manhattan.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">H3Layer</span>
+                        <span class="tag">Hexagons</span>
+                        <span class="tag">Dark theme</span>
+                        <span class="tag">CSV data</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="taxi_heatmap/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/yourusername/llmaps/tree/main/examples/taxi_heatmap" 
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Earthquakes Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="earthquakes/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">Global Earthquakes</h2>
+                    <p class="card-description">
+                        5.0+ magnitude earthquakes (2021-2026) from USGS. 
+                        Circle size = magnitude, color = depth with plasma colormap.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">CircleLayer</span>
+                        <span class="tag">interpolate</span>
+                        <span class="tag">Jenks</span>
+                        <span class="tag">Sidebar</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="earthquakes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/yourusername/llmaps/tree/main/examples/earthquakes" 
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Built with <a href="https://github.com/yourusername/llmaps">llmaps</a> — 
+           LLM-first Python library for beautiful web maps</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">
+            All examples use open data (ODbL, Public Domain)
+        </p>
+    </footer>
+</body>
+</html>

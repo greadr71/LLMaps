@@ -36,7 +36,7 @@ m.save("my_map.html")
 | Small dataset (<10k points) | CircleLayer + FileSource + Legend |
 | Large dataset (>100k points) | H3Layer + FileSource + Legend (+ use_compression) |
 | Polygons / choropleth | FillLayer + FileSource + Legend + Popup |
-| Dynamic polygon coloring | FillLayer + expressions + promote_id + custom JS |
+| Dynamic polygon coloring | FillLayer + expressions + promote_id + feature_state |
 | Rich feature details | Sidebar + FillLayer/CircleLayer (replaces Popup for complex views) |
 | Search within data | FeatureSearch (+ Sidebar for detail on select) |
 | Hover tooltips | Popup(trigger="hover") + FillLayer/CircleLayer |
@@ -49,15 +49,16 @@ m.save("my_map.html")
 
 ```python
 # Map — center [lon, lat], zoom 0–22. tiles: "osm", "carto-light", "carto-dark", "yandex", "2gis"
-Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=False, use_compression=False)
+Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=False, use_compression=False, locale="en-US")
+# locale: "en-US" (commas: 1,000,000), "ru-RU" (spaces: 1 000 000), or any BCP 47 tag. Formats numbers in Popup/Sidebar.
 # .add_layer(layer) .add_component(comp) .auto_extent(sources=None, padding=0.1) .save(path) .to_html()
 # .enable_comparison(left_layers=[], right_layers=[])  # before/after slider
 # .add_custom_js(js) .add_custom_css(css) .add_custom_html(html) .embed_data(key, data)
 
 # Layers — all need id, source
 CircleLayer(id, source, radius=6.0, color="#3182bd", opacity=0.8)
-FillLayer(id, source, fill_color="#3182bd", fill_opacity=0.6, stroke_color="#08519c", stroke_width=1.0)
-# fill_color/fill_opacity accept MapLibre expressions (e.g. feature-state). stroke_width>1 adds outline layer.
+FillLayer(id, source, fill_color="#3182bd", fill_opacity=0.6, stroke_color="#08519c", stroke_width=1.0, feature_state=None)
+# fill_color/fill_opacity accept MapLibre expressions (e.g. feature-state). feature_state: {"active": True, "color": "POP_EST"} auto-sets state from GeoJSON (no custom JS). stroke_width>1 adds outline layer.
 H3Layer(id, source, h3_column=None, resolution=8, aggregation="count", property_field="value",
         colors=["#ffffcc", "#800026"], opacity=0.7, stroke_width=0.0, stroke_color=None)
 # aggregation: "count"|"sum"|"mean"|"median". Optional: pip install llmaps[h3]
@@ -76,7 +77,9 @@ Legend(position="top-right", show_toggle=True, layer_labels={}, layer_counts={})
 Popup(fields=[], field_labels={}, template=None, fields_by_layer={}, trigger="click")
 # trigger: "click" or "hover"
 Sidebar(position="right", width=400, fields_by_layer={}, field_labels={}, title_field=None,
-        title_by_layer={}, show_on_click=True, close_on_map_click=True, zoom_on_click=None)
+        title_by_layer={}, show_on_click=True, close_on_map_click=True, zoom_on_click=None,
+        hide_empty_fields=False)
+# hide_empty_fields: if True, null/empty string values are hidden
 FeatureSearch(position="top-center", placeholder="Search...", search_fields={}, field_labels={},
               max_results=15, zoom_on_select=8, debounce_ms=200, min_chars=2)
 # search_fields: source_id -> list of attribute names to search
@@ -86,6 +89,8 @@ Controls(zoom=True, scale=True, fullscreen=False)
 ```
 
 ## Frontend JS (custom JS via add_custom_js)
+
+For **static** choropleth (colors from GeoJSON property), use layer `feature_state` — no custom JS needed. Use the utilities below for **interactive** updates (e.g. click-to-highlight).
 
 ```javascript
 await window.llmapsGetSourceData(sourceId)   // Promise<GeoJSON>
@@ -108,6 +113,8 @@ feature_state_color(state_key, color_ramp_key, color_stops, inactive="#F0F0F0", 
 # Returns MapLibre expression for fill_color. color_stops: [(value, color), ...]
 feature_state_value(state_key, active=0.7, inactive=0.2, default=0.6)
 # Returns expression for fill_opacity or circle-radius
-compute_color_stops(values, n_stops=5, colors=None, percentiles=None, precision=1)
+compute_color_stops(values, n_stops=5, colors=None, percentiles=None, precision=1, method="quantile", cmap=None)
 # values: array-like. Returns list of (value, color) for feature_state_color.
+# method: "quantile" (default), "jenks" (natural breaks, requires jenkspy), "equal_interval"
+# cmap: matplotlib colormap name (e.g. "plasma", "viridis", "plasma_r"). Overrides colors.
 ```

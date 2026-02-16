@@ -14,6 +14,7 @@ Common attributes for all layers:
 | `minzoom` | float or None | None | Minimum zoom at which the layer is shown. |
 | `maxzoom` | float or None | None | Maximum zoom at which the layer is shown. |
 | `metadata` | dict | {} | Extra metadata (passed through to config). |
+| `feature_state` | dict or None | None | Mapping of feature-state keys to GeoJSON property names (str) or constants (bool/number). The library auto-generates JS to call `setFeatureState` after source load. Requires `promote_id` on the source. Example: `{"active": True, "color": "POP_EST"}`. |
 
 ---
 
@@ -59,6 +60,7 @@ FillLayer(
     fill_opacity: Union[float, List[Any]] = 0.6,
     stroke_color: Optional[str] = "#08519c",
     stroke_width: Optional[float] = 1.0,
+    feature_state: Optional[Dict[str, Any]] = None,
 )
 ```
 
@@ -70,10 +72,11 @@ FillLayer(
 | `fill_opacity` | float or list | 0.6 | Fill opacity (0–1). Accepts a number or a MapLibre expression. |
 | `stroke_color` | str or None | `"#08519c"` | Outline color; None to omit. |
 | `stroke_width` | float or None | 1.0 | Outline width in pixels (see note below). |
+| `feature_state` | dict or None | None | Auto-bind feature-state from GeoJSON properties (see BaseLayer). |
 
 **Note on stroke_width:** MapLibre GL JS natively supports only 1px outlines via `fill-outline-color`. For `stroke_width <= 1`, the standard fill outline is used. For `stroke_width > 1`, LLMaps automatically generates an additional line layer `{id}-outline` with the specified width.
 
-**Expressions:** `fill_color` and `fill_opacity` accept MapLibre expressions for dynamic styling. Use with `feature-state` for GPU-efficient highlighting — see [feature-state recipe](../recipes/feature-state-highlighting.md) and `llmaps.expressions` helpers (`feature_state_color`, `feature_state_value`).
+**Expressions:** `fill_color` and `fill_opacity` accept MapLibre expressions for dynamic styling. For **static** choropleth (colors from a GeoJSON property), set `feature_state` (e.g. `{"active": True, "color": "POP_EST"}`) — no custom JS needed. For **interactive** highlighting (e.g. click-to-recolor), use `add_custom_js` with the JS utilities. See [feature-state recipe](../recipes/feature-state-highlighting.md) and `llmaps.expressions` helpers (`feature_state_color`, `feature_state_value`).
 
 ---
 
