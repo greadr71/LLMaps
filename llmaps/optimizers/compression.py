@@ -2,26 +2,30 @@
 GeoJSON compression (Geobuf + Gzip + Base64) for LLMaps.
 
 Reduces embedded data size in HTML when use_compression=True.
-Uses Geobuf when available; falls back to minified JSON + Gzip.
+Uses Geobuf for efficient binary compression.
 """
 
 import base64
 import gzip
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, Union
 
+logger = logging.getLogger(__name__)
+
 try:
     import geobuf
-    GEOBUF_AVAILABLE = True
-except ImportError:
-    GEOBUF_AVAILABLE = False
-    geobuf = None
+except ImportError as e:
+    raise ImportError(
+        "geobuf is required for compression in llmaps. "
+        "Install with: pip install 'llmaps' or pip install 'geobuf>=2.1'"
+    ) from e
 
 
 def compress_geojson_dict(geojson: Dict[str, Any]) -> str:
     """
-    Compress a GeoJSON dict to base64 string (Geobuf + Gzip, or JSON + Gzip).
+    Compress a GeoJSON dict to base64 string (Geobuf + Gzip).
 
     Parameters
     ----------
@@ -31,20 +35,18 @@ def compress_geojson_dict(geojson: Dict[str, Any]) -> str:
     Returns
     -------
     str
-        Base64-encoded compressed data.
+        Base64-encoded compressed data (Geobuf encoded and gzipped).
     """
-    if GEOBUF_AVAILABLE and geobuf is not None:
-        geobuf_bytes = geobuf.encode(geojson)
-        compressed = gzip.compress(geobuf_bytes)
-    else:
-        json_str = json.dumps(geojson, ensure_ascii=False, separators=(",", ":"))
-        compressed = gzip.compress(json_str.encode("utf-8"))
-    return base64.b64encode(compressed).decode("utf-8")
+    geobuf_bytes = geobuf.encode(geojson)
+    compressed = gzip.compress(geobuf_bytes)
+    result = base64.b64encode(compressed).decode("utf-8")
+    logger.debug(f"GeoJSON compressed with Geobuf+Gzip: {len(geojson)} features → {len(result)} bytes (base64)")
+    return result
 
 
 def compress_geojson(source: Union[Path, str, Dict[str, Any]]) -> str:
     """
-    Compress GeoJSON from path or dict to base64 string.
+    Compress GeoJSON from path or dict to base64 string (Geobuf + Gzip).
 
     Parameters
     ----------
@@ -54,7 +56,7 @@ def compress_geojson(source: Union[Path, str, Dict[str, Any]]) -> str:
     Returns
     -------
     str
-        Base64-encoded compressed data.
+        Base64-encoded compressed data (Geobuf encoded and gzipped).
     """
     if isinstance(source, dict):
         return compress_geojson_dict(source)
@@ -66,12 +68,13 @@ def compress_geojson(source: Union[Path, str, Dict[str, Any]]) -> str:
 
 def generate_decompression_js() -> str:
     """
-    Generate JavaScript for decompressing base64 Geobuf/Gzip data in the browser.
+    Generate JavaScript for decompressing base64 Geobuf+Gzip data in the browser.
 
     Returns
     -------
     str
-        JS code defining async decompressData(compressedBase64).
+        JS code defining async decompressData(compressedBase64) function.
+        Includes fallback to JSON parsing if geobuf.js not available in browser.
     """
     return r"""      async function decompressData(compressedBase64) {
         if (!compressedBase64) return null;
