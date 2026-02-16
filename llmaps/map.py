@@ -35,6 +35,12 @@ class Map:
         Optional map title used in HTML.
     tiles:
         Tile provider identifier, e.g. ``"osm"`` or ``"carto-light"``.
+    embedded:
+        If ``True``, inline file-based sources into the HTML so the map works
+        via ``file://`` without a web server.
+    use_compression:
+        If ``True`` and ``embedded`` is enabled, compress embedded GeoJSON to
+        reduce HTML size.
     locale:
         Locale identifier for number formatting in UI components (Popup, Sidebar).
         Default is ``"en-US"`` (uses commas as thousand separators: 1,000,000).
@@ -47,8 +53,8 @@ class Map:
     title: Optional[str] = None
     tiles: str = "osm"
     tile_providers: Optional[Sequence[str]] = None
-    embedded: bool = False
-    use_compression: bool = False
+    embedded: bool = True
+    use_compression: bool = True
     custom_attribution: Optional[str] = '© <a href="https://github.com/greadr71/LLMaps" target="_blank">LLMaps</a>'
     locale: str = "en-US"
 

@@ -10,8 +10,8 @@ Generate a single HTML file that contains all data inline so the map works when 
 
 ## Steps
 
-1. **Set `Map(embedded=True)`** so that data from file-based sources (e.g. `FileSource`) is inlined in the HTML.
-2. **Optional:** Set `use_compression=True` to compress GeoJSON with Geobuf + Gzip and reduce file size (requires optional dependency: `pip install llmaps[compression]` or `llmaps[all]`).
+1. **Use the default `Map()`** (embedded is enabled by default) so that data from file-based sources (e.g. `FileSource`) is inlined in the HTML.
+2. **Optional:** Keep `use_compression=True` (default) to compress GeoJSON with Geobuf + Gzip and reduce file size (requires optional dependency: `pip install llmaps[compression]` or `llmaps[all]`).
 3. **Use `FileSource`** for layers that should be embedded; `ApiSource` and `VectorTileSource` are not inlined (they are loaded by the frontend from URL/tiles).
 4. **Save** with `save(path)` or get the string with `to_html()`.
 
@@ -30,7 +30,6 @@ m = Map(center=[10.0, 50.0], zoom=4, title="Embedded map", tiles="osm")
 m.add_layer(layer)
 m.add_component(Legend(layer_labels={"points-layer": "Points"}))
 
-m.embedded = True
 m.save("embedded_map.html")
 # Open embedded_map.html in a browser via file://
 ```
@@ -38,7 +37,6 @@ m.save("embedded_map.html")
 ## Example (with compression)
 
 ```python
-m.embedded = True
 m.use_compression = True
 m.save("embedded_compressed.html")
 ```

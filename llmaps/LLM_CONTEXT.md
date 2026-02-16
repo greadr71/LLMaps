@@ -40,7 +40,7 @@ m.save("my_map.html")
 | Rich feature details | Sidebar + FillLayer/CircleLayer (replaces Popup for complex views) |
 | Search within data | FeatureSearch (+ Sidebar for detail on select) |
 | Hover tooltips | Popup(trigger="hover") + FillLayer/CircleLayer |
-| Embedded map (no server) | Map(embedded=True, use_compression=True) + FileSource |
+| Embedded map (no server) | Map() + FileSource (embedded by default) |
 | Before/after comparison | Two layers + Map.enable_comparison(left_layers, right_layers) |
 | Data from API | CircleLayer/FillLayer + ApiSource + Legend |
 | Vector tiles | VectorTileLayer + VectorTileSource |
@@ -49,7 +49,7 @@ m.save("my_map.html")
 
 ```python
 # Map — center [lon, lat], zoom 0–22. tiles: "osm", "carto-light", "carto-dark", "yandex", "2gis"
-Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=False, use_compression=False, locale="en-US")
+Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=True, use_compression=True, locale="en-US")
 # locale: "en-US" (commas: 1,000,000), "ru-RU" (spaces: 1 000 000), or any BCP 47 tag. Formats numbers in Popup/Sidebar.
 # .add_layer(layer) .add_component(comp) .auto_extent(sources=None, padding=0.1) .save(path) .to_html()
 # .enable_comparison(left_layers=[], right_layers=[])  # before/after slider
