@@ -92,27 +92,6 @@ m.auto_extent()
 m.save("my_map.html")
 ```
 
-## Attribution
-
-By default, all maps include a LLMaps attribution with a link to the GitHub repository:
-
-```python
-# Default LLMaps attribution
-m = Map(center=[10.0, 50.0], zoom=5)
-# Result: "© OpenStreetMap contributors | © LLMaps"
-```
-
-You can customize or disable the attribution:
-
-```python
-# Custom attribution
-m = Map(center=[10.0, 50.0], zoom=5, custom_attribution='© My Company')
-
-# Disable custom attribution
-m = Map(center=[10.0, 50.0], zoom=5, custom_attribution=None)
-# Result: "© OpenStreetMap contributors"
-```
-
 ## Examples
 
 Explore interactive maps showcasing key features and capabilities: [**LLMaps Examples Gallery**](https://greadr71.github.io/LLMaps/examples/)
