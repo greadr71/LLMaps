@@ -115,20 +115,15 @@ m = Map(center=[10.0, 50.0], zoom=5, custom_attribution=None)
 
 ## Examples
 
-| Example | Description |
-|---------|-------------|
-| [01_quick_start.py](examples/01_quick_start.py) | Circle layer, legend, popup, controls; synthetic points. |
-| [02_fill_layer.py](examples/02_fill_layer.py) | Fill layer (polygons). |
-| [03_h3_heatmap.py](examples/03_h3_heatmap.py) | H3 hexagon heatmap, embedded mode, auto_extent. |
-| [04_comparison.py](examples/04_comparison.py) | Before/after comparison with slider; embedded. |
+Explore interactive maps showcasing key features and capabilities: [**LLMaps Examples Gallery**](https://greadr71.github.io/LLMaps/examples/)
 
-Run an example:
+Real-world examples with source code:
 
-```bash
-cd examples
-python 01_quick_start.py
-# Opens or writes 01_quick_start.html
-```
+| Example | Features | Data |
+|---------|----------|------|
+| [Paris Cafes & Restaurants](examples/cafes/) | CircleLayer, Search, FeatureSearch, BasemapSwitcher, Popup, Sidebar | OpenStreetMap Overpass |
+| [World Population](examples/world_population/) | FillLayer, feature-state styling, Jenks classification, color ramps | Natural Earth |
+| [Earthquakes](examples/earthquakes/) | H3Layer, animated H3 heatmap, temporal filtering | USGS Earthquake API |
 
 ## Built With
 
