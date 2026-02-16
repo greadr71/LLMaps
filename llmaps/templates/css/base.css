@@ -634,15 +634,11 @@ body {
 }
 .maplibregl-popup-content td:last-child {
   word-break: break-word;
-}
-
-@media (max-width: 768px) {
+}@media (max-width: 768px) {
   .llmaps-sidebar {
     width: 100% !important;
   }
-}
-
-/* FeatureSearch — search within map data */
+}/* FeatureSearch — search within map data */
 .llmaps-feature-search {
   position: absolute;
   z-index: 15;
@@ -670,9 +666,7 @@ body {
 .llmaps-feature-search-input:focus {
   border-color: rgba(0, 0, 0, 0.25);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
-}
-
-.llmaps-feature-search-dropdown {
+}.llmaps-feature-search-dropdown {
   display: none;
   position: absolute;
   top: calc(100% + 4px);

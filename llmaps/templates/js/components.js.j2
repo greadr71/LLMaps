@@ -140,18 +140,25 @@
             if (!g || !g.coordinates) return null;
             const c = g.coordinates;
             if (g.type === "Point") return c;
+            if (g.type === "LineString" || g.type === "MultiPoint") return c[0];
+            if (g.type === "Polygon") return c[0][0];
+            if (g.type === "MultiLineString") return c[0][0];
+            if (g.type === "MultiPolygon") return c[0][0][0];
             if (c[0] != null && typeof c[0] === "number") return c;
-            return c[0] || null;
+            if (Array.isArray(c[0]) && c[0].length >= 2 && typeof c[0][0] === "number") return c[0];
+            return null;
           }
 
           function addPopupToMap(m) {
             if (!m || !m.getLayer) return;
 
+            const hasFieldsByLayer = Object.keys(fieldsByLayer).length > 0;
             if (popupTrigger === "hover") {
               var hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
               layers.forEach(layerCfg => {
                 const layerId = layerCfg.id;
                 if (!m.getLayer(layerId)) return;
+                if (hasFieldsByLayer && !fieldsByLayer[layerId]) return;
                 m.on("mousemove", layerId, function(ev) {
                   const feat = ev.features && ev.features[0];
                   if (!feat) return;
@@ -167,8 +174,13 @@
               });
             } else {
               // Single map click + queryRenderedFeatures + layer type priority (points over polygons)
+              // When fields_by_layer is set, only layers listed there get popup (e.g. no popup on point layer)
               const popupLayerIds = layers
-                .filter(function(l) { return !sidebarLayerIds.has(l.id) && m.getLayer(l.id); })
+                .filter(function(l) {
+                  if (sidebarLayerIds.has(l.id) || !m.getLayer(l.id)) return false;
+                  if (hasFieldsByLayer && !fieldsByLayer[l.id]) return false;
+                  return true;
+                })
                 .map(function(l) { return l.id; });
               const typePriority = { circle: 0, symbol: 1, line: 2, fill: 3 };
               var currentPopup = null;
@@ -187,10 +199,8 @@
                 });
                 var feat = features[0];
                 var layerId = feat.layer.id;
-                var coords = lngLat(feat);
-                if (!coords) return;
                 currentPopup = new maplibregl.Popup()
-                  .setLngLat(coords)
+                  .setLngLat(ev.lngLat)
                   .setHTML(popupContent(feat, layerId))
                   .addTo(m);
               });
