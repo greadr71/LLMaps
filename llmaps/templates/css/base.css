@@ -19,6 +19,7 @@ body {
 #llmaps-comparison-container {
   position: absolute;
   inset: 0;
+  user-select: none;
 }
 .llmaps-compare-map {
   position: absolute;

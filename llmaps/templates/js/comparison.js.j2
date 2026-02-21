@@ -10,8 +10,16 @@
         ].join("");
 
         const embedded = config.embedded_sources || {};
-        const beforeMap = createSingleMap("llmaps-compare-before", config, leftIds, embedded);
-        const afterMap = createSingleMap("llmaps-compare-after", config, rightIds, embedded);
+        const allConfigLayerIds = (config.layers || []).map(function(l) { return l.id; });
+        function withOutlineLayers(ids) {
+          var result = ids.slice();
+          ids.forEach(function(id) {
+            if (allConfigLayerIds.indexOf(id + "-outline") !== -1) result.push(id + "-outline");
+          });
+          return result;
+        }
+        const beforeMap = createSingleMap("llmaps-compare-before", config, withOutlineLayers(leftIds), embedded);
+        const afterMap = createSingleMap("llmaps-compare-after", config, withOutlineLayers(rightIds), embedded);
 
         if (typeof maplibregl.Compare !== "function") {
           console.warn("maplibre-gl-compare not loaded; comparison uses basic sync only.");
@@ -27,7 +35,7 @@
         }
 
         var compare = new maplibregl.Compare(beforeMap, afterMap, "#llmaps-comparison-container", {
-          mousemove: true,
+          mousemove: false,
           orientation: "vertical"
         });
 

@@ -184,11 +184,46 @@
                 .map(function(l) { return l.id; });
               const typePriority = { circle: 0, symbol: 1, line: 2, fill: 3 };
               var currentPopup = null;
+              var selectedFeature = null;
+              var _prevHl = null; // { map, source, id }
+              function _hlClear() {
+                if (_prevHl) {
+                  _prevHl.map.removeFeatureState({ source: _prevHl.source, id: _prevHl.id }, 'selected');
+                  _prevHl = null;
+                }
+              }
+              function _hlEnsureLayer(m, sourceId, parentLayerType, sourceLayer) {
+                var hlId = 'llmaps-hl-' + sourceId;
+                if (m.getLayer(hlId)) return;
+                var isPoint = parentLayerType === 'circle' || parentLayerType === 'symbol';
+                var sel = ['boolean', ['feature-state', 'selected'], false];
+                var spec = isPoint
+                  ? { id: hlId, type: 'circle', source: sourceId,
+                      paint: { 'circle-radius': ['case', sel, 10, 0],
+                               'circle-color': 'transparent',
+                               'circle-stroke-color': '#111111',
+                               'circle-stroke-width': ['case', sel, 2.5, 0] } }
+                  : { id: hlId, type: 'line', source: sourceId,
+                      paint: { 'line-color': '#111111',
+                               'line-width': ['case', sel, 3.5, 0] } };
+                if (sourceLayer) spec['source-layer'] = sourceLayer;
+                m.addLayer(spec);
+              }
+              function _hlSet(m, feat) {
+                _hlClear();
+                if (!feat || feat.id == null) return;
+                var sourceId = feat.source;
+                _hlEnsureLayer(m, sourceId, feat.layer && feat.layer.type, feat.sourceLayer);
+                m.setFeatureState({ source: sourceId, id: feat.id }, { selected: true });
+                _prevHl = { map: m, source: sourceId, id: feat.id };
+              }
               m.on("click", function(ev) {
                 if (currentPopup) {
                   currentPopup.remove();
                   currentPopup = null;
                 }
+                _hlSet(m, null);
+                selectedFeature = null;
                 if (!popupLayerIds.length) return;
                 var features = m.queryRenderedFeatures(ev.point, { layers: popupLayerIds });
                 if (!features.length) return;
@@ -199,6 +234,8 @@
                 });
                 var feat = features[0];
                 var layerId = feat.layer.id;
+                _hlSet(m, feat);
+                selectedFeature = feat;
                 currentPopup = new maplibregl.Popup()
                   .setLngLat(ev.lngLat)
                   .setHTML(popupContent(feat, layerId))
