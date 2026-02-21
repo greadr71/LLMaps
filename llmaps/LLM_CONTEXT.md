@@ -62,7 +62,7 @@ FillLayer(id, source, fill_color="#3182bd", fill_opacity=0.6, stroke_color="#085
 # fill_color/fill_opacity accept MapLibre expressions (e.g. feature-state). feature_state: {"active": True, "color": "POP_EST"} auto-sets state from GeoJSON (no custom JS). stroke_width>1 adds outline layer.
 H3Layer(id, source, h3_column=None, resolution=8, aggregation="count", property_field="value",
         colors=["#ffffcc", "#800026"], opacity=0.7, stroke_width=0.0, stroke_color=None)
-# aggregation: "count"|"sum"|"mean"|"median". Optional: pip install llmaps[h3]
+# aggregation: "count"|"sum"|"mean"|"median"
 VectorTileLayer(id, source, source_layer="", geometry_type="circle", dynamic_stats=False,
                 property_field=None, colors=["#e0d4f7", "#6829c5"], radius_range=None, opacity=0.8)
 # geometry_type: "circle"|"fill"|"line". source must be VectorTileSource.

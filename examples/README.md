@@ -166,15 +166,8 @@ All examples use open data:
 
 ## Requirements
 
-Install llmaps with all extras:
-
 ```bash
-pip install llmaps[h3]
-```
-
-For world_population example, you also need:
-```bash
-pip install geopandas
+pip install llmaps
 ```
 
 ---

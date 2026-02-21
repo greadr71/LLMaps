@@ -13,7 +13,6 @@ Encapsulates best practices for interactive web map development behind a predict
 
 - [Features](#features)
 - [Installation](#installation)
-- [Cursor skill](#cursor-skill)
 - [Quick Start](#quick-start)
 - [Examples](#examples)
 - [Built With](#built-with)
@@ -52,30 +51,18 @@ Encapsulates best practices for interactive web map development behind a predict
 pip install llmaps
 ```
 
-Optional extras:
+**Cursor ([cursor.com](https://cursor.com/))** — copy the repo's `cursor-skill` folder into Cursor's skills directory so the AI has full context when generating map code.
 
-```bash
-pip install llmaps[h3]           # H3 aggregation (h3, geopandas)
-pip install llmaps[compression]  # Geobuf + Gzip for embedded data
-pip install llmaps[all]          # h3 + compression
-```
+- **Linux / macOS:** `~/.cursor/skills/llmaps/SKILL.md` (create `~/.cursor/skills` and `llmaps` if needed).
+- **Windows:** `%USERPROFILE%\.cursor\skills\llmaps\SKILL.md` (e.g. `C:\Users\<YourName>\.cursor\skills\llmaps\`). Create the folders if needed.
 
-**Context for LLM:** To give your LLM the right context when generating map code, run this in your project directory once. Then in chat use `@llmaps_context.md`:
+Cursor picks up the skill on next launch. If you use Cursor with this skill, you can skip the step below.
+
+**Context for other LLM chats:** Run once in your project directory, then attach `llmaps_context.md` to the chat (e.g. `@llmaps_context.md` in Cursor):
 
 ```bash
 python -c "import llmaps; open('llmaps_context.md','w').write(llmaps.get_llm_context())"
 ```
-
-## Cursor skill
-
-For [Cursor](https://cursor.com/) users, an Agent Skill is provided so the AI has full context when generating or debugging map code (both when using llmaps via pip and when contributing to the repo). Install by copying the skill folder into Cursor's skills directory.
-
-**Manual install — where to copy (by OS):**
-
-- **Linux / macOS:** Copy the `cursor-skill` folder so that the result is `~/.cursor/skills/llmaps/SKILL.md`. Create `~/.cursor/skills` and the `llmaps` folder if they do not exist.
-- **Windows:** Copy the `cursor-skill` folder so that the result is `%USERPROFILE%\.cursor\skills\llmaps\SKILL.md` (e.g. `C:\Users\<YourName>\.cursor\skills\llmaps\SKILL.md`). Create the `.cursor\skills` and `llmaps` folders if they do not exist.
-
-After copying, Cursor will pick up the skill (on next launch or when opening a chat).
 
 ## Quick Start
 

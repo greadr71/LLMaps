@@ -5,7 +5,6 @@ Build a heatmap-style visualization by aggregating points into H3 hexagons. Best
 ## Requirements
 
 - Point data (GeoJSON, CSV, or Parquet with geometry).
-- Optional: `pip install llmaps[h3]` for H3 aggregation (h3, geopandas). Without it, H3Layer will fail at runtime when used with point data that needs aggregation.
 
 ## Steps
 

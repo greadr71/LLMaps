@@ -5,10 +5,10 @@ Thank you for considering contributing to LLMaps.
 ## Development setup
 
 1. Clone the repository and create a virtual environment (or use conda).
-2. Install in editable mode with optional dependencies:
+2. Install in editable mode:
 
    ```bash
-   pip install -e ".[all]"
+   pip install -e .
    ```
 
 3. Run tests (when available):

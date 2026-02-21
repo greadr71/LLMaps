@@ -50,13 +50,13 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 
 ### Running and developing
 
-- Install: `pip install -e ".[all]"` from repo root (optional: `.[h3]` etc.).
+- Install: `pip install -e .` from repo root.
 - Examples: from an example dir (e.g. `examples/cafes/`), run `python prepare_data.py` then `python build_map.py`; open `map.html`.
 - Tests: `pytest tests/` (currently only `.gitkeep` in tests).
 
 ### Tech stack
 
-Python ≥3.10, Hatch, Jinja2, pandas, geopandas, shapely, geobuf; optional h3, jenkspy, matplotlib. Frontend: MapLibre GL JS via CDN in `llmaps/templates/`; no Node in repo.
+Python ≥3.10, Hatch, Jinja2, pandas, geopandas, shapely, geobuf, h3, jenkspy, matplotlib. Frontend: MapLibre GL JS via CDN in `llmaps/templates/`; no Node in repo.
 
 ### References
 

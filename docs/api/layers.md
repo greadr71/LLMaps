@@ -84,8 +84,6 @@ FillLayer(
 
 Hexagonal grid using H3 indices. Points are aggregated into H3 cells; fill color can be driven by a value field (count/sum/mean/median). Best for large point datasets (&gt;100k points).
 
-**Optional dependency:** `pip install llmaps[h3]` (h3, geopandas).
-
 ```python
 from llmaps.layers import H3Layer
 

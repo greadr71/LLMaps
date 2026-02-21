@@ -11,7 +11,7 @@ Generate a single HTML file that contains all data inline so the map works when 
 ## Steps
 
 1. **Use the default `Map()`** (embedded is enabled by default) so that data from file-based sources (e.g. `FileSource`) is inlined in the HTML.
-2. **Optional:** Keep `use_compression=True` (default) to compress GeoJSON with Geobuf + Gzip and reduce file size (requires optional dependency: `pip install llmaps[compression]` or `llmaps[all]`).
+2. **Optional:** Keep `use_compression=True` (default) to compress GeoJSON with Geobuf + Gzip and reduce file size.
 3. **Use `FileSource`** for layers that should be embedded; `ApiSource` and `VectorTileSource` are not inlined (they are loaded by the frontend from URL/tiles).
 4. **Save** with `save(path)` or get the string with `to_html()`.
 
