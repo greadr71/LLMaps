@@ -111,16 +111,17 @@ Real-world examples with source code:
 
 ## Comparison with Alternatives
 
-| Criterion | Kepler.gl | Folium / ipyleaflet | Custom MapLibre/Leaflet | **LLMaps** |
-|-----------|-----------|---------------------|--------------------------|------------|
-| **Ready-made components** | Limited by UI | Few map primitives | None | Full set: layers, legend, popup, sidebar, search, controls |
-| **LLM-friendly** | No | Partial (verbose) | Depends on custom code | Yes: keyword index, clear API, stable contracts |
-| **H3 / aggregation** | Yes | No (manual) | Manual | Yes (H3Layer) |
-| **Embedded (file://)** | No | Often needs server | Manual | Yes (`embedded=True`) |
-| **Comparison (before/after)** | No | No | Manual | Yes (`enable_comparison`) |
-| **Single HTML output** | No | Possible | Manual | Yes (`save` / `to_html`) |
-| **Customization** | Limited by UI | Good | Full | Full (config + templates + custom JS/CSS) |
-| **No backend** | No | Often | Possible | Yes (embedded mode) |
+| **Criterion** | **Kepler.gl** | **Folium / ipyleaflet** | **Custom MapLibre/Leaflet** | **LLMaps** |
+|---------------|---------------|-------------------------|-----------------------------|------------|
+| **Ready-made components** | ⚠️ Limited by UI | ⚠️ Few primitives | ❌ | ✅ Full set: layers, legend, popup, sidebar, search, controls |
+| **LLM-friendly** | ❌ | ⚠️ Partial | ⚠️ Depends on code | ✅ Clear API, stable contracts |
+| **H3 / aggregation** | ✅ | ❌ | ⚠️ Manual | ✅ H3Layer |
+| **Embedded (file://)** | ❌ | ⚠️ Often needs server | ⚠️ Manual | ✅ `embedded=True` |
+| **Comparison (before/after)** | ❌ | ❌ | ⚠️ Manual | ✅ `enable_comparison` |
+| **Single HTML output** | ❌ | ✅ Possible | ⚠️ Manual | ✅ `save` / `to_html` |
+| **Customization** | ⚠️ Limited | ✅ Good | ✅ Full | ✅ Full (config + templates + custom JS/CSS) |
+| **Extensibility** | ⚠️ Limited by UI | ✅ Good (plugins, custom HTML/JS) | ✅ Full | ✅ Full (custom JS/CSS/HTML, `embed_data()`, templates) |
+| **No backend** | ❌ | ✅ Often | ⚠️ Possible | ✅ Embedded mode |
 
 **When to use LLMaps:** You want a single Python API to produce a standalone interactive map (especially with embedded data), with minimal boilerplate and good support for LLM-generated code.
 
