@@ -51,12 +51,14 @@ Encapsulates best practices for interactive web map development behind a predict
 pip install llmaps
 ```
 
-**Cursor ([cursor.com](https://cursor.com/))** — copy the repo's `cursor-skill` folder into Cursor's skills directory so the AI has full context when generating map code.
+**Cursor / Claude Code** — both support the [Agent Skills](https://agentskills.io) standard. Copy the repo's `cursor-skill` folder so the AI has full context when generating map code:
 
-- **Linux / macOS:** `~/.cursor/skills/llmaps/SKILL.md` (create `~/.cursor/skills` and `llmaps` if needed).
-- **Windows:** `%USERPROFILE%\.cursor\skills\llmaps\SKILL.md` (e.g. `C:\Users\<YourName>\.cursor\skills\llmaps\`). Create the folders if needed.
+| Tool | Skills path |
+|------|-------------|
+| Cursor | `~/.cursor/skills/llmaps/SKILL.md` |
+| Claude Code | `~/.claude/skills/llmaps/SKILL.md` |
 
-Cursor picks up the skill on next launch. If you use Cursor with this skill, you can skip the step below.
+On Windows use `%USERPROFILE%\` instead of `~/`. Create the folders if needed. The skill is picked up automatically on next launch. If you use either tool with this skill, you can skip the step below.
 
 **Context for other LLM chats:** Run once in your project directory, then attach `llmaps_context.md` to the chat (e.g. `@llmaps_context.md` in Cursor):
 
