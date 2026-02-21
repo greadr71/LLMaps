@@ -123,3 +123,27 @@
 
         return map;
       }
+
+      /**
+       * Safely destroy a map instance and release its WebGL context.
+       * Call before removing the map container from DOM when using lazy_init
+       * or when evicting due to max_active_maps. Idempotent if map already removed.
+       */
+      function destroySingleMap(map) {
+        if (!map) return;
+        try {
+          if (typeof map.remove === "function") map.remove();
+        } catch (e) {
+          if (typeof console !== "undefined" && console.warn) console.warn("LLMaps: destroySingleMap", e);
+        }
+        map._layersLoaded = false;
+        map._layersLoading = false;
+        if (window._llmapsReadyMap === map) {
+          window._llmapsReadyMap = null;
+          window._llmapsLayersReady = false;
+        }
+        if (window.llmaps_maps && Array.isArray(window.llmaps_maps)) {
+          window.llmaps_maps = window.llmaps_maps.filter(function(m) { return m !== map; });
+        }
+        if (window.llmaps_map === map) window.llmaps_map = null;
+      }

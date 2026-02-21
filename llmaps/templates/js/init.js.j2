@@ -1,28 +1,45 @@
-{# Init: createMap and DOMContentLoaded #}
+{# Init: createMap and DOMContentLoaded; lazy_init uses lifecycle observer #}
       function createMap() {
         const MAP_CONFIG = readConfig();
         const root = document.getElementById("map-root");
+        if (!root) return;
+
         const visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
 
         if (MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers) {
           const { mapLeft, mapRight } = setupComparison(root, MAP_CONFIG);
-          window.llmaps_maps = [mapLeft, mapRight];  // Store for legend access
-          if (visibilityIds.length && typeof initVisibilityOptimization === "function")
-            initVisibilityOptimization([mapLeft, mapRight], visibilityIds);
-          addComponents(MAP_CONFIG, [mapLeft, mapRight]);
-          return;
+          return { mapLeft: mapLeft, mapRight: mapRight };
         }
 
         const map = createSingleMap("map-root", MAP_CONFIG, null, MAP_CONFIG.embedded_sources);
-        window.llmaps_map = map;  // Store for legend access
-        window.llmaps_maps = [map];  // Unified access
+        window.llmaps_map = map;
+        window.llmaps_maps = [map];
         if (visibilityIds.length && typeof initVisibilityOptimization === "function")
           initVisibilityOptimization(map, visibilityIds);
         addComponents(MAP_CONFIG, map);
+        return map;
+      }
+
+      function initMap() {
+        const MAP_CONFIG = readConfig();
+        var instanceCount = Math.max(1, MAP_CONFIG.map_instance_count || 1);
+        var useLifecycle = MAP_CONFIG.lazy_init && instanceCount >= 3 && typeof initLifecycleWithObserver === "function";
+        if (useLifecycle) {
+          initLifecycleWithObserver("map-root", MAP_CONFIG, createMap);
+          return;
+        }
+        var result = createMap();
+        if (result && (result.mapLeft || result.mapRight)) {
+          window.llmaps_maps = [result.mapLeft, result.mapRight];
+          var visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+          if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+            initVisibilityOptimization(window.llmaps_maps, visibilityIds);
+          addComponents(MAP_CONFIG, window.llmaps_maps);
+        }
       }
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", createMap);
+        document.addEventListener("DOMContentLoaded", initMap);
       } else {
-        createMap();
+        initMap();
       }

@@ -13,6 +13,7 @@ Encapsulates best practices for interactive web map development behind a predict
 
 - [Features](#features)
 - [Installation](#installation)
+- [Cursor skill](#cursor-skill)
 - [Quick Start](#quick-start)
 - [Examples](#examples)
 - [Built With](#built-with)
@@ -64,6 +65,17 @@ pip install llmaps[all]          # h3 + compression
 ```bash
 python -c "import llmaps; open('llmaps_context.md','w').write(llmaps.get_llm_context())"
 ```
+
+## Cursor skill
+
+For [Cursor](https://cursor.com/) users, an Agent Skill is provided so the AI has full context when generating or debugging map code (both when using llmaps via pip and when contributing to the repo). Install by copying the skill folder into Cursor's skills directory.
+
+**Manual install — where to copy (by OS):**
+
+- **Linux / macOS:** Copy the `cursor-skill` folder so that the result is `~/.cursor/skills/llmaps/SKILL.md`. Create `~/.cursor/skills` and the `llmaps` folder if they do not exist.
+- **Windows:** Copy the `cursor-skill` folder so that the result is `%USERPROFILE%\.cursor\skills\llmaps\SKILL.md` (e.g. `C:\Users\<YourName>\.cursor\skills\llmaps\SKILL.md`). Create the `.cursor\skills` and `llmaps` folders if they do not exist.
+
+After copying, Cursor will pick up the skill (on next launch or when opening a chat).
 
 ## Quick Start
 

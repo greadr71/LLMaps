@@ -46,6 +46,19 @@ class Map:
         Default is ``"en-US"`` (uses commas as thousand separators: 1,000,000).
         Use ``"ru-RU"`` for Russian format (spaces as separators: 1 000 000).
         Supports any valid BCP 47 language tag.
+    lazy_init:
+        If ``True`` and there are 3+ map instances on the page, the map is created
+        only when its container enters the viewport and is disposed when it leaves,
+        to avoid exceeding the browser's WebGL context limit.
+    max_active_maps:
+        Maximum number of map instances to keep active at once when using lazy_init.
+        Oldest (least recently used) maps are disposed when the limit is exceeded.
+        Default 8; browsers typically allow about 16 WebGL contexts per page.
+    map_instance_count:
+        Total number of map instances on this page. Used to decide whether to enable
+        lifecycle (lazy init + dispose): only when map_instance_count >= 3.
+        Default: 2 for comparison mode, 1 otherwise. Set to 3 or more when building
+        a page with many map widgets so that lazy_init takes effect.
     """
 
     center: Sequence[float]
@@ -57,6 +70,9 @@ class Map:
     use_compression: bool = True
     custom_attribution: Optional[str] = '© <a href="https://github.com/greadr71/LLMaps" target="_blank">LLMaps</a>'
     locale: str = "en-US"
+    lazy_init: bool = False
+    max_active_maps: int = 8
+    map_instance_count: Optional[int] = None
 
     _layers: List[BaseLayer] = field(default_factory=list, init=False, repr=False)
     _components: List[BaseComponent] = field(default_factory=list, init=False, repr=False)
@@ -236,6 +252,13 @@ class Map:
         out["components"] = [component.to_dict() for component in self._components]
         out["embedded"] = self.embedded
         out["use_compression"] = self.use_compression
+        out["lazy_init"] = self.lazy_init
+        out["max_active_maps"] = self.max_active_maps
+        out["map_instance_count"] = (
+            self.map_instance_count
+            if self.map_instance_count is not None
+            else (2 if self._comparison else 1)
+        )
         # Collect unique sources from layers for frontend
         source_ids = set()
         for layer in self._layers:

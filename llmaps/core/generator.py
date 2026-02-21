@@ -33,6 +33,7 @@ _JS_TEMPLATES = (
     "js/layers.js.j2",
     "js/comparison.js.j2",
     "js/components.js.j2",
+    "js/lifecycle.js.j2",
     "js/init.js.j2",
 )
 

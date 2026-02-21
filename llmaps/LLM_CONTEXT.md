@@ -49,8 +49,9 @@ m.save("my_map.html")
 
 ```python
 # Map — center [lon, lat], zoom 0–22. tiles: "osm", "carto-light", "carto-dark", "yandex", "2gis"
-Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=True, use_compression=True, locale="en-US")
+Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=True, use_compression=True, locale="en-US", lazy_init=False, max_active_maps=8, map_instance_count=None)
 # locale: "en-US" (commas: 1,000,000), "ru-RU" (spaces: 1 000 000), or any BCP 47 tag. Formats numbers in Popup/Sidebar.
+# lazy_init + map_instance_count>=3: use when many maps on one page to avoid WebGL context limit (lazy create/dispose, LRU cap).
 # .add_layer(layer) .add_component(comp) .auto_extent(sources=None, padding=0.1) .save(path) .to_html()
 # .enable_comparison(left_layers=[], right_layers=[])  # before/after slider
 # .add_custom_js(js) .add_custom_css(css) .add_custom_html(html) .embed_data(key, data)

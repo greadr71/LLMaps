@@ -1,0 +1,99 @@
+{# Lifecycle: lazy-init, max_active_maps, IntersectionObserver, LRU eviction #}
+      window._llmapsLifecycle = {
+        maxActiveMaps: 8,
+        active: [],
+        lastUsed: null,
+        observers: null
+      };
+
+      function _llmapsLifecycleTouch(entry) {
+        entry.lastUsed = Date.now();
+      }
+
+      function _llmapsLifecycleEvictLRU() {
+        const L = window._llmapsLifecycle;
+        if (L.active.length <= L.maxActiveMaps) return;
+        L.active.sort(function(a, b) { return (a.lastUsed || 0) - (b.lastUsed || 0); });
+        while (L.active.length > L.maxActiveMaps && L.active.length > 0) {
+          const entry = L.active.shift();
+          if (typeof entry.dispose === "function") entry.dispose();
+        }
+      }
+
+      function _llmapsLifecycleRemoveEntry(entry) {
+        window._llmapsLifecycle.active = window._llmapsLifecycle.active.filter(function(e) { return e !== entry; });
+      }
+
+      function initLifecycleWithObserver(rootId, MAP_CONFIG, createMapOnce) {
+        const root = document.getElementById(rootId);
+        if (!root) return;
+        const maxActiveMaps = Math.max(1, Math.min(16, (MAP_CONFIG.max_active_maps || 8)));
+        window._llmapsLifecycle.maxActiveMaps = maxActiveMaps;
+        window._llmapsLifecycle.lastUsed = window._llmapsLifecycle.lastUsed || Date.now();
+
+        const isComparison = MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers;
+        const visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+
+        function disposeCurrent() {
+          const L = window._llmapsLifecycle;
+          const entry = L.active.find(function(e) { return e.rootId === rootId; });
+          if (!entry) return;
+          if (typeof entry.dispose === "function") entry.dispose();
+          _llmapsLifecycleRemoveEntry(entry);
+        }
+
+        function ensureMap() {
+          const L = window._llmapsLifecycle;
+          var entry = L.active.find(function(e) { return e.rootId === rootId; });
+          if (entry) {
+            _llmapsLifecycleTouch(entry);
+            return;
+          }
+          _llmapsLifecycleEvictLRU();
+          var result = createMapOnce();
+          entry = { rootId: rootId, rootElement: root, lastUsed: Date.now() };
+          if (isComparison && result && (result.mapLeft || result.mapRight)) {
+            entry.maps = [result.mapLeft, result.mapRight].filter(Boolean);
+            window.llmaps_maps = entry.maps;
+            window.llmaps_map = entry.maps[0] || null;
+            if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+              initVisibilityOptimization(entry.maps, visibilityIds);
+            addComponents(MAP_CONFIG, entry.maps);
+            entry.dispose = function() {
+              if (entry.maps) entry.maps.forEach(function(m) { if (typeof destroySingleMap === "function") destroySingleMap(m); });
+              entry.maps = null;
+              if (entry.rootElement) { entry.rootElement.id = rootId; entry.rootElement.innerHTML = ""; }
+            };
+          } else {
+            var map = result;
+            entry.map = map;
+            window.llmaps_map = map;
+            window.llmaps_maps = [map];
+            if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+              initVisibilityOptimization(map, visibilityIds);
+            addComponents(MAP_CONFIG, map);
+            entry.dispose = function() {
+              if (entry.map && typeof destroySingleMap === "function") destroySingleMap(entry.map);
+              entry.map = null;
+            };
+          }
+          L.active.push(entry);
+        }
+
+        var observer = new IntersectionObserver(
+          function(entries) {
+            entries.forEach(function(ev) {
+              if (ev.target !== root) return;
+              if (ev.isIntersecting) ensureMap(); else disposeCurrent();
+            });
+          },
+          { root: null, rootMargin: "0px", threshold: 0.01 }
+        );
+        observer.observe(root);
+        if (window._llmapsLifecycle.observers) window._llmapsLifecycle.observers.push(observer); else window._llmapsLifecycle.observers = [observer];
+
+        if (root.getBoundingClientRect && root.getBoundingClientRect().height > 0 && root.getBoundingClientRect().width > 0) {
+          var rect = root.getBoundingClientRect();
+          if (rect.top < (window.innerHeight || document.documentElement.clientHeight) && rect.bottom > 0) ensureMap();
+        }
+      }

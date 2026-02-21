@@ -15,6 +15,9 @@ Map(
     embedded: bool = True,
     use_compression: bool = True,
     locale: str = "en-US",
+    lazy_init: bool = False,
+    max_active_maps: int = 8,
+    map_instance_count: Optional[int] = None,
 )
 ```
 
@@ -27,6 +30,18 @@ Map(
 | `embedded` | bool | True | If True, data is inlined in HTML (works via `file://`). |
 | `use_compression` | bool | True | If True and embedded, GeoJSON is compressed (Geobuf + Gzip). |
 | `locale` | str | `"en-US"` | Locale for number formatting in Popup and Sidebar. Use `"ru-RU"` for Russian (spaces as thousand separators), or any BCP 47 language tag. |
+| `lazy_init` | bool | False | If True and `map_instance_count` ≥ 3, maps are created when their container enters the viewport and disposed when it leaves, avoiding "Too many active WebGL contexts". |
+| `max_active_maps` | int | 8 | When lazy_init is active, maximum number of map instances kept at once; oldest (LRU) are disposed when the limit is exceeded. |
+| `map_instance_count` | int or None | None | Total map instances on the page. Default: 2 for comparison mode, 1 otherwise. Set to 3+ with `lazy_init=True` to enable lifecycle management. |
+
+### Multiple maps on one page (WebGL)
+
+Browsers limit the number of active WebGL contexts per page (often ~16). If you have 3 or more map instances on one page, set `lazy_init=True` and `map_instance_count` to the total number of maps. Maps will be created when their container enters the viewport and disposed when it leaves; at most `max_active_maps` instances stay active (oldest are evicted).
+
+```python
+# Dashboard with 5 map widgets — enable lifecycle so WebGL limit is not exceeded
+m = Map(center=[10, 50], zoom=4, lazy_init=True, map_instance_count=5)
+```
 
 ## Methods
 
