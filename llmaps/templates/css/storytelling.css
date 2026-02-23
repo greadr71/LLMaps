@@ -1,0 +1,179 @@
+/* LLMaps Storytelling / Scrollytelling component styles */
+
+/* ── Main wrapper: narrative + map side by side ── */
+.llmaps-story-wrapper {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Narrative panel (scrollable text) ── */
+.llmaps-story-narrative {
+  flex: 0 0 var(--story-width, 400px);
+  height: 100vh;
+  overflow-y: auto;
+  background: #fff;
+  z-index: 2;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
+
+.llmaps-story-narrative.position-right {
+  order: 2;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Scene cards ── */
+.story-step {
+  min-height: 80vh;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0.25;
+  transition: opacity 0.5s ease;
+  scroll-snap-align: start;
+}
+
+.story-step.is-active {
+  opacity: 1;
+}
+
+.story-step:first-child {
+  padding-top: 4rem;
+}
+
+.story-step:last-child {
+  min-height: 90vh;
+}
+
+.story-step h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #1a1a1a;
+}
+
+.story-step .step-content {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #444;
+}
+
+.story-step .step-content p {
+  margin: 0 0 0.8rem 0;
+}
+
+.story-step .step-content strong {
+  color: #1a1a1a;
+}
+
+/* ── Map container ── */
+.llmaps-story-map {
+  flex: 1;
+  height: 100vh;
+  position: relative;
+}
+
+/* Override base #map-root when inside story wrapper */
+.llmaps-story-map #map-root {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Navigation dots ── */
+.llmaps-story-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.llmaps-story-nav.nav-right {
+  right: 16px;
+}
+
+.llmaps-story-nav.nav-left {
+  left: 16px;
+}
+
+.nav-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-dot:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.3);
+}
+
+.nav-dot.is-active {
+  background: #333;
+  border-color: #333;
+  transform: scale(1.4);
+}
+
+/* Tooltip on hover */
+.nav-tooltip {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff;
+  color: #333;
+  padding: 4px 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.nav-right .nav-tooltip {
+  right: calc(100% + 10px);
+}
+
+.nav-left .nav-tooltip {
+  left: calc(100% + 10px);
+}
+
+.nav-dot:hover .nav-tooltip {
+  display: block;
+}
+
+/* ── Responsive: collapse narrative on small screens ── */
+@media (max-width: 768px) {
+  .llmaps-story-wrapper {
+    flex-direction: column;
+  }
+  .llmaps-story-narrative {
+    flex: none;
+    width: 100% !important;
+    height: 40vh;
+    order: 2;
+  }
+  .llmaps-story-map {
+    height: 60vh;
+  }
+  .story-step {
+    min-height: 40vh;
+    padding: 1.5rem 1.2rem;
+  }
+  .llmaps-story-nav {
+    display: none;
+  }
+}

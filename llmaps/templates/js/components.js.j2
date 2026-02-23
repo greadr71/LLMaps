@@ -7,8 +7,13 @@
         // Get locale from config, default to en-US
         const locale = config.locale || "en-US";
 
-        function formatValue(val) {
+        function formatValue(val, fieldName) {
           if (val == null) return "";
+
+          // Special case: year field - never format with thousand separators
+          if (fieldName === 'year' && typeof val === 'number') {
+            return String(Math.round(val));
+          }
 
           // If value is a number, format with locale-aware separators
           if (typeof val === 'number') {
@@ -24,6 +29,10 @@
 
             // Ensure parsing succeeded and the string is not empty
             if (!isNaN(parsed) && trimmed !== '' && /^-?\d+\.?\d*$/.test(trimmed)) {
+              // Check if it's a year field or year-like value (4-digit integer 1900-2100)
+              if (fieldName === 'year' || (Number.isInteger(parsed) && parsed >= 1900 && parsed <= 2100 && trimmed.length === 4)) {
+                return String(Math.round(parsed));
+              }
               return parsed.toLocaleString(locale, {
                 maximumFractionDigits: 2
               });
@@ -130,7 +139,7 @@
             const rows = fields.map(f => {
               const label = fieldLabels[f] || f;
               const val = props[f];
-              return "<tr><td>" + label + "</td><td>" + formatValue(val) + "</td></tr>";
+              return "<tr><td>" + label + "</td><td>" + formatValue(val, f) + "</td></tr>";
             });
             return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
           }
@@ -240,6 +249,12 @@
                   .setLngLat(ev.lngLat)
                   .setHTML(popupContent(feat, layerId))
                   .addTo(m);
+                // Clear highlight when popup is closed manually
+                currentPopup.on('close', function() {
+                  _hlClear();
+                  currentPopup = null;
+                  selectedFeature = null;
+                });
               });
               m.getCanvas().style.cursor = "pointer";
             }
@@ -248,6 +263,9 @@
           window.llmapsOnLayersReady(function(m) {
             addPopupToMap(m);
           });
+          
+          // Export for external map instances (e.g., comparison maps created via custom JS)
+          window.llmapsAddPopupToMap = addPopupToMap;
         }
 
         // Sidebar
@@ -295,7 +313,7 @@
                 if (typeof val === "string" && val.trim() === "") return;
               }
               var linkHtml = _sbLinkField(f, val);
-              var valueHtml = linkHtml !== false ? linkHtml : _sbEsc(formatValue(val));
+              var valueHtml = linkHtml !== false ? linkHtml : _sbEsc(formatValue(val, f));
               html += '<div class="llmaps-sidebar-field">'
                 + '<span class="llmaps-sidebar-field-label">' + _sbEsc(label) + '</span>'
                 + '<span class="llmaps-sidebar-field-value">' + valueHtml + '</span>'

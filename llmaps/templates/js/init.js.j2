@@ -11,7 +11,13 @@
           return { mapLeft: mapLeft, mapRight: mapRight };
         }
 
-        const map = createSingleMap("map-root", MAP_CONFIG, null, MAP_CONFIG.embedded_sources);
+        const map = createSingleMap(
+          "map-root",
+          MAP_CONFIG,
+          null,
+          MAP_CONFIG.embedded_sources,
+          { hashSync: isHashPositionEnabled(MAP_CONFIG) }
+        );
         window.llmaps_map = map;
         window.llmaps_maps = [map];
         if (visibilityIds.length && typeof initVisibilityOptimization === "function")

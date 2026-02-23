@@ -18,6 +18,7 @@ Map(
     lazy_init: bool = False,
     max_active_maps: int = 8,
     map_instance_count: Optional[int] = None,
+    hash_position: Optional[bool] = None,
 )
 ```
 
@@ -33,6 +34,7 @@ Map(
 | `lazy_init` | bool | False | If True and `map_instance_count` ≥ 3, maps are created when their container enters the viewport and disposed when it leaves, avoiding "Too many active WebGL contexts". |
 | `max_active_maps` | int | 8 | When lazy_init is active, maximum number of map instances kept at once; oldest (LRU) are disposed when the limit is exceeded. |
 | `map_instance_count` | int or None | None | Total map instances on the page. Default: 2 for comparison mode, 1 otherwise. Set to 3+ with `lazy_init=True` to enable lifecycle management. |
+| `hash_position` | bool or None | None | Sync map position with URL hash (`#zoom/lat/lon`). If `None`, inferred from `Controls(hash=...)` for backward compatibility. |
 
 ### Multiple maps on one page (WebGL)
 

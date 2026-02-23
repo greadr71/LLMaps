@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.0 - Storytelling
+
+- **Added:** `Storytelling` component — scrollytelling narrative panel with scroll-driven map reactions (camera, layers, highlights). Uses Scrollama.
+- **Added:** `Scene` dataclass — defines a single step in a storytelling narrative (title, content, center, zoom, visible layers, feature highlights).
+- **Added:** Clickable navigation dots with tooltips for quick scene access.
+- **Added:** Responsive layout — narrative panel collapses below map on mobile.
+- **Fixed:** `BaseLayer(visible=False)` now correctly hides layers at initialization (previously `visible` was only used by legend toggles).
+
 ## 0.4.0 - New components (A1, A2, A4, C1)
 
 - **Added:** `Sidebar` component — sliding side panel for feature details on click. Configurable fields per layer, title, position, width. Takes priority over Popup. Exposes `window.llmapsSidebarOpen/Close` JS API.

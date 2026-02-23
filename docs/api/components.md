@@ -177,6 +177,7 @@ Controls(
     zoom: bool = True,
     scale: bool = True,
     fullscreen: bool = False,
+    hash: bool = True,
 )
 ```
 
@@ -185,9 +186,73 @@ Controls(
 | `zoom` | bool | True | Show zoom in/out buttons. |
 | `scale` | bool | True | Show scale bar. |
 | `fullscreen` | bool | False | Show fullscreen toggle. |
+| `hash` | bool | True | Sync map position with URL hash in format `#zoom/lat/lon`. |
+
+---
+
+## Storytelling
+
+Scrollytelling component: a scrollable narrative panel alongside the map. As the user scrolls through scenes, the map camera, layer visibility, and feature highlights update automatically. Uses [Scrollama](https://github.com/russellsamora/scrollama) (loaded from CDN).
+
+```python
+from llmaps.components import Storytelling, Scene
+
+Storytelling(
+    scenes: List[Scene] = [],
+    position: Literal["left", "right"] = "left",
+    width: int = 400,
+    progress: bool = True,
+)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `scenes` | list of Scene | [] | Ordered list of narrative scenes. |
+| `position` | str | `"left"` | Side of the screen for the narrative panel. |
+| `width` | int | 400 | Narrative panel width in pixels. |
+| `progress` | bool | True | Show clickable navigation dots for quick scene access. |
+
+### Scene
+
+Each scene defines one step in the narrative.
+
+```python
+Scene(
+    id: str,
+    title: str,
+    content: str,                              # HTML text
+    center: Optional[List[float]] = None,      # [lon, lat], None = keep current
+    zoom: Optional[float] = None,              # None = keep current
+    bearing: float = 0,
+    pitch: float = 0,
+    visible_layers: Optional[List[str]] = None, # None = don't change, [] = hide all
+    highlight: Dict[str, List] = {},            # {source_id: [feature_ids]}
+    fly_duration: int = 2000,                   # camera animation in ms
+)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `id` | str | required | Unique scene identifier. |
+| `title` | str | required | Scene heading in the narrative panel. |
+| `content` | str | required | HTML body text for the scene. |
+| `center` | list or None | None | Map center `[lon, lat]` to fly to. `None` = keep current. |
+| `zoom` | float or None | None | Zoom level. `None` = keep current. |
+| `bearing` | float | 0 | Map rotation in degrees. |
+| `pitch` | float | 0 | Map tilt in degrees. |
+| `visible_layers` | list or None | None | Layer ids to show. `None` = don't change. `[]` = hide all. |
+| `highlight` | dict | {} | Features to highlight: `{source_id: [feature_id, ...]}`. Uses feature-state `highlighted: true`. |
+| `fly_duration` | int | 2000 | Camera fly animation duration in ms. |
+
+**Layers:** Set `visible=False` on layers that should be hidden initially and let scenes control visibility via `visible_layers`.
+
+**Highlights:** Requires `promote_id` on the source. Use feature-state expressions in layer paint to style highlighted features (e.g. brighter color, thicker stroke).
+
+**Navigation dots:** When `progress=True`, clickable dots appear on the side of the map. Hovering shows the scene title as a tooltip. Clicking scrolls to that scene.
 
 ---
 
 ## See also
 
 - [Map](map.md) — add_component()
+- [Storytelling recipe](../recipes/storytelling.md) — full example

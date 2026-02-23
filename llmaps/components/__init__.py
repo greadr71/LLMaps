@@ -7,6 +7,7 @@ from .legend import Legend
 from .popup import Popup
 from .search import Search
 from .sidebar import Sidebar
+from .storytelling import Scene, Storytelling
 
 __all__ = [
     "BasemapSwitcher",
@@ -14,7 +15,9 @@ __all__ = [
     "FeatureSearch",
     "Legend",
     "Popup",
+    "Scene",
     "Search",
     "Sidebar",
+    "Storytelling",
 ]
 

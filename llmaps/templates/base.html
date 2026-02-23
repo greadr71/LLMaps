@@ -14,7 +14,18 @@
 {{ custom_css | safe }}{% endif %}</style>
   </head>
   <body>
+{% if storytelling_html %}
+    <div class="llmaps-story-wrapper">
+      <div class="llmaps-story-narrative{% if story_position == 'right' %} position-right{% endif %}" style="--story-width: {{ story_width }}px">
+{{ storytelling_html | safe }}
+      </div>
+      <div class="llmaps-story-map">
+        <div id="map-root"></div>
+      </div>
+    </div>
+{% else %}
     <div id="map-root"></div>
+{% endif %}
 {{ legend_html | safe }}
 {% if custom_html %}{{ custom_html | safe }}{% endif %}
     <script id="llmaps-config" type="application/json">
@@ -22,6 +33,9 @@
     </script>
     <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/maplibre/maplibre-gl-compare@main/dist/maplibre-gl-compare.js"></script>
+    {% if use_scrollama %}
+    <script src="https://unpkg.com/scrollama@3.2.0/build/scrollama.min.js"></script>
+    {% endif %}
     {% if use_compression %}
     <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
     <script src="https://unpkg.com/pbf@3.2.1/dist/pbf.js"></script>

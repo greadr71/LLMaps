@@ -1,0 +1,160 @@
+{# Storytelling: Scrollama-based scrollytelling with map reactions #}
+{% if config.storytelling %}
+      (function() {
+        var storyConfig = {{ config.storytelling | tojson }};
+        var scenes = storyConfig.scenes || [];
+        if (!scenes.length) return;
+
+        /* ── Track known layer ids from config for visibility toggling ── */
+        var allLayerIds = ({{ config.layers | tojson }}).map(function(l) { return l.id; });
+        /* Include outline layers (llmaps adds -outline suffix for thick strokes) */
+        var allLayerIdsWithOutline = [];
+        allLayerIds.forEach(function(id) {
+          allLayerIdsWithOutline.push(id);
+          allLayerIdsWithOutline.push(id + "-outline");
+        });
+
+        var currentSceneIndex = -1;
+        var highlightedFeatures = []; /* [{source, id}] for clearing */
+        var isJumping = false;
+        var storyMap = null;
+
+        /* ── Apply scene to map ── */
+        function applyScene(map, scene, index) {
+          if (currentSceneIndex === index) return;
+          currentSceneIndex = index;
+
+          /* Camera */
+          var flyOpts = { duration: scene.flyDuration || 2000 };
+          if (scene.center) flyOpts.center = scene.center;
+          if (scene.zoom != null) flyOpts.zoom = scene.zoom;
+          flyOpts.bearing = scene.bearing || 0;
+          flyOpts.pitch = scene.pitch || 0;
+          if (scene.center || scene.zoom != null) {
+            map.flyTo(flyOpts);
+          }
+
+          /* Layer visibility */
+          if (scene.visibleLayers != null) {
+            var visible = new Set(scene.visibleLayers);
+            allLayerIdsWithOutline.forEach(function(layerId) {
+              if (!map.getLayer(layerId)) return;
+              /* Match base layer id (strip -outline suffix for lookup) */
+              var baseId = layerId.endsWith("-outline") ? layerId.slice(0, -8) : layerId;
+              var show = visible.has(baseId) ? "visible" : "none";
+              map.setLayoutProperty(layerId, "visibility", show);
+            });
+          }
+
+          /* Feature highlights */
+          clearHighlights(map);
+          var hl = scene.highlight || {};
+          Object.keys(hl).forEach(function(sourceId) {
+            var ids = hl[sourceId] || [];
+            ids.forEach(function(featureId) {
+              map.setFeatureState(
+                { source: sourceId, id: featureId },
+                { highlighted: true }
+              );
+              highlightedFeatures.push({ source: sourceId, id: featureId });
+            });
+          });
+
+          /* Update nav dots */
+          updateNavDots(index);
+
+          /* Update active step class */
+          var steps = document.querySelectorAll(".story-step");
+          steps.forEach(function(el, i) {
+            el.classList.toggle("is-active", i === index);
+          });
+        }
+
+        function clearHighlights(map) {
+          highlightedFeatures.forEach(function(h) {
+            try {
+              map.setFeatureState(
+                { source: h.source, id: h.id },
+                { highlighted: false }
+              );
+            } catch(e) { /* source may not exist yet */ }
+          });
+          highlightedFeatures = [];
+        }
+
+        /* ── Navigation dots ── */
+        function buildNavDots() {
+          if (!storyConfig.progress) return;
+          var nav = document.createElement("div");
+          nav.className = "llmaps-story-nav nav-" +
+            (storyConfig.position === "left" ? "right" : "left");
+
+          scenes.forEach(function(scene, i) {
+            var dot = document.createElement("div");
+            dot.className = "nav-dot";
+            dot.dataset.index = i;
+
+            var tip = document.createElement("span");
+            tip.className = "nav-tooltip";
+            tip.textContent = scene.title;
+            dot.appendChild(tip);
+
+            dot.addEventListener("click", function() {
+              var targetIndex = i;
+              var target = document.querySelector('.story-step[data-index="' + targetIndex + '"]');
+              if (!target || !storyMap) return;
+
+              isJumping = true;
+              applyScene(storyMap, scenes[targetIndex], targetIndex);
+              target.scrollIntoView({ behavior: "instant", block: "start" });
+              setTimeout(function() { isJumping = false; }, 50);
+            });
+
+            nav.appendChild(dot);
+          });
+
+          document.body.appendChild(nav);
+        }
+
+        function updateNavDots(activeIndex) {
+          var dots = document.querySelectorAll(".llmaps-story-nav .nav-dot");
+          dots.forEach(function(dot, i) {
+            dot.classList.toggle("is-active", i === activeIndex);
+          });
+        }
+
+        /* ── Scrollama setup ── */
+        function initScrollama(map) {
+          if (typeof scrollama === "undefined") {
+            console.warn("LLMaps Storytelling: scrollama not loaded");
+            return;
+          }
+
+          var scroller = scrollama();
+          scroller
+            .setup({
+              step: ".story-step",
+              offset: 0.5,
+              container: ".llmaps-story-narrative"
+            })
+            .onStepEnter(function(response) {
+              if (isJumping) return;
+              applyScene(map, scenes[response.index], response.index);
+            });
+
+          window.addEventListener("resize", scroller.resize);
+
+          /* Apply first scene immediately */
+          if (scenes.length > 0) {
+            applyScene(map, scenes[0], 0);
+          }
+        }
+
+        /* ── Init on layers ready ── */
+        buildNavDots();
+        window.llmapsOnLayersReady(function(map) {
+          storyMap = map;
+          initScrollama(map);
+        });
+      })();
+{% endif %}

@@ -18,8 +18,21 @@
           });
           return result;
         }
-        const beforeMap = createSingleMap("llmaps-compare-before", config, withOutlineLayers(leftIds), embedded);
-        const afterMap = createSingleMap("llmaps-compare-after", config, withOutlineLayers(rightIds), embedded);
+        const hashSyncEnabled = isHashPositionEnabled(config);
+        const beforeMap = createSingleMap(
+          "llmaps-compare-before",
+          config,
+          withOutlineLayers(leftIds),
+          embedded,
+          { hashSync: hashSyncEnabled }
+        );
+        const afterMap = createSingleMap(
+          "llmaps-compare-after",
+          config,
+          withOutlineLayers(rightIds),
+          embedded,
+          { hashSync: false }
+        );
 
         if (typeof maplibregl.Compare !== "function") {
           console.warn("maplibre-gl-compare not loaded; comparison uses basic sync only.");

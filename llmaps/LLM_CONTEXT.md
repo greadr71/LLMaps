@@ -42,6 +42,7 @@ m.save("my_map.html")
 | Hover tooltips | Popup(trigger="hover") + FillLayer/CircleLayer |
 | Embedded map (no server) | Map() + FileSource (embedded by default) |
 | Before/after comparison | Two layers + Map.enable_comparison(left_layers, right_layers) |
+| Scrollytelling narrative | Storytelling + Scene + FillLayer/CircleLayer (visible=False) |
 | Data from API | CircleLayer/FillLayer + ApiSource + Legend |
 | Vector tiles | VectorTileLayer + VectorTileSource |
 
@@ -49,9 +50,10 @@ m.save("my_map.html")
 
 ```python
 # Map — center [lon, lat], zoom 0–22. tiles: "osm", "carto-light", "carto-dark", "yandex", "2gis"
-Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=True, use_compression=True, locale="en-US", lazy_init=False, max_active_maps=8, map_instance_count=None)
+Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=True, use_compression=True, locale="en-US", lazy_init=False, max_active_maps=8, map_instance_count=None, hash_position=None)
 # locale: "en-US" (commas: 1,000,000), "ru-RU" (spaces: 1 000 000), or any BCP 47 tag. Formats numbers in Popup/Sidebar.
 # lazy_init + map_instance_count>=3: use when many maps on one page to avoid WebGL context limit (lazy create/dispose, LRU cap).
+# hash_position: URL hash sync in format #zoom/lat/lon. If None, inferred from Controls(hash=...).
 # .add_layer(layer) .add_component(comp) .auto_extent(sources=None, padding=0.1) .save(path) .to_html()
 # .enable_comparison(left_layers=[], right_layers=[])  # before/after slider
 # .add_custom_js(js) .add_custom_css(css) .add_custom_html(html) .embed_data(key, data)
@@ -86,7 +88,16 @@ FeatureSearch(position="top-center", placeholder="Search...", search_fields={}, 
 # search_fields: source_id -> list of attribute names to search
 Search(geocoder_url=None, geocoder_params=None, placeholder="Search address...", autocomplete=True,
        position="top-left", zoom_on_result=15)
-Controls(zoom=True, scale=True, fullscreen=False)
+Controls(zoom=True, scale=True, fullscreen=False, hash=True)
+
+# Storytelling — scrollytelling narrative map
+Storytelling(scenes=[Scene(...)], position="left", width=400, progress=True)
+Scene(id, title, content,  # content is HTML
+      center=None, zoom=None, bearing=0, pitch=0,  # camera (None=keep current)
+      visible_layers=None,  # None=don't change, []=hide all, ["id"]=show these
+      highlight={},  # {source_id: [feature_ids]} — sets feature-state highlighted=true
+      fly_duration=2000)
+# Set visible=False on layers; scenes control visibility. Requires promote_id for highlights.
 ```
 
 ## Frontend JS (custom JS via add_custom_js)

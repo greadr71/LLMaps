@@ -59,6 +59,10 @@ class Map:
         lifecycle (lazy init + dispose): only when map_instance_count >= 3.
         Default: 2 for comparison mode, 1 otherwise. Set to 3 or more when building
         a page with many map widgets so that lazy_init takes effect.
+    hash_position:
+        Sync map position with URL hash in format ``#zoom/lat/lon``.
+        If ``None`` (default), value is inferred from ``Controls(hash=...)`` for
+        backward compatibility; otherwise this explicit map-level setting is used.
     """
 
     center: Sequence[float]
@@ -73,6 +77,7 @@ class Map:
     lazy_init: bool = False
     max_active_maps: int = 8
     map_instance_count: Optional[int] = None
+    hash_position: Optional[bool] = None
 
     _layers: List[BaseLayer] = field(default_factory=list, init=False, repr=False)
     _components: List[BaseComponent] = field(default_factory=list, init=False, repr=False)
@@ -236,6 +241,18 @@ class Map:
                     outline_layer["maxzoom"] = layer_dict["maxzoom"]
                 layers_list.append(outline_layer)
 
+        hash_position = self.hash_position
+        if hash_position is None:
+            for component in self._components:
+                if getattr(component, "component_type", "") != "controls":
+                    continue
+                hash_value = getattr(component, "hash", None)
+                if isinstance(hash_value, bool):
+                    hash_position = hash_value
+                    break
+            if hash_position is None:
+                hash_position = False
+
         out: Dict[str, Any] = {
             "title": self.title,
             "center": list(self.center),
@@ -243,6 +260,7 @@ class Map:
             "tiles": self._tile_config(),
             "layers": layers_list,
             "locale": self.locale,
+            "hash_position": hash_position,
         }
         if self.tile_providers is not None:
             out["tile_providers"] = [
@@ -250,6 +268,11 @@ class Map:
                 for pid in self.tile_providers
             ]
         out["components"] = [component.to_dict() for component in self._components]
+        # Promote storytelling config to top level for template access
+        for comp in self._components:
+            if getattr(comp, "component_type", "") == "storytelling":
+                out["storytelling"] = comp.to_dict()
+                break
         out["embedded"] = self.embedded
         out["use_compression"] = self.use_compression
         out["lazy_init"] = self.lazy_init

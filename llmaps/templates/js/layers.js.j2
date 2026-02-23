@@ -26,6 +26,9 @@
         };
         if (layerConfig["source-layer"] != null)
           layer["source-layer"] = layerConfig["source-layer"];
+        if (layerConfig.visible === false) {
+          layer.layout.visibility = "none";
+        }
         if (layerConfig.minzoom != null) layer.minzoom = layerConfig.minzoom;
         if (layerConfig.maxzoom != null) layer.maxzoom = layerConfig.maxzoom;
         map.addLayer(layer);
@@ -83,9 +86,65 @@
         });
       }
 
-      function createSingleMap(containerId, config, layerIdsFilter, embeddedSources) {
-        const center = config.center || [0, 0];
-        const zoom = config.zoom ?? 10;
+      function parseMapHash(hashValue) {
+        if (!hashValue) return null;
+        const raw = hashValue.charAt(0) === "#" ? hashValue.slice(1) : hashValue;
+        const parts = raw.split("/");
+        if (parts.length !== 3) return null;
+
+        const zoom = Number(parts[0]);
+        const lat = Number(parts[1]);
+        const lon = Number(parts[2]);
+        const valid = [zoom, lat, lon].every(Number.isFinite)
+          && lat >= -90 && lat <= 90
+          && lon >= -180 && lon <= 180
+          && zoom >= 0 && zoom <= 24;
+
+        if (!valid) return null;
+        return { center: [lon, lat], zoom: zoom };
+      }
+
+      function formatMapHash(map) {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        return zoom.toFixed(2) + "/" + center.lat.toFixed(5) + "/" + center.lng.toFixed(5);
+      }
+
+      function updateLocationHash(hashValue) {
+        const nextHash = "#" + hashValue;
+        if (window.location.hash === nextHash) return;
+        const base = window.location.pathname + window.location.search;
+        if (window.history && typeof window.history.replaceState === "function") {
+          window.history.replaceState(null, "", base + nextHash);
+        } else {
+          window.location.hash = hashValue;
+        }
+      }
+
+      function enableMapHashSync(map) {
+        if (!map || map._llmapsHashSyncEnabled) return;
+        map._llmapsHashSyncEnabled = true;
+
+        const sync = function() {
+          updateLocationHash(formatMapHash(map));
+        };
+
+        map.on("load", sync);
+        map.on("moveend", sync);
+      }
+
+      function isHashPositionEnabled(config) {
+        if (typeof config.hash_position === "boolean") return config.hash_position;
+        const controls = (config.components || []).find(function(c) { return c.type === "controls"; });
+        if (controls && typeof controls.hash === "boolean") return controls.hash;
+        return false;
+      }
+
+      function createSingleMap(containerId, config, layerIdsFilter, embeddedSources, options) {
+        const useHash = !!(options && options.hashSync);
+        const hashState = useHash ? parseMapHash(window.location.hash) : null;
+        const center = (hashState && hashState.center) || config.center || [0, 0];
+        const zoom = (hashState && hashState.zoom) ?? (config.zoom ?? 10);
         const tiles = config.tiles || {};
         const map = new maplibregl.Map({
           container: containerId,
@@ -93,6 +152,7 @@
           center: center,
           zoom: zoom
         });
+        if (useHash) enableMapHashSync(map);
 
         const layers = config.layers || [];
         const embedded = config.embedded_sources || embeddedSources || {};
