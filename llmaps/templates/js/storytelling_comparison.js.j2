@@ -1,0 +1,295 @@
+        /* ══════════════════════════════════════════════════════════════
+         * Storytelling × Comparison: lazy overlay with before/after maps
+         * ══════════════════════════════════════════════════════════════ */
+        var compReady = false;
+        var compInitializing = false;
+        var compReadyQueue = [];
+        var compContainer = null;
+        var beforeMap = null;
+        var afterMap = null;
+        var compVisible = false;
+        var compCompare = null;
+        var cameraSyncOn = false;
+        var isSyncing = false;
+        var labelBefore = null;
+        var labelAfter = null;
+        var sliderTooltipShown = false;
+        var compHighlighted = []; /* [{map, source, id}] */
+        var compLocale = {{ config.locale | tojson }} || "en-US";
+        var compSliderHint = storyConfig.comparisonSliderHint || null;
+        var compSliderStartPct = Number(storyConfig.comparisonSliderStartPct);
+        if (!isFinite(compSliderStartPct)) compSliderStartPct = 0.50;
+        compSliderStartPct = Math.max(0, Math.min(1, compSliderStartPct));
+
+        function defaultSliderHint() {
+          if (compSliderHint) return compSliderHint;
+          if (compLocale.indexOf("ru") === 0) return "\u041f\u043e\u0442\u044f\u043d\u0438\u0442\u0435 \u0441\u043b\u0430\u0439\u0434\u0435\u0440 \u0434\u043b\u044f \u0441\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u044f";
+          return "Drag to compare";
+        }
+
+        /* Helper: add outline ids alongside base ids */
+        function withOutlineIds(ids) {
+          var result = ids.slice();
+          ids.forEach(function(id) {
+            if (allLayerIdsWithOutline.indexOf(id + "-outline") !== -1) {
+              result.push(id + "-outline");
+            }
+          });
+          return result;
+        }
+
+        /* Layer visibility helpers for comparison maps */
+        function setLayerVis(map, layerId, visible) {
+          if (!map || !map.getLayer(layerId)) return;
+          map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+        }
+
+        function hideAllOnMap(map) {
+          allLayerIdsWithOutline.forEach(function(id) { setLayerVis(map, id, false); });
+        }
+
+        /* Camera sync between storyMap and comparison maps */
+        function syncFromMain() {
+          if (isSyncing || !storyMap || !beforeMap || !afterMap) return;
+          isSyncing = true;
+          var c = { center: storyMap.getCenter(), zoom: storyMap.getZoom(),
+                    bearing: storyMap.getBearing(), pitch: storyMap.getPitch(), animate: false };
+          beforeMap.jumpTo(c);
+          afterMap.jumpTo(c);
+          isSyncing = false;
+        }
+
+        function syncFromComp() {
+          if (isSyncing || !storyMap || !beforeMap) return;
+          isSyncing = true;
+          var c = { center: beforeMap.getCenter(), zoom: beforeMap.getZoom(),
+                    bearing: beforeMap.getBearing(), pitch: beforeMap.getPitch(), animate: false };
+          storyMap.jumpTo(c);
+          isSyncing = false;
+        }
+
+        function enableCameraSync() {
+          if (cameraSyncOn) return;
+          cameraSyncOn = true;
+          storyMap.on("move", syncFromMain);
+          beforeMap.on("move", syncFromComp);
+        }
+
+        function disableCameraSync() {
+          if (!cameraSyncOn) return;
+          cameraSyncOn = false;
+          storyMap.off("move", syncFromMain);
+          beforeMap.off("move", syncFromComp);
+        }
+
+        /* Comparison highlights */
+        function clearCompHighlights() {
+          compHighlighted.forEach(function(h) {
+            if (!h.map.getSource(h.source)) return;
+            try { h.map.setFeatureState({ source: h.source, id: h.id }, { highlighted: false }); } catch(e) {}
+          });
+          compHighlighted = [];
+        }
+
+        function setCompHighlight(map, sourceId, featureId) {
+          if (!map || !map.getSource(sourceId)) return;
+          map.setFeatureState({ source: sourceId, id: featureId }, { highlighted: true });
+          compHighlighted.push({ map: map, source: sourceId, id: featureId });
+        }
+
+        /* Labels */
+        function setCompLabels(beforeText, afterText) {
+          if (labelBefore) {
+            labelBefore.textContent = beforeText || "";
+            labelBefore.classList.toggle("is-visible", !!beforeText);
+          }
+          if (labelAfter) {
+            labelAfter.textContent = afterText || "";
+            labelAfter.classList.toggle("is-visible", !!afterText);
+          }
+        }
+
+        /* Show / hide comparison overlay */
+        function showComparison() {
+          if (!compContainer) return;
+          compContainer.classList.add("is-visible");
+          compVisible = true;
+          enableCameraSync();
+          syncFromMain();
+        }
+
+        function hideComparison() {
+          if (!compContainer) return;
+          compContainer.classList.remove("is-visible");
+          compVisible = false;
+          disableCameraSync();
+          clearCompHighlights();
+        }
+
+        /* Configure layers for a comparison scene */
+        function configureCompScene(scene) {
+          var comp = scene.comparison;
+          hideAllOnMap(beforeMap);
+          hideAllOnMap(afterMap);
+          clearCompHighlights();
+          setCompLabels("", "");
+
+          /* Show before layers */
+          withOutlineIds(comp.beforeLayers || []).forEach(function(id) {
+            setLayerVis(beforeMap, id, true);
+          });
+
+          /* Show after layers */
+          withOutlineIds(comp.afterLayers || []).forEach(function(id) {
+            setLayerVis(afterMap, id, true);
+          });
+
+          /* Labels */
+          setCompLabels(comp.beforeLabel || "", comp.afterLabel || "");
+
+          /* Highlights on before map */
+          var bhl = comp.beforeHighlight || {};
+          Object.keys(bhl).forEach(function(src) {
+            (bhl[src] || []).forEach(function(fid) { setCompHighlight(beforeMap, src, fid); });
+          });
+
+          /* Highlights on after map */
+          var ahl = comp.afterHighlight || {};
+          Object.keys(ahl).forEach(function(src) {
+            (ahl[src] || []).forEach(function(fid) { setCompHighlight(afterMap, src, fid); });
+          });
+        }
+
+        /* Slider tooltip (shown once) */
+        function showSliderTooltip() {
+          if (!compContainer) return;
+          var slider = compContainer.querySelector(".maplibregl-compare");
+          if (!slider) return;
+          var handle = slider.querySelector(".compare-swiper-vertical");
+          var sliderX = handle
+            ? handle.getBoundingClientRect().left - compContainer.getBoundingClientRect().left
+            : 0;
+
+          var tip = document.createElement("div");
+          tip.className = "llmaps-compare-tooltip";
+          tip.textContent = defaultSliderHint();
+          tip.style.left = sliderX + "px";
+          compContainer.appendChild(tip);
+
+          requestAnimationFrame(function() { tip.classList.add("is-visible"); });
+
+          function dismiss() {
+            tip.classList.remove("is-visible");
+            setTimeout(function() { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 400);
+            compContainer.removeEventListener("mousedown", dismiss);
+            compContainer.removeEventListener("touchstart", dismiss);
+          }
+          compContainer.addEventListener("mousedown", dismiss);
+          compContainer.addEventListener("touchstart", dismiss);
+        }
+
+        /* Lazy creation of comparison infrastructure (once) */
+        function ensureCompReady(cb) {
+          if (compReady) { cb(); return; }
+          compReadyQueue.push(cb);
+          if (compInitializing) return;
+          compInitializing = true;
+
+          var mapContainer = document.querySelector(".llmaps-story-map");
+          if (!mapContainer || !storyMap) { compInitializing = false; return; }
+
+          /* Build DOM */
+          compContainer = document.createElement("div");
+          compContainer.className = "llmaps-story-compare";
+
+          var beforeDiv = document.createElement("div");
+          beforeDiv.id = "llmaps-story-compare-before";
+          beforeDiv.className = "llmaps-compare-panel";
+
+          var afterDiv = document.createElement("div");
+          afterDiv.id = "llmaps-story-compare-after";
+          afterDiv.className = "llmaps-compare-panel";
+
+          compContainer.appendChild(beforeDiv);
+          compContainer.appendChild(afterDiv);
+
+          /* Labels */
+          labelBefore = document.createElement("div");
+          labelBefore.className = "llmaps-compare-label llmaps-compare-label-before";
+          beforeDiv.appendChild(labelBefore);
+
+          labelAfter = document.createElement("div");
+          labelAfter.className = "llmaps-compare-label llmaps-compare-label-after";
+          afterDiv.appendChild(labelAfter);
+
+          mapContainer.appendChild(compContainer);
+
+          /* Create map instances from main map style */
+          var mainStyle = storyMap.getStyle();
+          var mainCenter = storyMap.getCenter();
+          var mainZoom = storyMap.getZoom();
+          var mainBearing = storyMap.getBearing();
+          var mainPitch = storyMap.getPitch();
+
+          function createCompMap(containerId) {
+            return new maplibregl.Map({
+              container: containerId,
+              style: mainStyle,
+              center: mainCenter,
+              zoom: mainZoom,
+              bearing: mainBearing,
+              pitch: mainPitch,
+              attributionControl: false,
+            });
+          }
+
+          beforeMap = createCompMap("llmaps-story-compare-before");
+          afterMap = createCompMap("llmaps-story-compare-after");
+
+          var loaded = { before: false, after: false };
+
+          function finalize() {
+            if (!loaded.before || !loaded.after) return;
+            hideAllOnMap(beforeMap);
+            hideAllOnMap(afterMap);
+
+            if (typeof maplibregl.Compare === "function") {
+              compCompare = new maplibregl.Compare(beforeMap, afterMap, compContainer, {
+                orientation: "vertical",
+                mousemove: false,
+              });
+            }
+
+            /* Enable popups on comparison maps */
+            if (window.llmapsAddPopupToMap) {
+              window.llmapsAddPopupToMap(beforeMap);
+              window.llmapsAddPopupToMap(afterMap);
+            }
+
+            window.llmapsStoryComparison = {
+              beforeMap: beforeMap,
+              afterMap: afterMap,
+              container: compContainer,
+              compare: compCompare,
+            };
+
+            try {
+              window.dispatchEvent(new CustomEvent("llmaps:storyComparisonReady", {
+                detail: {
+                  beforeMap: beforeMap,
+                  afterMap: afterMap,
+                  container: compContainer,
+                },
+              }));
+            } catch (e) {}
+
+            compReady = true;
+            compInitializing = false;
+            var q = compReadyQueue.slice();
+            compReadyQueue = [];
+            q.forEach(function(fn) { fn(); });
+          }
+
+          beforeMap.on("load", function() { loaded.before = true; finalize(); });
+          afterMap.on("load", function() { loaded.after = true; finalize(); });
+        }

@@ -202,6 +202,7 @@ Storytelling(
     position: Literal["left", "right"] = "left",
     width: int = 400,
     progress: bool = True,
+    comparison_slider_hint: Optional[str] = None,
 )
 ```
 
@@ -211,6 +212,7 @@ Storytelling(
 | `position` | str | `"left"` | Side of the screen for the narrative panel. |
 | `width` | int | 400 | Narrative panel width in pixels. |
 | `progress` | bool | True | Show clickable navigation dots for quick scene access. |
+| `comparison_slider_hint` | str or None | None | Tooltip text shown when comparison slider first appears. `None` = locale-aware default. |
 
 ### Scene
 
@@ -228,6 +230,7 @@ Scene(
     visible_layers: Optional[List[str]] = None, # None = don't change, [] = hide all
     highlight: Dict[str, List] = {},            # {source_id: [feature_ids]}
     fly_duration: int = 2000,                   # camera animation in ms
+    comparison: Optional[SceneComparison] = None,  # per-scene comparison slider
 )
 ```
 
@@ -243,6 +246,35 @@ Scene(
 | `visible_layers` | list or None | None | Layer ids to show. `None` = don't change. `[]` = hide all. |
 | `highlight` | dict | {} | Features to highlight: `{source_id: [feature_id, ...]}`. Uses feature-state `highlighted: true`. |
 | `fly_duration` | int | 2000 | Camera fly animation duration in ms. |
+| `comparison` | SceneComparison or None | None | Per-scene comparison slider. When set, `visible_layers` and `highlight` are ignored. |
+
+### SceneComparison
+
+Per-scene before/after slider configuration. When a `Scene` has a `comparison`, the map shows a draggable slider overlay with two map instances.
+
+```python
+SceneComparison(
+    before_layers: List[str] = [],
+    after_layers: List[str] = [],
+    before_label: Optional[str] = None,
+    after_label: Optional[str] = None,
+    before_highlight: Dict[str, List] = {},
+    after_highlight: Dict[str, List] = {},
+)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `before_layers` | list of str | [] | Layer ids shown on the left (before) side. |
+| `after_layers` | list of str | [] | Layer ids shown on the right (after) side. |
+| `before_label` | str or None | None | Label displayed on the before panel (e.g. `"2016"`). |
+| `after_label` | str or None | None | Label displayed on the after panel (e.g. `"2018"`). |
+| `before_highlight` | dict | {} | Features to highlight on the before map: `{source_id: [feature_id, ...]}`. |
+| `after_highlight` | dict | {} | Features to highlight on the after map: `{source_id: [feature_id, ...]}`. |
+
+**Difference from `Map.enable_comparison()`:** `enable_comparison()` creates a static full-map slider. `SceneComparison` is dynamic — the slider appears only during specific scenes and is hidden otherwise. Camera, layers, and highlights are managed per-scene.
+
+**Popups:** Click/hover popups automatically work on both comparison map instances (using the same popup configuration as the main map).
 
 **Layers:** Set `visible=False` on layers that should be hidden initially and let scenes control visibility via `visible_layers`.
 
@@ -256,3 +288,4 @@ Scene(
 
 - [Map](map.md) — add_component()
 - [Storytelling recipe](../recipes/storytelling.md) — full example
+- [Storytelling comparison recipe](../recipes/storytelling-comparison.md) — before/after within scenes

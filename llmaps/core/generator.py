@@ -112,6 +112,7 @@ def render_map_html(
     story_cfg = config.get("storytelling") or {}
     storytelling_html = _generate_storytelling_html(config)
     use_scrollama = bool(story_cfg)
+    use_compare = bool(config.get("comparison") or story_cfg.get("hasComparison"))
 
     # Combine custom JS snippets
     custom_js_str = "\n".join(custom_js) if custom_js else ""
@@ -132,6 +133,7 @@ def render_map_html(
         llmaps_js=_render_base_js(config),
         use_compression=use_compression,
         use_scrollama=use_scrollama,
+        use_compare=use_compare,
         legend_html=legend_html,
         storytelling_html=storytelling_html,
         story_position=story_cfg.get("position", "left"),

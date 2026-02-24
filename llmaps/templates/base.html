@@ -32,7 +32,9 @@
       {{ map_config_json | safe }}
     </script>
     <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
+    {% if use_compare %}
     <script src="https://cdn.jsdelivr.net/gh/maplibre/maplibre-gl-compare@main/dist/maplibre-gl-compare.js"></script>
+    {% endif %}
     {% if use_scrollama %}
     <script src="https://unpkg.com/scrollama@3.2.0/build/scrollama.min.js"></script>
     {% endif %}

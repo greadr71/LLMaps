@@ -277,11 +277,21 @@ class Map:
         out["use_compression"] = self.use_compression
         out["lazy_init"] = self.lazy_init
         out["max_active_maps"] = self.max_active_maps
-        out["map_instance_count"] = (
-            self.map_instance_count
-            if self.map_instance_count is not None
-            else (2 if self._comparison else 1)
-        )
+        # Determine map instance count: explicit override, comparison mode (2),
+        # storytelling with comparison scenes (3: main + before + after), or 1.
+        story_has_comparison = False
+        for comp in self._components:
+            if getattr(comp, "component_type", "") == "storytelling":
+                story_has_comparison = getattr(comp, "has_comparison", False)
+                break
+        if self.map_instance_count is not None:
+            out["map_instance_count"] = self.map_instance_count
+        elif self._comparison:
+            out["map_instance_count"] = 2
+        elif story_has_comparison:
+            out["map_instance_count"] = 3
+        else:
+            out["map_instance_count"] = 1
         # Collect unique sources from layers for frontend
         source_ids = set()
         for layer in self._layers:

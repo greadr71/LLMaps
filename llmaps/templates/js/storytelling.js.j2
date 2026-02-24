@@ -19,10 +19,61 @@
         var isJumping = false;
         var storyMap = null;
 
+{% if config.storytelling.hasComparison %}
+{% include "js/storytelling_comparison.js.j2" %}
+{% endif %}
+
         /* ── Apply scene to map ── */
         function applyScene(map, scene, index) {
           if (currentSceneIndex === index) return;
           currentSceneIndex = index;
+
+{% if config.storytelling.hasComparison %}
+          /* Comparison scene? */
+          if (scene.comparison) {
+            /* Camera (applied to main map first; sync will propagate) */
+            var flyOpts = { duration: scene.flyDuration || 2000 };
+            if (scene.center) flyOpts.center = scene.center;
+            if (scene.zoom != null) flyOpts.zoom = scene.zoom;
+            flyOpts.bearing = scene.bearing || 0;
+            flyOpts.pitch = scene.pitch || 0;
+            if (scene.center || scene.zoom != null) {
+              map.flyTo(flyOpts);
+            }
+
+            /* Hide all layers on main map too */
+            allLayerIdsWithOutline.forEach(function(layerId) {
+              if (!map.getLayer(layerId)) return;
+              map.setLayoutProperty(layerId, "visibility", "none");
+            });
+            clearHighlights(map);
+            updateNavDots(index);
+            var steps = document.querySelectorAll(".story-step");
+            steps.forEach(function(el, i) { el.classList.toggle("is-active", i === index); });
+
+            ensureCompReady(function() {
+              configureCompScene(scene);
+              if (compCompare && typeof compCompare.setSlider === "function") {
+                var sliderOffset = compContainer
+                  ? Math.round(compContainer.offsetWidth * compSliderStartPct)
+                  : 100;
+                compCompare.setSlider(sliderOffset);
+              }
+              syncFromMain();
+              showComparison();
+              if (!sliderTooltipShown) {
+                sliderTooltipShown = true;
+                showSliderTooltip();
+              }
+            });
+            return;
+          }
+
+          /* Non-comparison scene: hide comparison overlay */
+          if (compVisible || (compContainer && compContainer.classList.contains("is-visible"))) {
+            hideComparison();
+          }
+{% endif %}
 
           /* Camera */
           var flyOpts = { duration: scene.flyDuration || 2000 };
@@ -68,6 +119,12 @@
           steps.forEach(function(el, i) {
             el.classList.toggle("is-active", i === index);
           });
+
+          try {
+            window.dispatchEvent(new CustomEvent("llmaps:storySceneChanged", {
+              detail: { index: index, sceneId: scene.id || null }
+            }));
+          } catch (e) {}
         }
 
         function clearHighlights(map) {
