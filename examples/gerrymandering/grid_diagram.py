@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Optional
 
+from texts import get_texts
+
 # ── Grid data (hypothetical 50-person example) ──
 GRID_ROWS = 5
 GRID_COLS = 10
@@ -111,8 +113,10 @@ def build_grid_html(
 def build_overlays_html(
     dem_color: str = "#2166ac",
     rep_color: str = "#b2182b",
+    locale: str = "en",
 ) -> str:
     """Build HTML for intro and tools grid diagram overlays + court cross."""
+    text = get_texts(locale)["grid"]
     dim_overlay_html = '<div id="map-dim-overlay" class="map-dim-overlay"></div>'
     grid_backdrop_html = '<div id="grid-overlay-backdrop" class="grid-overlay-backdrop"></div>'
 
@@ -124,28 +128,28 @@ def build_overlays_html(
     <div id="grid-overlay-intro" class="grid-overlay">
       <div class="grid-container">
         <div class="grid-panel">
-          <div class="grid-title">50 избирателей</div>
+          <div class="grid-title">50 {text["voters"]}</div>
           {plain}
           <div class="grid-subtitle">
-            <span style="color:{dem_color}">&#9632;</span> 60% синих &ensp;
-            <span style="color:{rep_color}">&#9632;</span> 40% красных
+            <span style="color:{dem_color}">&#9632;</span> 60% {text["blue_pct"]} &ensp;
+            <span style="color:{rep_color}">&#9632;</span> 40% {text["red_pct"]}
           </div>
         </div>
         <div class="grid-panel">
-          <div class="grid-title grid-title--fair">Честное деление</div>
+          <div class="grid-title grid-title--fair">{text["fair_division"]}</div>
           {fair}
           <div class="grid-subtitle">
-            <span style="color:{dem_color}"><strong>3</strong> синих</span> &ensp;
-            <span style="color:{rep_color}"><strong>2</strong> красных</span>
+            <span style="color:{dem_color}"><strong>3</strong> {text["blue_count"]}</span> &ensp;
+            <span style="color:{rep_color}"><strong>2</strong> {text["red_count"]}</span>
           </div>
         </div>
         <div class="grid-panel">
-          <div class="grid-title grid-title--gerry">Джерримендеринг</div>
+          <div class="grid-title grid-title--gerry">{text["gerrymandering"]}</div>
           {gerry}
           <div class="grid-subtitle">
-            <span style="color:{dem_color}"><strong>2</strong> синих</span> &ensp;
-            <span style="color:{rep_color}"><strong>3</strong> красных</span><br>
-            <strong>Меньшинство побеждает!</strong>
+            <span style="color:{dem_color}"><strong>2</strong> {text["blue_count"]}</span> &ensp;
+            <span style="color:{rep_color}"><strong>3</strong> {text["red_count"]}</span><br>
+            <strong>{text["minority_wins"]}</strong>
           </div>
         </div>
       </div>
@@ -173,7 +177,7 @@ def build_overlays_html(
         label = "PACKING" if technique == "packing" else "CRACKING"
         bar_rows.append(f"""
         <div class="vote-bar-row">
-          <div class="vote-bar-label">Округ {d + 1}</div>
+          <div class="vote-bar-label">{text["district_prefix"]} {d + 1}</div>
           <div class="vote-bar">
             <div class="vote-bar-fill" style="width:{b_pct}%;background:{dem_color}"></div>
             <div class="vote-bar-fill" style="width:{r_pct}%;background:{rep_color}"></div>
@@ -186,11 +190,11 @@ def build_overlays_html(
     <div id="grid-overlay-tools" class="grid-overlay">
       <div class="grid-container tools-layout">
         <div class="grid-panel">
-          <div class="grid-title grid-title--gerry">Те же 50 человек, те же линии</div>
+          <div class="grid-title grid-title--gerry">{text["same_people"]}</div>
           {gerry_labeled}
         </div>
         <div class="vote-bars">
-          <div class="vote-bars-title">Голоса по округам:</div>
+          <div class="vote-bars-title">{text["votes_by_district"]}</div>
           {"".join(bar_rows)}
         </div>
       </div>

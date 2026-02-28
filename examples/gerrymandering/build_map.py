@@ -7,6 +7,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import base64
 import mimetypes
 from pathlib import Path
@@ -22,10 +23,11 @@ from scenes import (
     PA_CENTER,
     PA_ZOOM,
     POPUP_FIELDS,
-    POPUP_LABELS,
     REP_COLOR,
-    SCENES,
+    build_popup_labels,
+    build_scenes,
 )
+from texts import get_texts
 
 import patches
 
@@ -35,7 +37,6 @@ DATA_DIR = BASE_DIR / "data"
 SOURCE_2016 = DATA_DIR / "pa_gerrymandered_2016.geojson"
 SOURCE_2018 = DATA_DIR / "pa_remedial_2018.geojson"
 GOOFY_IMAGE = DATA_DIR / "goofy_kicks_donald.png"
-OUTPUT_HTML = BASE_DIR / "gerrymandering.html"
 
 # ── Styling ──
 NO_DATA = "#c7c7c7"
@@ -84,13 +85,25 @@ def _encode_image_as_data_url(path: Path) -> str | None:
     return f"data:{content_type};base64,{encoded}"
 
 
-def build_map() -> Map:
+def _map_locale(locale: str) -> str:
+    return "ru-RU" if locale == "ru" else "en-US"
+
+
+def _output_path(locale: str) -> Path:
+    suffix = "en" if locale == "en" else "ru"
+    return BASE_DIR / f"gerrymandering_{suffix}.html"
+
+
+def build_map(locale: str = "en") -> Map:
+    texts = get_texts(locale)
+    scenes = build_scenes(locale)
+
     m = Map(
         center=PA_CENTER,
         zoom=PA_ZOOM,
-        title="Джерримендеринг в Пенсильвании",
+        title=texts["map_title"],
         tiles="carto-light",
-        locale="ru-RU",
+        locale=_map_locale(locale),
         embedded=True,
         use_compression=False,
     )
@@ -129,7 +142,7 @@ def build_map() -> Map:
                 "fill-2016": POPUP_FIELDS,
                 "fill-2018": POPUP_FIELDS,
             },
-            field_labels=POPUP_LABELS,
+            field_labels=build_popup_labels(locale),
             trigger="click",
         )
     )
@@ -137,13 +150,13 @@ def build_map() -> Map:
     # Storytelling (upstream snap_mode + touch_swipe eliminate CSS override + touch patch)
     m.add_component(
         Storytelling(
-            scenes=SCENES,
+            scenes=scenes,
             position="left",
             width=420,
             progress=True,
             snap_mode="mandatory",
             touch_swipe=False,
-            comparison_slider_hint="Потяните слайдер для сравнения",
+            comparison_slider_hint=texts["comparison_slider_hint"],
             comparison_slider_start_pct=0.03,
         )
     )
@@ -151,7 +164,7 @@ def build_map() -> Map:
     m.add_component(Controls(zoom=True, scale=True))
 
     # ── Embed data for JS overlays ──
-    scene_ids = [s.id for s in SCENES]
+    scene_ids = [s.id for s in scenes]
     m.embed_data(
         "sceneConfig",
         {
@@ -180,7 +193,7 @@ def build_map() -> Map:
         print(f"Warning: overlay image not found at {GOOFY_IMAGE}")
 
     # Grid diagram HTML overlays
-    m.add_custom_html(build_overlays_html(dem_color=DEM_COLOR, rep_color=REP_COLOR))
+    m.add_custom_html(build_overlays_html(dem_color=DEM_COLOR, rep_color=REP_COLOR, locale=locale))
 
     # External CSS & JS
     m.add_custom_css(Path(BASE_DIR / "overlays.css"))
@@ -189,11 +202,30 @@ def build_map() -> Map:
     return m
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build gerrymandering story map")
+    parser.add_argument(
+        "--locale",
+        choices=["en", "ru", "all"],
+        default="all",
+        help="Output locale(s): en, ru, or all",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
-    m = build_map()
-    m.save(str(OUTPUT_HTML))
-    patches.apply(OUTPUT_HTML)
-    print(f"Saved gerrymandering story map to {OUTPUT_HTML}")
+    args = _parse_args()
+    locales = ["en", "ru"] if args.locale == "all" else [args.locale]
+
+    for locale in locales:
+        output_path = _output_path(locale)
+        m = build_map(locale)
+        m.save(str(output_path))
+        patches.apply(output_path)
+        print(f"Saved {locale} gerrymandering story map to {output_path}")
+
+
+OUTPUT_HTML = _output_path("en")
 
 
 if __name__ == "__main__":

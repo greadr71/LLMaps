@@ -111,6 +111,36 @@ open map.html
 
 ---
 
+### 5. [Pennsylvania Gerrymandering Story](gerrymandering/)
+
+**Features**: FillLayer, Storytelling, SceneComparison, Popup, custom overlays
+
+A scrollytelling map explaining how district boundaries in Pennsylvania affected
+Congressional representation before and after the 2018 court-ordered redistricting.
+Demonstrates:
+- Storytelling scenes with camera transitions and layer visibility control
+- Before/after swipe comparison for district maps (2016 vs 2018)
+- Highlighted districts for packing/cracking explanations
+- Custom HTML/CSS/JS overlays integrated into the map output
+- Locale-specific builds for English and Russian
+
+**Data**: Pennsylvania congressional districts and election results (2016/2018), open sources
+
+**Run**:
+```bash
+cd gerrymandering
+python build_map.py                # builds EN + RU
+python build_map.py --locale en    # English only
+python build_map.py --locale ru    # Russian only
+open gerrymandering_en.html
+```
+
+**Live demos**:
+- EN: [View map](https://greadr71.github.io/llmaps/examples/gerrymandering/gerrymandering_en.html)
+- RU: [View map](https://greadr71.github.io/llmaps/examples/gerrymandering/gerrymandering_ru.html)
+
+---
+
 ## API Coverage
 
 Every public feature of llmaps is demonstrated across these examples:
@@ -124,6 +154,7 @@ Every public feature of llmaps is demonstrated across these examples:
 | **Components** |
 | `Legend` | all examples |
 | `Popup` | all examples |
+| `Storytelling` | gerrymandering |
 | `Sidebar` | cafes, world_population, earthquakes |
 | `Controls` | all examples |
 | `Search` (geocoding) | cafes |

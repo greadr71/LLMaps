@@ -96,6 +96,36 @@
             color: #222;
         }
 
+        .card-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .lang-toggle {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .lang-btn {
+            border: 1px solid #d8dcff;
+            background: #f5f6ff;
+            color: #4253b5;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 0.8em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .lang-btn.is-active {
+            background: #667eea;
+            border-color: #667eea;
+            color: #fff;
+        }
+
         .card-description {
             color: #666;
             margin-bottom: 15px;
@@ -265,6 +295,40 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Gerrymandering Example -->
+            <div class="example-card" data-map-card>
+                <iframe
+                    class="card-preview"
+                    src="gerrymandering/gerrymandering_en.html"
+                    scrolling="no"
+                    data-map-frame
+                ></iframe>
+                <div class="card-content">
+                    <div class="card-title-row">
+                        <h2 class="card-title">Pennsylvania Gerrymandering Story</h2>
+                        <div class="lang-toggle" role="group" aria-label="Language">
+                            <button type="button" class="lang-btn is-active" data-lang="en">EN</button>
+                            <button type="button" class="lang-btn" data-lang="ru">RU</button>
+                        </div>
+                    </div>
+                    <p class="card-description">
+                        Scrollytelling case study of Pennsylvania congressional maps before and after the 2018 court remedy,
+                        with side-by-side comparison and district-level vote context.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">FillLayer</span>
+                        <span class="tag">Storytelling</span>
+                        <span class="tag">Comparison</span>
+                        <span class="tag">Popup</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="gerrymandering/gerrymandering_en.html" class="btn btn-primary" target="_blank" data-open-map>Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/gerrymandering"
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -275,5 +339,33 @@
             All examples use open data (ODbL, Public Domain)
         </p>
     </footer>
+
+    <script>
+        (function () {
+            var card = document.querySelector('[data-map-card]');
+            if (!card) return;
+
+            var frame = card.querySelector('[data-map-frame]');
+            var openLink = card.querySelector('[data-open-map]');
+            var buttons = card.querySelectorAll('[data-lang]');
+
+            function applyLang(lang) {
+                var src = lang === 'ru'
+                    ? 'gerrymandering/gerrymandering_ru.html'
+                    : 'gerrymandering/gerrymandering_en.html';
+                frame.src = src;
+                openLink.href = src;
+                buttons.forEach(function (btn) {
+                    btn.classList.toggle('is-active', btn.dataset.lang === lang);
+                });
+            }
+
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    applyLang(btn.dataset.lang);
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
