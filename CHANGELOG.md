@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.2 - Project URL metadata fix
+
+- **Fixed:** Updated PyPI project URLs (`Homepage`, `Documentation`, `Source`, `Issues`) to the canonical repository `https://github.com/greadr71/LLMaps`.
+- **Docs:** No API changes.
+
 ## 1.0.1 - Packaging hotfix
 
 - **Fixed:** Corrected `jenkspy` dependency constraint in package metadata so installation from PyPI succeeds.

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llmaps"
-version = "1.0.1"
+version = "1.0.2"
 description = "A Python library for creating interactive web maps, optimized for LLM-assisted development."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -38,10 +38,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sergeyabramov/llmaps"
-Documentation = "https://github.com/sergeyabramov/llmaps"
-Source = "https://github.com/sergeyabramov/llmaps"
-Issues = "https://github.com/sergeyabramov/llmaps/issues"
+Homepage = "https://github.com/greadr71/LLMaps"
+Documentation = "https://github.com/greadr71/LLMaps"
+Source = "https://github.com/greadr71/LLMaps"
+Issues = "https://github.com/greadr71/LLMaps/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["llmaps"]
