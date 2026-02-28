@@ -3796,12 +3796,12 @@ body {
     var sceneIds = cfg.sceneIds || [];
 
     /* Mobile camera overrides: default + exceptions */
-    var defaultMobile = { center: [-77.62915, 41.07845], zoom: 5.61 };
+    var defaultMobile = { center: [-77.58875, 41.15961], zoom: 5.40 };
     var mobileExceptions = (window.llmapsData || {}).mobileOverrides || {
-        goofy:   { center: [-75.68084, 40.12504], zoom: 7.87 },
-        new_d7:  { center: [-75.68084, 40.12504], zoom: 7.87 },
+        goofy:   { center: [-75.67962, 40.14411], zoom: 7.60 },
+        new_d7:  { center: [-75.67962, 40.14411], zoom: 7.60 },
         packing: { center: [-75.15, 40.0], zoom: 8.5 },
-        cracking:{ center: [-75.55869, 40.16528], zoom: 7.87 }
+        cracking:{ center: [-75.56075, 40.16843], zoom: 7.12 }
     };
     var hintCfg = (window.llmapsData || {}).scrollHintConfig || {};
     var hintTexts = hintCfg.texts || {};
