@@ -99,6 +99,7 @@ class VectorTileLayer(BaseLayer):
             base["paint"] = {
                 "fill-color": self.colors[0] if self.colors else "#3182bd",
                 "fill-opacity": self.opacity,
+                "fill-outline-color": "rgba(0,0,0,0)",
             }
             if self.property_field and len(self.colors) >= 2:
                 base["paint"]["fill-color"] = [

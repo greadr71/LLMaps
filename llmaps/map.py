@@ -68,6 +68,9 @@ class Map:
     center: Sequence[float]
     zoom: float = 10.0
     title: Optional[str] = None
+    # Optional external MapLibre style URL (e.g. corporate basemap).
+    # When provided, frontend templates can prefer this over tile provider config.
+    style_url: Optional[str] = None
     tiles: str = "osm"
     tile_providers: Optional[Sequence[str]] = None
     embedded: bool = True
@@ -262,6 +265,12 @@ class Map:
             "locale": self.locale,
             "hash_position": hash_position,
         }
+        if self.style_url:
+            out["style_url"] = self.style_url
+        if self.custom_attribution:
+            out["custom_attribution"] = self.custom_attribution
+        if self.style_url:
+            out["style_url"] = self.style_url
         if self.tile_providers is not None:
             out["tile_providers"] = [
                 self._apply_custom_attribution(resolve_tile_provider(pid))

@@ -48,6 +48,7 @@
             });
             clearHighlights(map);
             updateNavDots(index);
+            updateMobileProgress(index);
             var steps = document.querySelectorAll(".story-step");
             steps.forEach(function(el, i) { el.classList.toggle("is-active", i === index); });
 
@@ -111,8 +112,9 @@
             });
           });
 
-          /* Update nav dots */
+          /* Update nav dots + mobile progress */
           updateNavDots(index);
+          updateMobileProgress(index);
 
           /* Update active step class */
           var steps = document.querySelectorAll(".story-step");
@@ -180,6 +182,17 @@
           });
         }
 
+        /* ── Mobile progress counter ── */
+        function updateMobileProgress(index) {
+          var progressEl = document.querySelector(".llmaps-story-progress-mobile");
+          if (!progressEl) return;
+          var textEl = progressEl.querySelector(".progress-text");
+          var barEl = progressEl.querySelector(".progress-bar");
+          var total = scenes.length;
+          if (textEl) textEl.textContent = (index + 1) + " / " + total;
+          if (barEl) barEl.style.width = ((index + 1) / total * 100).toFixed(1) + "%";
+        }
+
         /* ── Scrollama setup ── */
         function initScrollama(map) {
           if (typeof scrollama === "undefined") {
@@ -213,5 +226,43 @@
           storyMap = map;
           initScrollama(map);
         });
+
+        /* ── Touch swipe navigation (mobile) ── */
+        (function() {
+          var narrative = document.querySelector(".llmaps-story-narrative");
+          if (!narrative) return;
+          if (!("ontouchstart" in window)) return;
+          if (narrative.dataset.noLibraryTouch) return;
+
+          var touchStartY = 0;
+          var touchLocked = false;
+          var SWIPE_THRESHOLD = 40;
+          var LOCK_MS = 600;
+
+          narrative.addEventListener("touchstart", function(e) {
+            if (e.touches.length !== 1) return;
+            touchStartY = e.touches[0].clientY;
+          }, { passive: true });
+
+          narrative.addEventListener("touchend", function(e) {
+            if (touchLocked) return;
+            var deltaY = touchStartY - (e.changedTouches[0] || {}).clientY;
+            if (Math.abs(deltaY) < SWIPE_THRESHOLD) return;
+
+            var dir = deltaY > 0 ? 1 : -1;
+            var next = currentSceneIndex + dir;
+            if (next < 0 || next >= scenes.length) return;
+
+            touchLocked = true;
+            var target = document.querySelector('.story-step[data-index="' + next + '"]');
+            if (target && storyMap) {
+              isJumping = true;
+              applyScene(storyMap, scenes[next], next);
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+              setTimeout(function() { isJumping = false; }, 50);
+            }
+            setTimeout(function() { touchLocked = false; }, LOCK_MS);
+          }, { passive: true });
+        })();
       })();
 {% endif %}

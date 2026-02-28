@@ -163,15 +163,34 @@
   .llmaps-story-narrative {
     flex: none;
     width: 100% !important;
-    height: 40vh;
+    height: 50vh;
     order: 2;
+    -webkit-overflow-scrolling: touch;
   }
   .llmaps-story-map {
-    height: 60vh;
+    height: 50vh;
   }
   .story-step {
-    min-height: 40vh;
+    min-height: 50vh;
     padding: 1.5rem 1.2rem;
+    opacity: 0.5;
+  }
+  .story-step.is-active {
+    opacity: 1;
+  }
+  .story-step:first-child {
+    padding-top: 2rem;
+  }
+  .story-step:last-child {
+    min-height: 55vh;
+  }
+  .story-step h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+  }
+  .story-step .step-content {
+    font-size: 0.88rem;
+    line-height: 1.55;
   }
   .llmaps-story-nav {
     display: none;
@@ -250,4 +269,51 @@
 
 .llmaps-compare-tooltip.is-visible {
   opacity: 1;
+}
+
+/* ── Comparison labels: mobile ── */
+@media (max-width: 768px) {
+  .llmaps-compare-label {
+    font-size: 16px;
+    padding: 6px 14px;
+  }
+  .llmaps-compare-label-before {
+    left: 12px;
+  }
+  .llmaps-compare-label-after {
+    right: 12px;
+  }
+}
+
+/* ── Mobile progress counter ── */
+.llmaps-story-progress-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .llmaps-story-progress-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 6px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    letter-spacing: 0.02em;
+  }
+  .llmaps-story-progress-mobile .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: #333;
+    transition: width 0.3s ease;
+  }
 }

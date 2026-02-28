@@ -37,8 +37,18 @@ def _generate_storytelling_html(config: Dict[str, Any]) -> str:
     if not story:
         return ""
     scenes = story.get("scenes", [])
+    total = len(scenes)
 
     parts = []
+    # Mobile progress counter (hidden on desktop via CSS)
+    if story.get("progress") and total > 1:
+        parts.append(
+            '<div class="llmaps-story-progress-mobile">'
+            '<span class="progress-text">1 / {0}</span>'
+            '<div class="progress-bar" style="width: {1:.1f}%"></div>'
+            '</div>'.format(total, 100 / total)
+        )
+
     for i, scene in enumerate(scenes):
         parts.append(
             f'<section class="story-step" data-index="{i}">'

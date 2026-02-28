@@ -146,12 +146,33 @@
         const center = (hashState && hashState.center) || config.center || [0, 0];
         const zoom = (hashState && hashState.zoom) ?? (config.zoom ?? 10);
         const tiles = config.tiles || {};
-        const map = new maplibregl.Map({
+        const styleUrl = (config && config.style_url) || null;
+
+        const mapOptions = {
           container: containerId,
-          style: buildBaseStyle(center, zoom, tiles),
           center: center,
-          zoom: zoom
-        });
+          zoom: zoom,
+          attributionControl: false
+        };
+
+        // If an explicit external style is provided in the config
+        // (e.g. Lightberry from WB Maps), use it directly.
+        // Otherwise, build a basic raster style.
+        if (styleUrl) {
+          mapOptions.style = styleUrl;
+        } else {
+          mapOptions.style = buildBaseStyle(center, zoom, tiles);
+        }
+
+        const map = new maplibregl.Map(mapOptions);
+
+        // Single attribution control: style/sources + custom LLMaps label.
+        if (typeof maplibregl.AttributionControl === "function") {
+          const customAttr = config.custom_attribution || '© LLMaps';
+          map.addControl(new maplibregl.AttributionControl({
+            customAttribution: customAttr
+          }), "bottom-right");
+        }
         if (useHash) enableMapHashSync(map);
 
         const layers = config.layers || [];
