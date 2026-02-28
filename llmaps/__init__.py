@@ -7,7 +7,7 @@ from . import components, expressions, layers, sources, tiles
 
 __all__ = ["Map", "components", "expressions", "layers", "sources", "tiles", "get_llm_context"]
 
-__version__ = "0.1.0"
+__version__ = "1.0.1"
 
 
 def get_llm_context() -> str:

@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.1 - Packaging hotfix
+
+- **Fixed:** Corrected `jenkspy` dependency constraint in package metadata so installation from PyPI succeeds.
+- **Docs:** No API changes.
+
+## 1.0.0 - Stable storytelling release
+
+- **Added:** `SceneComparison` support in `Storytelling` scenes — per-scene before/after slider with dedicated layers, labels, and feature highlights.
+- **Added:** Storytelling mobile UX improvements: progress counter, touch navigation, scroll hints, and localized narrative content.
+- **Added:** Gerrymandering storytelling example with scene overlays and effect scripts.
+- **Improved:** Story transitions and camera behavior on mobile devices for smoother scene activation.
+- **Fixed:** Fill/stroke rendering reliability and comparison interactions.
+- **Docs:** Synced README/API docs and release process for 1.0.0 publishing.
+
 ## 0.5.0 - Storytelling
 
 - **Added:** `Storytelling` component — scrollytelling narrative panel with scroll-driven map reactions (camera, layers, highlights). Uses Scrollama.

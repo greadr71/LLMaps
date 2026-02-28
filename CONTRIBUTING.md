@@ -44,6 +44,46 @@ For any public API change, update the documentation. Below is a complete list of
 
 **Note:** `CHANGELOG.md` is updated only on new releases, not on every commit.
 
+## Versioning and releases
+
+LLMaps uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
+
+- **PATCH** (`x.y.Z`) — backward-compatible fixes and small non-breaking improvements.
+- **MINOR** (`x.Y.z`) — backward-compatible new functionality.
+- **MAJOR** (`X.y.z`) — breaking changes or major API redesign.
+
+### Release checklist (PyPI)
+
+1. Update `CHANGELOG.md` with a new version section and date.
+2. Sync version in both files:
+   - `pyproject.toml` (`[project].version`)
+   - `llmaps/__init__.py` (`__version__`)
+3. Ensure docs matrix is updated (`README.md`, `llmaps/LLM_CONTEXT.md`, `docs/api/*`, recipes when needed).
+4. Build artifacts from repo root:
+
+   ```bash
+   python -m build
+   ```
+
+5. Validate package metadata:
+
+   ```bash
+   python -m twine check dist/*
+   ```
+
+6. Publish to PyPI:
+
+   ```bash
+   python -m twine upload dist/*
+   ```
+
+7. Verify publication:
+
+   ```bash
+   python -m pip index versions llmaps
+   python -c "import llmaps; print(llmaps.__version__)"
+   ```
+
 ### Matrix: what to update
 
 | Change type | Must update |

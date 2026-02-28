@@ -1,6 +1,6 @@
 # LLMaps
 
-![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)
+![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![MapLibre](https://img.shields.io/badge/frontend-MapLibre%20GL%20JS-orange)
 
@@ -43,7 +43,7 @@ Encapsulates best practices for interactive web map development behind a predict
 |----------|---------|
 | **Layers** | `CircleLayer`, `FillLayer`, `H3Layer`, `VectorTileLayer` |
 | **Sources** | `FileSource`, `ApiSource`, `VectorTileSource` |
-| **Components** | `Legend`, `Popup`, `Sidebar`, `Search`, `FeatureSearch`, `Controls`, `BasemapSwitcher` |
+| **Components** | `Legend`, `Popup`, `Sidebar`, `Search`, `FeatureSearch`, `Controls`, `BasemapSwitcher`, `Storytelling` |
 
 ## Installation
 

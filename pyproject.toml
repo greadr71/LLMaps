@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llmaps"
-version = "0.1.2"
+version = "1.0.1"
 description = "A Python library for creating interactive web maps, optimized for LLM-assisted development."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -33,7 +33,7 @@ dependencies = [
   "numpy>=1.24",
   "geobuf>=2.0",
   "h3>=3.7",
-  "jenkspy>=1.7",
+  "jenkspy>=0.4.1",
   "matplotlib>=3.7",
 ]
 
