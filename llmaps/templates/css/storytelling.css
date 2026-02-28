@@ -169,6 +169,8 @@
     width: 100% !important;
     height: 50vh;
     order: 2;
+    scroll-padding-top: 0;
+    overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
   }
   .llmaps-story-map {
@@ -178,6 +180,7 @@
     min-height: 50vh;
     padding: 1.5rem 1.2rem;
     opacity: 0.5;
+    scroll-snap-stop: always;
   }
   .story-step.is-active {
     opacity: 1;

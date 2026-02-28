@@ -92,10 +92,19 @@ Search(geocoder_url=None, geocoder_params=None, placeholder="Search address...",
 Controls(zoom=True, scale=True, fullscreen=False, hash=True)
 
 # Storytelling — scrollytelling narrative map
-Storytelling(scenes=[Scene(...)], position="left", width=400, progress=True, snap_mode="proximity", touch_swipe=True, comparison_slider_hint=None)
+Storytelling(scenes=[Scene(...)], position="left", width=400, progress=True, snap_mode="proximity", touch_swipe=True,
+             comparison_slider_hint=None, comparison_slider_start_pct=0.5,
+             use_swiper_cdn=False, expose_scene_bridge=False, prewarm_comparison=False,
+             keep_main_layers_visible_in_comparison=False, mobile_scroll_fallback=False)
 # snap_mode: "proximity" (default) or "mandatory" — CSS scroll-snap behaviour for narrative panel.
 # touch_swipe: True (default) enables library touch-swipe handler; False disables it (use native scroll + CSS snap + Scrollama).
 # comparison_slider_hint: custom tooltip when comparison slider first appears. None = locale-aware default.
+# comparison_slider_start_pct: initial comparison slider position as fraction [0.0, 1.0].
+# use_swiper_cdn: include Swiper CDN assets in generated HTML for custom mobile transitions.
+# expose_scene_bridge: expose window.llmapsApplySceneByIndex(index) for custom JS.
+# prewarm_comparison: pre-initialize comparison infrastructure after layers are ready.
+# keep_main_layers_visible_in_comparison: do not hide main-map layers during comparison scenes.
+# mobile_scroll_fallback: enable narrative scroll-event fallback scene detection.
 Scene(id, title, content,  # content is HTML
       center=None, zoom=None, bearing=0, pitch=0,  # camera (None=keep current)
       visible_layers=None,  # None=don't change, []=hide all, ["id"]=show these

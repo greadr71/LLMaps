@@ -205,6 +205,12 @@ Storytelling(
     snap_mode: Literal["proximity", "mandatory"] = "proximity",
     touch_swipe: bool = True,
     comparison_slider_hint: Optional[str] = None,
+    comparison_slider_start_pct: float = 0.5,
+    use_swiper_cdn: bool = False,
+    expose_scene_bridge: bool = False,
+    prewarm_comparison: bool = False,
+    keep_main_layers_visible_in_comparison: bool = False,
+    mobile_scroll_fallback: bool = False,
 )
 ```
 
@@ -217,6 +223,12 @@ Storytelling(
 | `snap_mode` | str | `"proximity"` | CSS scroll-snap behaviour: `"proximity"` snaps only near scene boundaries; `"mandatory"` always snaps to the nearest scene. |
 | `touch_swipe` | bool | True | Enable the built-in touch-swipe handler. Set to `False` to rely on native scroll + CSS snap + Scrollama only. |
 | `comparison_slider_hint` | str or None | None | Tooltip text shown when comparison slider first appears. `None` = locale-aware default. |
+| `comparison_slider_start_pct` | float | 0.5 | Initial comparison slider position as fraction of map width in `[0.0, 1.0]`. |
+| `use_swiper_cdn` | bool | False | Include Swiper CDN assets in generated HTML for custom mobile scene transitions. |
+| `expose_scene_bridge` | bool | False | Expose `window.llmapsApplySceneByIndex(index)` for custom JS scene control. |
+| `prewarm_comparison` | bool | False | Pre-initialize comparison map infrastructure after layers are ready. |
+| `keep_main_layers_visible_in_comparison` | bool | False | Keep main-map layers visible while comparison overlay is active. |
+| `mobile_scroll_fallback` | bool | False | Enable scroll-event fallback for scene detection when `IntersectionObserver` is unreliable. |
 
 ### Scene
 

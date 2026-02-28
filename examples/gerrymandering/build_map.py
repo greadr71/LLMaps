@@ -29,8 +29,6 @@ from scenes import (
 )
 from texts import get_texts
 
-import patches
-
 # ── Paths ──
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -158,6 +156,10 @@ def build_map(locale: str = "en") -> Map:
             touch_swipe=False,
             comparison_slider_hint=texts["comparison_slider_hint"],
             comparison_slider_start_pct=0.03,
+            use_swiper_cdn=True,
+            expose_scene_bridge=True,
+            prewarm_comparison=True,
+            keep_main_layers_visible_in_comparison=True,
         )
     )
 
@@ -173,6 +175,13 @@ def build_map(locale: str = "en") -> Map:
             "paCtxIdx": scene_ids.index("pa_context"),
             "courtIdx": scene_ids.index("court"),
             "sceneIds": scene_ids,
+        },
+    )
+    m.embed_data(
+        "scrollHintConfig",
+        {
+            "texts": texts["scroll_hints"],
+            "showDelayMs": 900,
         },
     )
 
@@ -221,7 +230,6 @@ def main() -> None:
         output_path = _output_path(locale)
         m = build_map(locale)
         m.save(str(output_path))
-        patches.apply(output_path)
         print(f"Saved {locale} gerrymandering story map to {output_path}")
 
 

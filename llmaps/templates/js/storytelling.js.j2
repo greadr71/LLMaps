@@ -41,11 +41,13 @@
               map.flyTo(flyOpts);
             }
 
-            /* Hide all layers on main map too */
-            allLayerIdsWithOutline.forEach(function(layerId) {
-              if (!map.getLayer(layerId)) return;
-              map.setLayoutProperty(layerId, "visibility", "none");
-            });
+            if (!storyConfig.keepMainLayersVisibleInComparison) {
+              /* Hide all layers on main map too */
+              allLayerIdsWithOutline.forEach(function(layerId) {
+                if (!map.getLayer(layerId)) return;
+                map.setLayoutProperty(layerId, "visibility", "none");
+              });
+            }
             clearHighlights(map);
             updateNavDots(index);
             updateMobileProgress(index);
@@ -226,6 +228,40 @@
           }
         }
 
+        function initMobileScrollFallback(map) {
+          if (!storyConfig.mobileScrollFallback) return;
+          var nar = document.querySelector(".llmaps-story-narrative");
+          if (!nar) return;
+
+          var lastFallbackIdx = -1;
+          nar.addEventListener("scroll", function() {
+            if (window.llmapsStorySwiper) return;
+            if (isJumping) return;
+
+            var stepsEls = nar.querySelectorAll(".story-step");
+            if (!stepsEls.length) return;
+
+            var rect = nar.getBoundingClientRect();
+            var mid = rect.top + rect.height * 0.5;
+            var best = 0;
+            var bestDist = Infinity;
+
+            stepsEls.forEach(function(step, i) {
+              var sr = step.getBoundingClientRect();
+              var dist = Math.abs(sr.top + sr.height * 0.5 - mid);
+              if (dist < bestDist) {
+                bestDist = dist;
+                best = i;
+              }
+            });
+
+            if (best !== lastFallbackIdx) {
+              lastFallbackIdx = best;
+              applyScene(map, scenes[best], best);
+            }
+          }, { passive: true });
+        }
+
         /* ── Init on layers ready ── */
         buildNavDots();
         (function() {
@@ -237,7 +273,21 @@
         window.llmapsOnLayersReady(function(map) {
           storyMap = map;
           window.llmapsStoryMap = map;
+          if (storyConfig.exposeSceneBridge) {
+            window.llmapsApplySceneByIndex = function(index) {
+              var idx = Number(index);
+              if (!Number.isFinite(idx)) return;
+              if (idx < 0 || idx >= scenes.length) return;
+              applyScene(map, scenes[idx], idx);
+            };
+          }
           initScrollama(map);
+          initMobileScrollFallback(map);
+{% if config.storytelling.hasComparison %}
+          if (storyConfig.prewarmComparison) {
+            setTimeout(function() { ensureCompReady(function() {}); }, 0);
+          }
+{% endif %}
         });
 
         /* ── Touch swipe navigation (mobile) ── */

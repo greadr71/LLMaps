@@ -1,6 +1,53 @@
 /* Overlay styles for gerrymandering story map:
    grid diagrams, dim overlay, court cross, vote bars */
 
+.llmaps-story-narrative {
+    position: relative;
+}
+
+.story-scroll-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 8;
+    pointer-events: none;
+    background: rgba(34, 34, 34, 0.86);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.2;
+    padding: 7px 10px;
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    white-space: nowrap;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.story-scroll-hint::after {
+    content: "↓";
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 11px;
+    opacity: 0.85;
+    animation: hint-arrow 1.15s ease-in-out infinite;
+}
+
+.story-scroll-hint.is-next::after {
+    content: "↑";
+}
+
+@keyframes hint-arrow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(2px); }
+}
+
+.story-scroll-hint.is-visible {
+    opacity: 1;
+}
+
 /* ── Dim overlay (pa_context scene) ── */
 .map-dim-overlay {
     position: fixed;
@@ -227,6 +274,34 @@
         height: 40vh !important;
         height: 40svh !important;
         scroll-padding-top: 34px;
+        scroll-snap-type: none !important;
+        overflow: hidden !important;
+        -webkit-overflow-scrolling: auto;
+    }
+
+    .llmaps-story-narrative.snap-mandatory {
+        scroll-snap-type: none !important;
+    }
+
+    .story-swiper-mobile {
+        width: 100%;
+        height: calc(40vh - 34px);
+        height: calc(40svh - 34px);
+    }
+
+    .story-scroll-hint {
+        bottom: 8px;
+        font-size: 11px;
+    }
+
+    .story-swiper-mobile .swiper-slide {
+        height: 100%;
+    }
+
+    .slide-scroll-inner {
+        height: 100%;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
         -webkit-overflow-scrolling: touch;
     }
 
@@ -237,6 +312,7 @@
     .vote-bars-title { font-size: 13px; }
 
     .story-step {
+        min-height: 100% !important;
         padding: 1.5rem 1.25rem !important;
         justify-content: flex-start !important;
     }

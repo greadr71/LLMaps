@@ -22,6 +22,11 @@ TEXTS = {
     "en": {
         "map_title": "Gerrymandering in Pennsylvania",
         "comparison_slider_hint": "Drag the slider to compare",
+        "scroll_hints": {
+            "scroll_down": "Keep scrolling",
+            "next_wheel": "Scroll to continue",
+            "next_swipe": "Scroll once more",
+        },
         "popup_labels": {
             "district": "District",
             "year": "Year",
@@ -238,6 +243,11 @@ Sources:
     "ru": {
         "map_title": "Джерримендеринг в Пенсильвании",
         "comparison_slider_hint": "Потяните слайдер для сравнения",
+        "scroll_hints": {
+            "scroll_down": "Листайте дальше",
+            "next_wheel": "Прокрутите, чтобы продолжить",
+            "next_swipe": "Прокрутите ещё раз",
+        },
         "popup_labels": {
             "district": "Округ",
             "year": "Год",

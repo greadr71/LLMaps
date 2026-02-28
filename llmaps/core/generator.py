@@ -123,6 +123,7 @@ def render_map_html(
     storytelling_html = _generate_storytelling_html(config)
     use_scrollama = bool(story_cfg)
     use_compare = bool(config.get("comparison") or story_cfg.get("hasComparison"))
+    use_swiper = bool(story_cfg.get("useSwiperCdn"))
 
     # Combine custom JS snippets
     custom_js_str = "\n".join(custom_js) if custom_js else ""
@@ -144,6 +145,7 @@ def render_map_html(
         use_compression=use_compression,
         use_scrollama=use_scrollama,
         use_compare=use_compare,
+        use_swiper=use_swiper,
         legend_html=legend_html,
         storytelling_html=storytelling_html,
         story_position=story_cfg.get("position", "left"),

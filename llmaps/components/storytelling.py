@@ -155,6 +155,24 @@ class Storytelling(BaseComponent):
     comparison_slider_start_pct:
         Initial slider position as a fraction of map width in ``[0.0, 1.0]``.
         ``0.1`` means 10% from the left edge.
+    use_swiper_cdn:
+        Whether to include Swiper CDN assets in generated HTML. Useful for
+        custom mobile scene transitions implemented in ``add_custom_js``.
+    expose_scene_bridge:
+        Whether to expose ``window.llmapsApplySceneByIndex(index)`` to custom
+        scripts. The bridge applies a story scene by index through the
+        built-in storytelling runtime.
+    prewarm_comparison:
+        Whether to pre-initialize comparison map infrastructure right after
+        story layers are ready (instead of waiting for the first comparison
+        scene).
+    keep_main_layers_visible_in_comparison:
+        Whether to keep main-map layers visible when entering a comparison
+        scene. By default they are hidden while comparison overlay is active.
+    mobile_scroll_fallback:
+        Whether to enable a scroll-event fallback that applies the nearest
+        scene on narrative scroll. Useful for environments where
+        ``IntersectionObserver`` may miss step-enter events.
     """
 
     scenes: List[Scene] = field(default_factory=list)
@@ -165,6 +183,11 @@ class Storytelling(BaseComponent):
     touch_swipe: bool = True
     comparison_slider_hint: Optional[str] = None
     comparison_slider_start_pct: float = 0.5
+    use_swiper_cdn: bool = False
+    expose_scene_bridge: bool = False
+    prewarm_comparison: bool = False
+    keep_main_layers_visible_in_comparison: bool = False
+    mobile_scroll_fallback: bool = False
 
     def __post_init__(self) -> None:
         self.component_type = "storytelling"
@@ -191,4 +214,14 @@ class Storytelling(BaseComponent):
         if self.comparison_slider_hint is not None:
             base["comparisonSliderHint"] = self.comparison_slider_hint
         base["comparisonSliderStartPct"] = max(0.0, min(1.0, float(self.comparison_slider_start_pct)))
+        if self.use_swiper_cdn:
+            base["useSwiperCdn"] = True
+        if self.expose_scene_bridge:
+            base["exposeSceneBridge"] = True
+        if self.prewarm_comparison:
+            base["prewarmComparison"] = True
+        if self.keep_main_layers_visible_in_comparison:
+            base["keepMainLayersVisibleInComparison"] = True
+        if self.mobile_scroll_fallback:
+            base["mobileScrollFallback"] = True
         return base
