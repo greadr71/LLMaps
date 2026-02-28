@@ -20,6 +20,10 @@
   scroll-snap-type: y proximity;
 }
 
+.llmaps-story-narrative.snap-mandatory {
+  scroll-snap-type: y mandatory;
+}
+
 .llmaps-story-narrative.position-right {
   order: 2;
   box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);

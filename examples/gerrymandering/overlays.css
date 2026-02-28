@@ -1,0 +1,300 @@
+/* Overlay styles for gerrymandering story map:
+   grid diagrams, dim overlay, court cross, vote bars */
+
+/* ── Dim overlay (pa_context scene) ── */
+.map-dim-overlay {
+    position: fixed;
+    top: 0;
+    left: 420px;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: rgba(235, 235, 235, 0.55);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.map-dim-overlay.is-visible { opacity: 1; }
+
+/* ── Grid backdrop ── */
+.grid-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 420px;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: #f8f5ee;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+.grid-overlay-backdrop.is-visible { opacity: 1; }
+
+/* ── Grid overlay container ── */
+.grid-overlay {
+    position: fixed;
+    top: 0;
+    left: 420px;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    opacity: 1;
+    pointer-events: none;
+}
+.grid-overlay.is-visible { pointer-events: auto; }
+
+.grid-overlay .grid-container {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+.grid-overlay.is-visible .grid-container { opacity: 1; }
+
+/* ── Grid layout ── */
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+}
+.grid-container.tools-layout {
+    flex-direction: column;
+    gap: 32px;
+}
+
+.grid-panel { text-align: center; }
+
+.grid-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #333;
+}
+.grid-title--fair { color: #2e7d32; }
+.grid-title--gerry { color: #b2182b; }
+
+.grid-subtitle {
+    font-size: 14px;
+    margin-top: 10px;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* ── Grid cells ── */
+.gerry-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 32px);
+    grid-template-rows: repeat(5, 32px);
+}
+.gcell {
+    width: 32px;
+    height: 32px;
+    box-sizing: border-box;
+}
+
+/* ── District number labels ── */
+.grid-with-labels {
+    position: relative;
+    display: inline-block;
+}
+.district-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.5);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ── Vote bars (tools scene) ── */
+.vote-bars { width: 100%; max-width: 460px; }
+.vote-bars-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+.vote-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.vote-bar-label {
+    font-size: 13px;
+    width: 64px;
+    text-align: right;
+    color: #555;
+    flex-shrink: 0;
+}
+.vote-bar {
+    flex: 1;
+    height: 22px;
+    display: flex;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.vote-bar-fill { height: 100%; }
+.vote-bar-tag {
+    font-size: 11px;
+    font-weight: 700;
+    width: 80px;
+    text-align: left;
+    flex-shrink: 0;
+}
+.vote-bar-tag--packing { color: #2166ac; }
+.vote-bar-tag--cracking { color: #b2182b; }
+
+/* ── Court cross overlay ── */
+.court-cross-overlay {
+    position: fixed;
+    top: 0;
+    left: 420px;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    pointer-events: none;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.court-cross-overlay.is-visible { display: flex; }
+.court-cross-overlay svg {
+    width: min(70vh, 70%);
+    height: min(70vh, 70%);
+}
+.court-cross-line {
+    stroke: #b2182b;
+    stroke-width: 10;
+    stroke-linecap: square;
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+}
+.court-cross-overlay.is-visible .court-cross-line {
+    animation: draw-cross 1s ease-out forwards;
+}
+.court-cross-overlay.is-visible .court-cross-line:nth-child(2) {
+    animation-delay: 0.4s;
+}
+@keyframes draw-cross {
+    to { stroke-dashoffset: 0; }
+}
+
+/* ── Medium desktop ── */
+@media (max-width: 1500px) and (min-width: 769px) {
+    .gerry-grid {
+        grid-template-columns: repeat(10, 22px);
+        grid-template-rows: repeat(5, 22px);
+    }
+    .gcell { width: 22px; height: 22px; }
+    .grid-container { gap: 10px; padding: 16px 24px; }
+    .grid-title { font-size: 15px; }
+    .grid-subtitle { font-size: 12px; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+    .llmaps-story-map {
+        height: 60vh !important;
+        height: 60svh !important;
+        flex: none !important;
+    }
+
+    .map-dim-overlay {
+        left: 0;
+        top: 0;
+        bottom: 40vh;
+        bottom: 40svh;
+    }
+
+    .grid-overlay-backdrop {
+        left: 0;
+        top: 0;
+        bottom: 40vh;
+        bottom: 40svh;
+    }
+
+    .court-cross-overlay { left: 0; top: 0; bottom: 40vh; bottom: 40svh; }
+
+    .llmaps-story-narrative {
+        height: 40vh !important;
+        height: 40svh !important;
+        scroll-padding-top: 34px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .vote-bars { max-width: 100%; }
+    .vote-bar-row { gap: 4px; }
+    .vote-bar-label { font-size: 11px; width: 50px; }
+    .vote-bar-tag { font-size: 10px; width: 65px; }
+    .vote-bars-title { font-size: 13px; }
+
+    .story-step {
+        padding: 1.5rem 1.25rem !important;
+        justify-content: flex-start !important;
+    }
+    .story-step:first-child {
+        padding-top: 1rem !important;
+    }
+    .story-step h2 {
+        font-size: 1.15rem;
+        margin-bottom: 0.75rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    .story-step .step-content {
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
+    .llmaps-story-progress-mobile {
+        padding: 6px 16px !important;
+    }
+
+    /* Grid overlays on mobile */
+    .grid-overlay {
+        left: 0;
+        top: 0;
+        bottom: 40vh;
+        bottom: 40svh;
+        overflow-y: auto;
+    }
+    .gerry-grid {
+        grid-template-columns: repeat(10, 16px);
+        grid-template-rows: repeat(5, 16px);
+    }
+    .gcell { width: 16px; height: 16px; }
+    .grid-container {
+        gap: 4px;
+        padding: 6px;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: stretch;
+    }
+    .grid-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .grid-title { font-size: 13px; margin-bottom: 6px; }
+    .grid-subtitle { font-size: 11px; margin-top: 6px; line-height: 1.35; }
+}
+
+@media (max-width: 380px) {
+    .gerry-grid {
+        grid-template-columns: repeat(10, 14px);
+        grid-template-rows: repeat(5, 14px);
+    }
+    .gcell { width: 14px; height: 14px; }
+    .grid-title { font-size: 14px; margin-bottom: 8px; }
+    .grid-subtitle { font-size: 12px; }
+    .grid-container { gap: 6px; padding: 8px; }
+}

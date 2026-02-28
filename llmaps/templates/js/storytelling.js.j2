@@ -67,6 +67,12 @@
                 showSliderTooltip();
               }
             });
+
+            try {
+              window.dispatchEvent(new CustomEvent("llmaps:storySceneChanged", {
+                detail: { index: index, sceneId: scene.id || null }
+              }));
+            } catch (e) {}
             return;
           }
 
@@ -222,8 +228,15 @@
 
         /* ── Init on layers ready ── */
         buildNavDots();
+        (function() {
+          var narrative = document.querySelector(".llmaps-story-narrative");
+          if (narrative && storyConfig.snapMode === "mandatory") {
+            narrative.classList.add("snap-mandatory");
+          }
+        })();
         window.llmapsOnLayersReady(function(map) {
           storyMap = map;
+          window.llmapsStoryMap = map;
           initScrollama(map);
         });
 
@@ -233,6 +246,7 @@
           if (!narrative) return;
           if (!("ontouchstart" in window)) return;
           if (narrative.dataset.noLibraryTouch) return;
+          if (storyConfig.touchSwipe === false) return;
 
           var touchStartY = 0;
           var touchLocked = false;

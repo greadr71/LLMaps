@@ -92,7 +92,9 @@ Search(geocoder_url=None, geocoder_params=None, placeholder="Search address...",
 Controls(zoom=True, scale=True, fullscreen=False, hash=True)
 
 # Storytelling — scrollytelling narrative map
-Storytelling(scenes=[Scene(...)], position="left", width=400, progress=True, comparison_slider_hint=None)
+Storytelling(scenes=[Scene(...)], position="left", width=400, progress=True, snap_mode="proximity", touch_swipe=True, comparison_slider_hint=None)
+# snap_mode: "proximity" (default) or "mandatory" — CSS scroll-snap behaviour for narrative panel.
+# touch_swipe: True (default) enables library touch-swipe handler; False disables it (use native scroll + CSS snap + Scrollama).
 # comparison_slider_hint: custom tooltip when comparison slider first appears. None = locale-aware default.
 Scene(id, title, content,  # content is HTML
       center=None, zoom=None, bearing=0, pitch=0,  # camera (None=keep current)

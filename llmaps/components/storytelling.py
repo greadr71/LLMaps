@@ -139,6 +139,15 @@ class Storytelling(BaseComponent):
         Narrative panel width in pixels.
     progress:
         Whether to show a clickable navigation dot indicator.
+    snap_mode:
+        CSS scroll-snap behaviour for the narrative panel.
+        ``"proximity"`` (default) snaps only when the scroll position is
+        near a scene boundary; ``"mandatory"`` always snaps to the
+        nearest scene.
+    touch_swipe:
+        Whether the built-in touch-swipe navigation handler is enabled.
+        Set to ``False`` to rely on native touch scrolling + CSS
+        scroll-snap + Scrollama instead of the library swipe handler.
     comparison_slider_hint:
         Custom tooltip text shown when the comparison slider first appears
         (e.g. ``"Drag to compare"``).  *None* uses a locale-aware default.
@@ -152,6 +161,8 @@ class Storytelling(BaseComponent):
     position: Literal["left", "right"] = "left"
     width: int = 400
     progress: bool = True
+    snap_mode: Literal["proximity", "mandatory"] = "proximity"
+    touch_swipe: bool = True
     comparison_slider_hint: Optional[str] = None
     comparison_slider_start_pct: float = 0.5
 
@@ -172,8 +183,11 @@ class Storytelling(BaseComponent):
                 "width": self.width,
                 "progress": self.progress,
                 "hasComparison": self.has_comparison,
+                "snapMode": self.snap_mode,
             }
         )
+        if not self.touch_swipe:
+            base["touchSwipe"] = False
         if self.comparison_slider_hint is not None:
             base["comparisonSliderHint"] = self.comparison_slider_hint
         base["comparisonSliderStartPct"] = max(0.0, min(1.0, float(self.comparison_slider_start_pct)))

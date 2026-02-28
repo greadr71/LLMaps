@@ -202,6 +202,8 @@ Storytelling(
     position: Literal["left", "right"] = "left",
     width: int = 400,
     progress: bool = True,
+    snap_mode: Literal["proximity", "mandatory"] = "proximity",
+    touch_swipe: bool = True,
     comparison_slider_hint: Optional[str] = None,
 )
 ```
@@ -212,6 +214,8 @@ Storytelling(
 | `position` | str | `"left"` | Side of the screen for the narrative panel. |
 | `width` | int | 400 | Narrative panel width in pixels. |
 | `progress` | bool | True | Show clickable navigation dots for quick scene access. |
+| `snap_mode` | str | `"proximity"` | CSS scroll-snap behaviour: `"proximity"` snaps only near scene boundaries; `"mandatory"` always snaps to the nearest scene. |
+| `touch_swipe` | bool | True | Enable the built-in touch-swipe handler. Set to `False` to rely on native scroll + CSS snap + Scrollama only. |
 | `comparison_slider_hint` | str or None | None | Tooltip text shown when comparison slider first appears. `None` = locale-aware default. |
 
 ### Scene
