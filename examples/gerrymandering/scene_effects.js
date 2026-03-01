@@ -216,10 +216,13 @@
     });
 
     /* Initial state */
-    applyScene(0, sceneIds[0] || null);
+    var _initIdx = (typeof window.llmapsDesiredInitialSlide === "number")
+        ? window.llmapsDesiredInitialSlide : 0;
+    if (_initIdx < 0 || _initIdx >= sceneIds.length) _initIdx = 0;
+    applyScene(_initIdx, sceneIds[_initIdx] || null);
 
-    /* ── Wheel hijack: one scroll tick = one scene (desktop only) ── */
-    var currentStep = 0;
+    /* ── Wheel hijack: one scroll tick = one scene ── */
+    var currentStep = _initIdx;
     var wheelLocked = false;
     var LOCK_MS = 700;
 
@@ -306,6 +309,7 @@
             effect: "slide",
             resistanceRatio: 0,
             runCallbacksOnInit: false,
+            initialSlide: currentStep,
         });
 
         window.llmapsStorySwiper.on("slideChange", function() {

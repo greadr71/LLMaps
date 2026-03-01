@@ -222,9 +222,21 @@
 
           window.addEventListener("resize", scroller.resize);
 
-          /* Apply first scene immediately */
+          /* Apply initial scene (reads ?step=N via llmapsDesiredInitialSlide) */
+          var initialIdx = (typeof window.llmapsDesiredInitialSlide === "number")
+            ? window.llmapsDesiredInitialSlide : 0;
+          if (initialIdx < 0 || initialIdx >= scenes.length) initialIdx = 0;
           if (scenes.length > 0) {
-            applyScene(map, scenes[0], 0);
+            applyScene(map, scenes[initialIdx], initialIdx);
+            if (initialIdx > 0) {
+              isJumping = true;
+              var nar = document.querySelector('.llmaps-story-narrative');
+              var target = nar && nar.querySelector('.story-step[data-index="' + initialIdx + '"]');
+              if (nar && target) {
+                nar.scrollTop = target.getBoundingClientRect().top - nar.getBoundingClientRect().top;
+              }
+              setTimeout(function() { isJumping = false; }, 50);
+            }
           }
         }
 

@@ -3376,9 +3376,21 @@ Sources:
 
           window.addEventListener("resize", scroller.resize);
 
-          /* Apply first scene immediately */
+          /* Apply initial scene (reads ?step=N via llmapsDesiredInitialSlide) */
+          var initialIdx = (typeof window.llmapsDesiredInitialSlide === "number")
+            ? window.llmapsDesiredInitialSlide : 0;
+          if (initialIdx < 0 || initialIdx >= scenes.length) initialIdx = 0;
           if (scenes.length > 0) {
-            applyScene(map, scenes[0], 0);
+            applyScene(map, scenes[initialIdx], initialIdx);
+            if (initialIdx > 0) {
+              isJumping = true;
+              var nar = document.querySelector('.llmaps-story-narrative');
+              var target = nar && nar.querySelector('.story-step[data-index="' + initialIdx + '"]');
+              if (nar && target) {
+                nar.scrollTop = target.getBoundingClientRect().top - nar.getBoundingClientRect().top;
+              }
+              setTimeout(function() { isJumping = false; }, 50);
+            }
           }
         }
 
@@ -4012,10 +4024,13 @@ Sources:
     });
 
     /* Initial state */
-    applyScene(0, sceneIds[0] || null);
+    var _initIdx = (typeof window.llmapsDesiredInitialSlide === "number")
+        ? window.llmapsDesiredInitialSlide : 0;
+    if (_initIdx < 0 || _initIdx >= sceneIds.length) _initIdx = 0;
+    applyScene(_initIdx, sceneIds[_initIdx] || null);
 
-    /* ── Wheel hijack: one scroll tick = one scene (desktop only) ── */
-    var currentStep = 0;
+    /* ── Wheel hijack: one scroll tick = one scene ── */
+    var currentStep = _initIdx;
     var wheelLocked = false;
     var LOCK_MS = 700;
 
@@ -4102,6 +4117,7 @@ Sources:
             effect: "slide",
             resistanceRatio: 0,
             runCallbacksOnInit: false,
+            initialSlide: currentStep,
         });
 
         window.llmapsStorySwiper.on("slideChange", function() {
@@ -4190,27 +4206,6 @@ Sources:
 
     scheduleHint();
 })();
-
-
-    (function() {
-        if (window.llmapsDesiredInitialSlide !== undefined) {
-            var stepIndex = window.llmapsDesiredInitialSlide;
-            var attempts = 0;
-            var maxAttempts = 30;
-
-            var checkAndSet = setInterval(function() {
-                if (window.llmapsStorySwiper) {
-                    window.llmapsStorySwiper.slideTo(stepIndex);
-                    clearInterval(checkAndSet);  // Stop immediately after first success
-                } else {
-                    attempts++;
-                    if (attempts >= maxAttempts) {
-                        clearInterval(checkAndSet);
-                    }
-                }
-            }, 100);
-        }
-    })();
-    </script>
+</script>
   </body>
 </html>

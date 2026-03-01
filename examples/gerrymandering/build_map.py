@@ -229,29 +229,6 @@ def build_map(locale: str = "en") -> Map:
 
     m.add_custom_js(Path(BASE_DIR / "scene_effects.js"))
 
-    # Apply desired initial slide after Swiper is initialized
-    m.add_custom_js("""
-    (function() {
-        if (window.llmapsDesiredInitialSlide !== undefined) {
-            var stepIndex = window.llmapsDesiredInitialSlide;
-            var attempts = 0;
-            var maxAttempts = 30;
-
-            var checkAndSet = setInterval(function() {
-                if (window.llmapsStorySwiper) {
-                    window.llmapsStorySwiper.slideTo(stepIndex);
-                    clearInterval(checkAndSet);  // Stop immediately after first success
-                } else {
-                    attempts++;
-                    if (attempts >= maxAttempts) {
-                        clearInterval(checkAndSet);
-                    }
-                }
-            }, 100);
-        }
-    })();
-    """)
-
     return m
 
 
