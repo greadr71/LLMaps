@@ -206,7 +206,64 @@ def build_map(locale: str = "en") -> Map:
 
     # External CSS & JS
     m.add_custom_css(Path(BASE_DIR / "overlays.css"))
+
+    # Handle URL step parameter BEFORE loading scene_effects.js
+    # This runs before Swiper initialization
+    m.add_custom_js("""
+    (function() {
+        try {
+            var params = new URLSearchParams(window.location.search);
+            var stepParam = params.get('step');
+            console.log('[llmaps] Step parameter detected:', stepParam);
+            if (stepParam !== null) {
+                var stepIndex = parseInt(stepParam, 10);
+                if (!isNaN(stepIndex) && stepIndex >= 0) {
+                    // Store the desired initial slide globally
+                    window.llmapsDesiredInitialSlide = stepIndex;
+                    console.log('[llmaps] Will jump to slide:', stepIndex);
+                }
+            }
+        } catch(e) {
+            console.error('[llmaps] Error reading step parameter:', e);
+        }
+    })();
+    """)
+
     m.add_custom_js(Path(BASE_DIR / "scene_effects.js"))
+
+    # Apply desired initial slide after Swiper is initialized
+    m.add_custom_js("""
+    (function() {
+        if (window.llmapsDesiredInitialSlide !== undefined) {
+            var stepIndex = window.llmapsDesiredInitialSlide;
+            var attempts = 0;
+            var maxAttempts = 30;
+
+            console.log('[llmaps] Starting to apply initial slide:', stepIndex);
+
+            var checkAndSet = setInterval(function() {
+                if (window.llmapsStorySwiper) {
+                    console.log('[llmaps] Swiper found, setting to slide:', stepIndex, 'attempt:', attempts);
+                    window.llmapsStorySwiper.slideTo(stepIndex);
+                    attempts++;
+                    // Keep trying to ensure it sticks
+                    if (attempts >= maxAttempts) {
+                        console.log('[llmaps] Max attempts reached');
+                        clearInterval(checkAndSet);
+                    }
+                } else {
+                    attempts++;
+                    if (attempts >= maxAttempts) {
+                        console.log('[llmaps] Swiper not found after max attempts');
+                        clearInterval(checkAndSet);
+                    }
+                }
+            }, 100);
+        } else {
+            console.log('[llmaps] No desired initial slide set');
+        }
+    })();
+    """)
 
     return m
 

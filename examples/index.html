@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1500px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -61,9 +61,80 @@
 
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto auto;
             gap: 40px;
             margin-bottom: 60px;
+        }
+
+        .example-card--featured {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .example-card--featured .card-preview {
+            flex: 1;
+            min-height: 400px;
+            height: 100%;
+        }
+
+        .invite-card {
+            background: #fafbff;
+            border: 2.5px dashed #a5b4fc;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 32px;
+            gap: 16px;
+            min-height: 200px;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .invite-card:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .invite-card__icon {
+            font-size: 3em;
+            line-height: 1;
+        }
+
+        .invite-card__title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #4253b5;
+            margin: 0;
+        }
+
+        .invite-card__text {
+            font-size: 0.95em;
+            color: #666;
+            max-width: 280px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .invite-card__link {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 24px;
+            border-radius: 6px;
+            background: #667eea;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .invite-card__link:hover {
+            background: #4f63d2;
         }
 
         .example-card {
@@ -88,6 +159,7 @@
 
         .card-content {
             padding: 24px;
+            border-top: 2.5px solid #a5b4fc;
         }
 
         .card-title {
@@ -204,6 +276,15 @@
                 grid-template-columns: 1fr;
             }
 
+            .example-card--featured {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .example-card--featured .card-preview {
+                height: 250px;
+            }
+
             h1 {
                 font-size: 2em;
             }
@@ -227,80 +308,11 @@
         </header>
 
         <div class="gallery">
-            <!-- Cafes Example -->
-            <div class="example-card">
-                <iframe class="card-preview" src="cafes/map.html" scrolling="no"></iframe>
-                <div class="card-content">
-                    <h2 class="card-title">Paris Cafes & Restaurants</h2>
-                    <p class="card-description">
-                        2,000+ cafes and restaurants in Paris from OpenStreetMap. 
-                        Features geocoding search, attribute filtering, and basemap switching.
-                    </p>
-                    <div class="card-tags">
-                        <span class="tag">CircleLayer</span>
-                        <span class="tag">Search</span>
-                        <span class="tag">FeatureSearch</span>
-                        <span class="tag">Sidebar</span>
-                    </div>
-                    <div class="card-actions">
-                        <a href="cafes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/cafes" 
-                           class="btn btn-secondary" target="_blank">View Code</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- World Population Example -->
-            <div class="example-card">
-                <iframe class="card-preview" src="world_population/map.html" scrolling="no"></iframe>
-                <div class="card-content">
-                    <h2 class="card-title">World Population</h2>
-                    <p class="card-description">
-                        Choropleth map of 177 countries colored by population using Jenks natural breaks. 
-                        Demonstrates GPU-efficient feature-state styling.
-                    </p>
-                    <div class="card-tags">
-                        <span class="tag">FillLayer</span>
-                        <span class="tag">feature-state</span>
-                        <span class="tag">Jenks</span>
-                        <span class="tag">color ramps</span>
-                    </div>
-                    <div class="card-actions">
-                        <a href="world_population/map.html" class="btn btn-primary" target="_blank">Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/world_population" 
-                           class="btn btn-secondary" target="_blank">View Code</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Earthquakes Example -->
-            <div class="example-card">
-                <iframe class="card-preview" src="earthquakes/map.html" scrolling="no"></iframe>
-                <div class="card-content">
-                    <h2 class="card-title">Global Earthquakes</h2>
-                    <p class="card-description">
-                        5.0+ magnitude earthquakes (2021-2026) from USGS. 
-                        Circle size = magnitude, color = depth with plasma colormap.
-                    </p>
-                    <div class="card-tags">
-                        <span class="tag">CircleLayer</span>
-                        <span class="tag">interpolate</span>
-                        <span class="tag">Jenks</span>
-                        <span class="tag">Sidebar</span>
-                    </div>
-                    <div class="card-actions">
-                        <a href="earthquakes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/earthquakes" 
-                           class="btn btn-secondary" target="_blank">View Code</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gerrymandering Example -->
-            <div class="example-card" data-map-card>
+            <!-- Gerrymandering Example (featured — spans 2 rows) -->
+            <div class="example-card example-card--featured" data-map-card>
                 <iframe
                     class="card-preview"
-                    src="gerrymandering/gerrymandering_en.html"
+                    src="gerrymandering/gerrymandering_en.html?step=4"
                     scrolling="no"
                     data-map-frame
                 ></iframe>
@@ -329,6 +341,90 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Cafes Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="cafes/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">Paris Cafes & Restaurants</h2>
+                    <p class="card-description">
+                        2,000+ cafes and restaurants in Paris from OpenStreetMap.
+                        Features geocoding search, attribute filtering, and basemap switching.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">CircleLayer</span>
+                        <span class="tag">Search</span>
+                        <span class="tag">FeatureSearch</span>
+                        <span class="tag">Sidebar</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="cafes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/cafes"
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- World Population Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="world_population/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">World Population</h2>
+                    <p class="card-description">
+                        Choropleth map of 177 countries colored by population using Jenks natural breaks.
+                        Demonstrates GPU-efficient feature-state styling.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">FillLayer</span>
+                        <span class="tag">feature-state</span>
+                        <span class="tag">Jenks</span>
+                        <span class="tag">color ramps</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="world_population/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/world_population"
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Earthquakes Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="earthquakes/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">Global Earthquakes</h2>
+                    <p class="card-description">
+                        5.0+ magnitude earthquakes (2021-2026) from USGS.
+                        Circle size = magnitude, color = depth with plasma colormap.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">CircleLayer</span>
+                        <span class="tag">interpolate</span>
+                        <span class="tag">Jenks</span>
+                        <span class="tag">Sidebar</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="earthquakes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/earthquakes"
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invitation to build your own -->
+            <div class="invite-card">
+                <div class="invite-card__icon">✦</div>
+                <h2 class="invite-card__title">Build Your Own</h2>
+                <p class="invite-card__text">
+                    Create interactive web maps from Python with llmaps —
+                    describe your data, pick layers, and publish.
+                </p>
+                <a href="https://github.com/greadr71/llmaps"
+                   class="invite-card__link"
+                   target="_blank">
+                    Get started on GitHub →
+                </a>
+            </div>
         </div>
     </div>
 
@@ -351,10 +447,13 @@
 
             function applyLang(lang) {
                 var src = lang === 'ru'
+                    ? 'gerrymandering/gerrymandering_ru.html?step=4'
+                    : 'gerrymandering/gerrymandering_en.html?step=4';
+                var openMapSrc = lang === 'ru'
                     ? 'gerrymandering/gerrymandering_ru.html'
                     : 'gerrymandering/gerrymandering_en.html';
                 frame.src = src;
-                openLink.href = src;
+                openLink.href = openMapSrc;
                 buttons.forEach(function (btn) {
                     btn.classList.toggle('is-active', btn.dataset.lang === lang);
                 });
