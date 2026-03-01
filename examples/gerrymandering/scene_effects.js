@@ -252,7 +252,7 @@
         narrative.addEventListener("wheel", hideHint, { passive: true });
     }
 
-    if (narrative && steps.length > 0 && !isMobile()) {
+    if (narrative && steps.length > 0) {
         narrative.addEventListener("wheel", function(e) {
             e.preventDefault();
             if (wheelLocked) return;
