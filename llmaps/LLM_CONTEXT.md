@@ -38,6 +38,7 @@ m.save("my_map.html")
 | Polygons / choropleth | FillLayer + FileSource + Legend + Popup |
 | Dynamic polygon coloring | FillLayer + expressions + promote_id + feature_state |
 | Rich feature details | Sidebar + FillLayer/CircleLayer (replaces Popup for complex views) |
+| Persistent map dashboard | Dashboard + custom JS bridge |
 | Search within data | FeatureSearch (+ Sidebar for detail on select) |
 | Hover tooltips | Popup(trigger="hover") + FillLayer/CircleLayer |
 | Embedded map (no server) | Map() + FileSource (embedded by default) |
@@ -84,6 +85,10 @@ Sidebar(position="right", width=400, fields_by_layer={}, field_labels={}, title_
         title_by_layer={}, show_on_click=True, close_on_map_click=True, zoom_on_click=None,
         hide_empty_fields=False)
 # hide_empty_fields: if True, null/empty string values are hidden
+Dashboard(dashboard_id="dashboard", position="top-right", title=None, width=360, height=None,
+          collapsible=True, collapsed=False, filters=[], content_html="",
+          empty_state="No dashboard content yet.")
+# filters: list of dicts with serializable descriptors. Supported types: "select", "date", "text".
 FeatureSearch(position="top-center", placeholder="Search...", search_fields={}, field_labels={},
               max_results=15, zoom_on_select=8, debounce_ms=200, min_chars=2)
 # search_fields: source_id -> list of attribute names to search
@@ -129,6 +134,11 @@ window.llmapsOnLayersReady(fn)
 window.llmapsData   // user data from embed_data(key, data)
 window.llmapsSidebarOpen(layerId, feature)
 window.llmapsSidebarClose()
+window.llmapsDashboardSetContent(id, html)
+window.llmapsDashboardSetTitle(id, title)
+window.llmapsDashboardGetState(id)
+window.llmapsDashboardSetCollapsed(id, collapsed)
+// window emits "llmaps:dashboard-filter-change" with {dashboardId, filterId, value, state}
 ```
 
 ## Expressions (dynamic styling by feature-state)

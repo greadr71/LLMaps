@@ -1,0 +1,2476 @@
+
+<!DOCTYPE html>
+<html lang="ru-RU">
+  <head>
+    <meta charset="utf-8" />
+    <title>LLMaps Dashboard Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    
+    <style>/* LLMaps base styles — injected into standalone HTML at render time */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+#map-root {
+  position: absolute;
+  inset: 0;
+}
+
+/* Comparison mode: maplibre-gl-compare plugin */
+#llmaps-comparison-container {
+  position: absolute;
+  inset: 0;
+  user-select: none;
+}
+.llmaps-compare-map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+/* Styles for maplibre-gl-compare slider (from plugin style.css) */
+.maplibregl-compare {
+  background-color: #fff;
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  z-index: 1;
+}
+.maplibregl-compare .compare-swiper-vertical {
+  background-color: #3887be;
+  box-shadow: inset 0 0 0 2px #fff;
+  display: inline-block;
+  border-radius: 50%;
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 50%;
+  left: -30px;
+  margin: -30px 1px 0;
+  color: #fff;
+  cursor: ew-resize;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath fill='%23fff' d='M25 24L16 30L25 36L25 24zM35 24L35 36L44 30L35 24z'/%3E%3C/svg%3E");
+}
+.maplibregl-compare-horizontal {
+  position: relative;
+  width: 100%;
+  height: 2px;
+}
+.maplibregl-compare .compare-swiper-horizontal {
+  background-color: #3887be;
+  box-shadow: inset 0 0 0 2px #fff;
+  display: inline-block;
+  border-radius: 50%;
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 50%;
+  left: 50%;
+  margin: -30px 1px 0;
+  cursor: ns-resize;
+  transform: rotate(90deg);
+}
+
+/* Legend — shadcn/ui Card style */
+.llmaps-legend {
+  position: absolute;
+  z-index: 10;
+  background: #ffffff;
+  padding: 0;
+  font-size: 14px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 300px;
+  min-width: 200px;
+  user-select: none;
+}
+.llmaps-legend.collapsed {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  min-width: 40px;
+  max-width: 40px;
+}
+.llmaps-legend.top-left { top: 12px; left: 12px; }
+.llmaps-legend.top-right { top: 12px; right: 12px; }
+.llmaps-legend.bottom-left { bottom: 12px; left: 12px; }
+.llmaps-legend.bottom-right { bottom: 12px; right: 12px; }
+
+.llmaps-legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.llmaps-legend-header:hover {
+  background: #f9fafb;
+}
+.llmaps-legend-title {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #0a0a0a;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.llmaps-legend.collapsed .llmaps-legend-title,
+.llmaps-legend.collapsed .llmaps-legend-content {
+  display: none;
+}
+.llmaps-legend-toggle-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.llmaps-legend-toggle-btn:hover {
+  background: #f3f4f6;
+}
+.llmaps-legend-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #6b7280;
+}
+/* Dual icons: chevron (expanded) / layers (collapsed) */
+.llmaps-legend-toggle-btn .llmaps-layers-icon {
+  display: none;
+}
+.llmaps-legend-toggle-btn .llmaps-chevron-icon {
+  display: block;
+}
+.llmaps-legend.collapsed .llmaps-legend-header {
+  padding: 0;
+  justify-content: center;
+}
+.llmaps-legend.collapsed .llmaps-legend-toggle-btn {
+  margin: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+.llmaps-legend.collapsed .llmaps-legend-toggle-btn .llmaps-chevron-icon {
+  display: none;
+}
+.llmaps-legend.collapsed .llmaps-legend-toggle-btn .llmaps-layers-icon {
+  display: block;
+}
+
+.llmaps-legend-content {
+  padding: 0 20px 20px 20px;
+}
+.llmaps-legend ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.llmaps-legend ul li {
+  display: flex;
+  flex-direction: column;
+}
+
+.llmaps-legend-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.llmaps-legend-item:hover {
+  background: #f9fafb;
+}
+.llmaps-legend-item.hidden .llmaps-legend-icon {
+  opacity: 0.4;
+}
+.llmaps-legend-item.hidden .llmaps-legend-item-label {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+/* Icons for different layer types */
+.llmaps-legend-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: opacity 0.15s;
+}
+.llmaps-legend-icon.circle { border-radius: 50%; }
+.llmaps-legend-icon.line { height: 3px; border-radius: 2px; width: 16px; }
+
+.llmaps-legend-item-label {
+  flex-grow: 1;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #374151;
+  transition: color 0.15s;
+}
+
+.llmaps-legend-ramp {
+  margin-top: 6px;
+  margin-left: 26px;
+  height: 10px;
+  border-radius: 5px;
+  width: calc(100% - 26px);
+}
+.llmaps-legend-ramp-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  margin-left: 26px;
+  width: calc(100% - 26px);
+  font-size: 11px;
+  color: #6b7280;
+}
+.llmaps-legend-basemap {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+.llmaps-legend-basemap-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+.llmaps-basemap-select-wrap {
+  width: 100%;
+}
+.llmaps-basemap-select {
+  display: block;
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.4;
+  color: #0a0a0a;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.llmaps-basemap-select:hover {
+  border-color: #9ca3af;
+}
+.llmaps-basemap-select:focus {
+  outline: none;
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.15);
+}
+
+/* Basemap switcher (standalone) */
+.llmaps-basemap-switcher {
+  position: absolute;
+  z-index: 10;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+}
+.llmaps-basemap-switcher .llmaps-basemap-select-wrap {
+  min-width: 140px;
+}
+.llmaps-basemap-switcher .llmaps-basemap-select {
+  max-width: none;
+  min-width: 140px;
+  border-radius: 8px;
+}
+.llmaps-basemap-switcher.top-left { top: 12px; left: 12px; }
+.llmaps-basemap-switcher.top-right { top: 12px; right: 12px; }
+.llmaps-basemap-switcher.bottom-left { bottom: 12px; left: 12px; }
+.llmaps-basemap-switcher.bottom-right { bottom: 12px; right: 12px; }
+
+/* Search */
+.llmaps-search-wrap {
+  position: absolute;
+  z-index: 10;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.llmaps-search-wrap.top-left { top: 12px; left: 12px; }
+.llmaps-search-wrap.top-right { top: 12px; right: 12px; }
+.llmaps-search-wrap input {
+  width: 220px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.llmaps-search-wrap input:focus {
+  border-color: rgba(0, 0, 0, 0.3);
+}
+.llmaps-search-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  max-height: 240px;
+  overflow-y: auto;
+  display: none;
+  z-index: 11;
+}
+.llmaps-search-suggestions.visible {
+  display: block;
+}
+.llmaps-search-suggestions div {
+  padding: 8px;
+  cursor: pointer;
+}
+.llmaps-search-suggestions div:hover {
+  background: #f0f0f0;
+}
+
+/* Server-rendered legend: new elements (wibemaps-inspired, llmaps aesthetics) */
+
+/* Map title section with separator */
+.llmaps-legend-map-title-section {
+  padding: 0 0 12px 0;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 12px;
+}
+.llmaps-legend-map-title {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: #0a0a0a;
+}
+
+/* Section separator (between layers) */
+.llmaps-legend-section-separator {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Layer header with toggle */
+.llmaps-legend-layer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.llmaps-legend-layer-header:hover {
+  background: #f9fafb;
+}
+
+/* Layer description text */
+.llmaps-legend-description {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+  margin-left: 32px;
+  line-height: 1.4;
+}
+
+/* iOS-style toggle switch */
+.llmaps-layer-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.llmaps-layer-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.llmaps-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d1d5db;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+}
+.llmaps-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.llmaps-layer-toggle input:checked + .llmaps-toggle-slider {
+  background-color: #0a0a0a;
+}
+.llmaps-layer-toggle input:checked + .llmaps-toggle-slider:before {
+  transform: translateX(20px);
+}
+.llmaps-layer-toggle:hover .llmaps-toggle-slider {
+  background-color: #9ca3af;
+}
+.llmaps-layer-toggle input:checked:hover + .llmaps-toggle-slider {
+  background-color: #27272a;
+}
+
+/* Collapsible Tips section */
+.llmaps-legend-instructions {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.llmaps-legend-instructions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  transition: background 0.15s;
+}
+.llmaps-legend-instructions-header:hover {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+.llmaps-legend-instructions-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+.llmaps-legend-instructions-arrow {
+  font-size: 10px;
+  color: #6b7280;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.llmaps-legend-instructions-header.collapsed .llmaps-legend-instructions-arrow {
+  transform: rotate(-90deg);
+}
+.llmaps-legend-instructions-content {
+  max-height: 300px;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+}
+.llmaps-legend-instructions-content.collapsed {
+  max-height: 0;
+}
+.llmaps-legend-instructions-list {
+  margin: 0;
+  padding: 12px 16px;
+  list-style: none;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.8;
+}
+.llmaps-legend-instructions-list li {
+  margin-bottom: 10px;
+  padding: 6px 0;
+  white-space: normal;
+  word-break: break-word;
+}
+.llmaps-legend-instructions-list li:last-child {
+  margin-bottom: 0;
+}
+.llmaps-legend-instructions-list strong {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Dashboard — persistent map overlay */
+.llmaps-dashboard {
+  position: absolute;
+  z-index: 15;
+  width: var(--llmaps-dashboard-width, 360px);
+  max-width: min(calc(100vw - 24px), var(--llmaps-dashboard-width, 360px));
+  max-height: var(--llmaps-dashboard-height, calc(100vh - 24px));
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 231, 235, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+}
+.llmaps-dashboard.top-left { top: 12px; left: 12px; }
+.llmaps-dashboard.top-right { top: 12px; right: 12px; }
+.llmaps-dashboard.bottom-left { bottom: 12px; left: 12px; }
+.llmaps-dashboard.bottom-right { bottom: 12px; right: 12px; }
+.llmaps-dashboard.collapsed {
+  width: auto;
+}
+.llmaps-dashboard.collapsed .llmaps-dashboard-body {
+  display: none;
+}
+.llmaps-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.9);
+}
+.llmaps-dashboard-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #111827;
+}
+.llmaps-dashboard-toggle {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #111827;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.llmaps-dashboard-toggle:hover {
+  background: #e5e7eb;
+}
+.llmaps-dashboard-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.llmaps-dashboard-filters {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.9);
+  background: rgba(249, 250, 251, 0.72);
+}
+.llmaps-dashboard-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.llmaps-dashboard-filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.llmaps-dashboard-filter-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  color: #111827;
+}
+.llmaps-dashboard-filter-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.llmaps-dashboard-content {
+  padding: 16px;
+  overflow: auto;
+  color: #111827;
+}
+.llmaps-dashboard-content.is-empty {
+  color: #6b7280;
+}
+.llmaps-dashboard-empty {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Sidebar — sliding panel for feature details */
+.llmaps-sidebar {
+  position: fixed;
+  top: 0;
+  width: var(--llmaps-sidebar-width, 400px);
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.08);
+  border-left: 1px solid #e5e7eb;
+  z-index: 20;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.llmaps-sidebar.right {
+  right: 0;
+  transform: translateX(100%);
+}
+.llmaps-sidebar.left {
+  left: 0;
+  transform: translateX(-100%);
+  border-left: none;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+}
+.llmaps-sidebar.open {
+  transform: translateX(0);
+}
+
+.llmaps-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+.llmaps-sidebar-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0a0a0a;
+  letter-spacing: -0.01em;
+}
+.llmaps-sidebar-close {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 18px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.llmaps-sidebar-close:hover {
+  background: #e5e7eb;
+  color: #0a0a0a;
+}
+
+.llmaps-sidebar-content {
+  padding: 20px;
+}
+
+.llmaps-sidebar-section {
+  margin-bottom: 24px;
+}
+.llmaps-sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+.llmaps-sidebar-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.llmaps-sidebar-field:last-child {
+  border-bottom: none;
+}
+.llmaps-sidebar-field-label {
+  color: #6b7280;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+.llmaps-sidebar-field-value {
+  color: #0a0a0a;
+  text-align: right;
+}
+.llmaps-sidebar-field-value a {
+  color: #2563eb;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+/* Popup (MapLibre) content */
+.maplibregl-popup-content {
+  max-width: 300px;
+  word-wrap: break-word;
+}
+.maplibregl-popup-content table {
+  width: 100%;
+}
+.maplibregl-popup-content td:first-child {
+  max-width: 120px;
+  font-weight: 600;
+  padding-right: 12px;
+  vertical-align: top;
+}
+.maplibregl-popup-content td:last-child {
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .llmaps-dashboard {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+    max-height: min(60vh, var(--llmaps-dashboard-height, 60vh));
+  }
+
+  .llmaps-sidebar {
+    width: 100% !important;
+  }
+}
+
+/* FeatureSearch — search within map data */
+.llmaps-feature-search {
+  position: absolute;
+  z-index: 15;
+  width: 360px;
+}
+.llmaps-feature-search.top-left { top: 12px; left: 12px; }
+.llmaps-feature-search.top-right { top: 12px; right: 12px; }
+.llmaps-feature-search.top-center { top: 12px; left: 50%; transform: translateX(-50%); }
+
+.llmaps-feature-search-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.llmaps-feature-search-input:focus {
+  border-color: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+}
+
+.llmaps-feature-search-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 16;
+}
+.llmaps-feature-search-dropdown.visible {
+  display: block;
+}
+.llmaps-feature-search-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.4;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.12s;
+}
+.llmaps-feature-search-item:last-child {
+  border-bottom: none;
+}
+.llmaps-feature-search-item:hover {
+  background: #f3f4f6;
+}
+.llmaps-feature-search-item-source {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-left: 6px;
+}
+.llmaps-feature-search-empty {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #9ca3af;
+}</style>
+  </head>
+  <body>
+
+    <div id="map-root"></div>
+
+    <!-- Legend (server-rendered) -->
+    <div class="llmaps-legend top-right">
+        <div class="llmaps-legend-header">
+            <div class="llmaps-legend-title">LLMaps Dashboard Example</div>
+            <div class="llmaps-legend-toggle-btn" id="llmaps-legend-toggle">
+                <svg class="llmaps-chevron-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="llmaps-layers-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="llmaps-legend-content">
+        <div class="llmaps-legend-section">
+            <div class="llmaps-legend-layer-header">
+                <div class="llmaps-legend-icon circle" style="background-color: #0f766e;"></div>
+                <div class="llmaps-legend-item-label">Sample cities</div>
+                <label class="llmaps-layer-toggle">
+                    <input type="checkbox" checked data-layer-id="cities-layer">
+                    <span class="llmaps-toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script id="llmaps-config" type="application/json">
+      {"title": "LLMaps Dashboard Example", "center": [16.5, 51.2], "zoom": 4.3, "tiles": {"id": "carto-light", "name": "Carto Light", "url_template": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png", "subdomains": ["a", "b", "c", "d"], "attribution": "\u00a9 OpenStreetMap contributors, \u00a9 CARTO | \u00a9 <a href=\"https://github.com/greadr71/LLMaps\" target=\"_blank\">LLMaps</a>"}, "layers": [{"id": "cities-layer", "type": "circle", "source": "cities", "visible": true, "metadata": {}, "paint": {"circle-radius": 8, "circle-color": "#0f766e", "circle-opacity": 0.85, "circle-stroke-width": 1, "circle-stroke-color": "#ffffff", "circle-stroke-opacity": 1.0}}], "locale": "ru-RU", "hash_position": true, "custom_attribution": "\u00a9 <a href=\"https://github.com/greadr71/LLMaps\" target=\"_blank\">LLMaps</a>", "components": [{"type": "legend", "position": "top-right", "collapsible": false, "show_toggle": true, "layer_labels": {"cities-layer": "Sample cities"}, "layer_counts": {}, "layer_descriptions": {}, "collapsed": true}, {"type": "popup", "fields": ["name", "category"], "field_labels": {}, "template": null, "fields_by_layer": {}, "trigger": "hover"}, {"type": "dashboard", "dashboard_id": "overview", "position": "top-right", "title": "Map Dashboard", "width": 340, "height": null, "collapsible": true, "collapsed": false, "filters": [{"id": "period", "type": "select", "label": "Period", "value": "week", "options": [{"value": "day", "label": "Day"}, {"value": "week", "label": "Week"}, {"value": "month", "label": "Month"}]}, {"id": "date", "type": "date", "label": "Snapshot date", "value": "2026-03-08"}, {"id": "query", "type": "text", "label": "Quick note", "placeholder": "Type any label...", "value": "All cities"}], "content_html": "\n<div>\n  <p style=\"margin:0 0 8px;font-weight:600;\">Interactive summary</p>\n  <p style=\"margin:0;color:#4b5563;line-height:1.5;\">Change a filter to update this block from custom JavaScript.</p>\n</div>\n", "empty_state": "No dashboard content yet."}, {"type": "controls", "zoom": true, "scale": true, "fullscreen": false, "hash": true}], "embedded": true, "use_compression": false, "lazy_init": false, "max_active_maps": 8, "map_instance_count": 1, "sources": {"cities": {"id": "cities", "type": "file", "path": "/Users/sergeyabramov/Yandex.Disk.localized/llmaps/examples/dashboard/data/cities.geojson", "format": "geojson"}}, "visibility_optimization_source_ids": ["cities"], "embedded_sources": {"cities": {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"name": "Warsaw", "category": "Hub"}, "geometry": {"type": "Point", "coordinates": [21.0122, 52.2297]}}, {"type": "Feature", "properties": {"name": "Berlin", "category": "Cluster"}, "geometry": {"type": "Point", "coordinates": [13.405, 52.52]}}, {"type": "Feature", "properties": {"name": "Prague", "category": "Spoke"}, "geometry": {"type": "Point", "coordinates": [14.4378, 50.0755]}}]}}}
+    </script>
+    <script src="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.js"></script>
+    
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+    
+    
+    
+    <script>
+      function readConfig() {
+        const el = document.getElementById("llmaps-config");
+        if (!el) throw new Error("LLMaps config element not found");
+        try {
+          return JSON.parse(el.textContent || "{}");
+        } catch (err) {
+          console.error("Failed to parse LLMaps config JSON", err);
+          return {};
+        }
+      }
+
+      function buildBaseStyle(center, zoom, tiles) {
+        const urlTemplate = (tiles.url_template || "").replace(
+          "{s}",
+          (tiles.subdomains && tiles.subdomains[0]) || "a"
+        );
+        return {
+          version: 8,
+          sources: {
+            "llmaps-base": {
+              type: "raster",
+              tiles: [urlTemplate],
+              tileSize: 256,
+              attribution: tiles.attribution || ""
+            }
+          },
+          layers: [
+            { id: "llmaps-base", type: "raster", source: "llmaps-base" }
+          ]
+        };
+      }
+
+
+      function explodeMultiPoint(geojson, callback) {
+        if (!geojson || !geojson.features || !geojson.features.length) {
+          callback(geojson || { type: "FeatureCollection", features: [] });
+          return;
+        }
+        const features = [];
+        let processed = 0;
+        const total = geojson.features.length;
+        const chunkSize = 100;
+        function processChunk() {
+          const end = Math.min(processed + chunkSize, total);
+          for (let i = processed; i < end; i++) {
+            const feature = geojson.features[i];
+            if (feature.geometry && feature.geometry.type === "MultiPoint") {
+              feature.geometry.coordinates.forEach(coord => {
+                features.push({
+                  type: "Feature",
+                  geometry: { type: "Point", coordinates: coord },
+                  properties: feature.properties || {}
+                });
+              });
+            } else {
+              features.push(feature);
+            }
+          }
+          processed = end;
+          if (processed < total) setTimeout(processChunk, 0);
+          else callback({ type: "FeatureCollection", features });
+        }
+        processChunk();
+      }
+
+      async function getGeoJsonSource(config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src) return null;
+        if (embeddedSources && embeddedSources[sourceId] !== undefined) {
+          let data = embeddedSources[sourceId];
+          if (typeof data === "string") {
+            if (typeof decompressData === "function") data = await decompressData(data);
+            else return null;
+          }
+          if (data && data.features && typeof explodeMultiPoint === "function" &&
+              data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+            data = await new Promise(r => explodeMultiPoint(data, r));
+          return data ? { type: "geojson", data } : null;
+        }
+        if (src.type === "api") {
+          const url = new URL(src.url);
+          if (src.params)
+            Object.entries(src.params).forEach(([k, v]) => url.searchParams.set(k, v));
+          const res = await fetch(url.toString(), { headers: src.headers || {} });
+          let data = await res.json();
+          if (data && data.features && typeof explodeMultiPoint === "function" &&
+              data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+            data = await new Promise(r => explodeMultiPoint(data, r));
+          return { type: "geojson", data };
+        }
+        if (src.type === "file" && src.path) {
+          try {
+            const res = await fetch(src.path);
+            let data = await res.json();
+            if (data && data.features && typeof explodeMultiPoint === "function" &&
+                data.features.some(f => f.geometry && f.geometry.type === "MultiPoint"))
+              data = await new Promise(r => explodeMultiPoint(data, r));
+            return { type: "geojson", data };
+          } catch (e) {
+            console.warn("Could not load file source " + sourceId + ": " + e.message);
+            return null;
+          }
+        }
+        return null;
+      }
+
+      // Feature state utilities (require promoteId on the source)
+      window.llmapsClearFeatureStates = function(sourceId) {
+        const map = window.llmaps_map;
+        if (!map || !map.getSource(sourceId)) return;
+        map.removeFeatureState({ source: sourceId });
+      };
+      window.llmapsSetFeatureState = function(sourceId, featureId, state) {
+        const map = window.llmaps_map;
+        if (!map || !map.getSource(sourceId)) return;
+        map.setFeatureState({ source: sourceId, id: featureId }, state);
+      };
+
+      /**
+       * Public utility: retrieve GeoJSON data for a source.
+       * Works with embedded (+ compressed) and remote sources.
+       * Returns a Promise resolving to a GeoJSON object or null.
+       *
+       * Usage: const data = await window.llmapsGetSourceData("my-source");
+       */
+      window.llmapsGetSourceData = function(sourceId) {
+        const config = readConfig();
+        const embedded = config.embedded_sources || {};
+        return getGeoJsonSource(config, sourceId, embedded).then(function(geo) {
+          return geo && geo.data ? geo.data : null;
+        });
+      };
+
+      // Store parsed GeoJSON data per source for feature-state binding
+      window._llmapsSourceGeoJson = window._llmapsSourceGeoJson || {};
+
+      function addSourceFromConfig(map, config, sourceId, embeddedSources) {
+        const src = config.sources && config.sources[sourceId];
+        if (!src || map.getSource(sourceId)) return Promise.resolve();
+        if (src.type === "vector") {
+          try {
+            const vectorOpts = { type: "vector", tiles: src.tiles || [src.tiles_url] };
+            if (src.promoteId) vectorOpts.promoteId = src.promoteId;
+            map.addSource(sourceId, vectorOpts);
+          } catch (e) {
+            if (e.message && e.message.includes("already exists")) {
+              console.warn(`Source ${sourceId} already exists, skipping`);
+              return Promise.resolve();
+            }
+            throw e;
+          }
+          return Promise.resolve();
+        }
+        return getGeoJsonSource(config, sourceId, embeddedSources).then(geo => {
+          if (geo) {
+            if (src.promoteId) geo.promoteId = src.promoteId;
+            // Keep a reference to parsed GeoJSON for feature-state binding
+            if (geo.data) window._llmapsSourceGeoJson[sourceId] = geo.data;
+            try {
+              map.addSource(sourceId, geo);
+            } catch (e) {
+              if (e.message && e.message.includes("already exists")) {
+                console.warn(`Source ${sourceId} already exists, skipping`);
+                return;
+              }
+              throw e;
+            }
+          }
+        });
+      }
+
+      function initVisibilityOptimization(maps, sourceIds) {
+        const list = Array.isArray(maps) ? maps : [maps];
+        const ids = sourceIds && sourceIds.length ? sourceIds : ['cities'];
+        document.addEventListener("visibilitychange", async () => {
+          if (document.hidden) {
+            list.forEach(map => {
+              if (!map || !map._layersLoaded) return;
+              map.stop();
+              ids.forEach(sourceId => {
+                if (!map.getSource(sourceId)) return;
+                const style = map.getStyle();
+                if (style && style.layers) {
+                  style.layers
+                    .filter(layer => layer.source === sourceId)
+                    .forEach(layer => {
+                      try {
+                        if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+                      } catch (e) {}
+                    });
+                }
+                try { map.removeSource(sourceId); } catch (e) {}
+              });
+              map.getCanvas().style.display = "none";
+              map._layersLoaded = false;
+            });
+          } else {
+            list.forEach(async map => {
+              if (!map || map._layersLoaded) { if (map) { map.getCanvas().style.display = "block"; map.resize(); map.triggerRepaint(); } return; }
+              map.getCanvas().style.display = "block";
+              // Verify that sources are actually removed before reloading
+              const allRemoved = ids.every(sourceId => !map.getSource(sourceId));
+              if (allRemoved && map._loadLayers) {
+                await map._loadLayers();
+              }
+              map._layersLoaded = true;
+              map.resize();
+              map.triggerRepaint();
+            });
+          }
+        });
+      }
+
+      function loadLayers(map, config, embeddedSources, layerIdsFilter) {
+        const layers = config.layers || [];
+        const sourceIds = new Set(layers.map(l => l.source));
+        const embedded = config.embedded_sources || embeddedSources || {};
+        return Promise.all(
+          Array.from(sourceIds).map(id =>
+            addSourceFromConfig(map, config, id, embedded)
+          )
+        ).then(() => {
+          layers.forEach(l => addLayerFromConfig(map, l, layerIdsFilter));
+        });
+      }
+
+      function addLayerFromConfig(map, layerConfig, layerIdsToAdd) {
+        if (layerIdsToAdd && !layerIdsToAdd.includes(layerConfig.id)) return;
+        if (map.getLayer(layerConfig.id)) return;
+        const layer = {
+          id: layerConfig.id,
+          type: layerConfig.type || "circle",
+          source: layerConfig.source,
+          paint: layerConfig.paint || {},
+          layout: layerConfig.layout || {}
+        };
+        if (layerConfig["source-layer"] != null)
+          layer["source-layer"] = layerConfig["source-layer"];
+        if (layerConfig.visible === false) {
+          layer.layout.visibility = "none";
+        }
+        if (layerConfig.minzoom != null) layer.minzoom = layerConfig.minzoom;
+        if (layerConfig.maxzoom != null) layer.maxzoom = layerConfig.maxzoom;
+        map.addLayer(layer);
+      }
+
+      // Event queue for llmapsOnLayersReady callbacks
+      window._llmapsReadyCallbacks = window._llmapsReadyCallbacks || [];
+      window._llmapsLayersReady = false;
+      window._llmapsReadyMap = null;
+      window.llmapsOnLayersReady = function(fn) {
+        if (typeof fn === 'function') {
+          window._llmapsReadyCallbacks.push(fn);
+          // If layers already loaded, call immediately
+          if (window._llmapsLayersReady && window._llmapsReadyMap) {
+            fn(window._llmapsReadyMap);
+          }
+        }
+      };
+
+      /**
+       * Apply feature-state bindings declared in layer configs.
+       * For each layer with a ``featureState`` dict, iterates over the
+       * source GeoJSON features and calls ``map.setFeatureState``.
+       *
+       * String values in the dict are treated as GeoJSON property names;
+       * all other values (bool, number) are used as constants.
+       */
+      function applyFeatureStates(map, config) {
+        var layers = config.layers || [];
+        var sources = config.sources || {};
+        layers.forEach(function(lc) {
+          if (!lc.featureState) return;
+          var sourceId = lc.source;
+          var srcConfig = sources[sourceId];
+          var promoteId = srcConfig && srcConfig.promoteId;
+          var geojson = window._llmapsSourceGeoJson && window._llmapsSourceGeoJson[sourceId];
+          if (!geojson || !geojson.features) {
+            console.warn("applyFeatureStates: no GeoJSON data for source '" + sourceId + "'");
+            return;
+          }
+          var bindings = lc.featureState;
+          var count = 0;
+          geojson.features.forEach(function(f) {
+            var id = promoteId ? f.properties[promoteId] : f.id;
+            if (id == null) return;
+            var state = {};
+            for (var key in bindings) {
+              var val = bindings[key];
+              state[key] = (typeof val === "string") ? f.properties[val] : val;
+            }
+            map.setFeatureState({ source: sourceId, id: id }, state);
+            count++;
+          });
+          console.log("Feature states set for " + count + " features in source '" + sourceId + "'");
+        });
+      }
+
+      function parseMapHash(hashValue) {
+        if (!hashValue) return null;
+        const raw = hashValue.charAt(0) === "#" ? hashValue.slice(1) : hashValue;
+        const parts = raw.split("/");
+        if (parts.length !== 3) return null;
+
+        const zoom = Number(parts[0]);
+        const lat = Number(parts[1]);
+        const lon = Number(parts[2]);
+        const valid = [zoom, lat, lon].every(Number.isFinite)
+          && lat >= -90 && lat <= 90
+          && lon >= -180 && lon <= 180
+          && zoom >= 0 && zoom <= 24;
+
+        if (!valid) return null;
+        return { center: [lon, lat], zoom: zoom };
+      }
+
+      function formatMapHash(map) {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        return zoom.toFixed(2) + "/" + center.lat.toFixed(5) + "/" + center.lng.toFixed(5);
+      }
+
+      function updateLocationHash(hashValue) {
+        const nextHash = "#" + hashValue;
+        if (window.location.hash === nextHash) return;
+        const base = window.location.pathname + window.location.search;
+        if (window.history && typeof window.history.replaceState === "function") {
+          window.history.replaceState(null, "", base + nextHash);
+        } else {
+          window.location.hash = hashValue;
+        }
+      }
+
+      function enableMapHashSync(map) {
+        if (!map || map._llmapsHashSyncEnabled) return;
+        map._llmapsHashSyncEnabled = true;
+
+        const sync = function() {
+          updateLocationHash(formatMapHash(map));
+        };
+
+        map.on("load", sync);
+        map.on("moveend", sync);
+      }
+
+      function isHashPositionEnabled(config) {
+        if (typeof config.hash_position === "boolean") return config.hash_position;
+        const controls = (config.components || []).find(function(c) { return c.type === "controls"; });
+        if (controls && typeof controls.hash === "boolean") return controls.hash;
+        return false;
+      }
+
+      function createSingleMap(containerId, config, layerIdsFilter, embeddedSources, options) {
+        const useHash = !!(options && options.hashSync);
+        const hashState = useHash ? parseMapHash(window.location.hash) : null;
+        const center = (hashState && hashState.center) || config.center || [0, 0];
+        const zoom = (hashState && hashState.zoom) ?? (config.zoom ?? 10);
+        const tiles = config.tiles || {};
+        const styleUrl = (config && config.style_url) || null;
+
+        const mapOptions = {
+          container: containerId,
+          center: center,
+          zoom: zoom,
+          attributionControl: false
+        };
+
+        // If an explicit external style is provided in the config
+        // (e.g. Lightberry from WB Maps), use it directly.
+        // Otherwise, build a basic raster style.
+        if (styleUrl) {
+          mapOptions.style = styleUrl;
+        } else {
+          mapOptions.style = buildBaseStyle(center, zoom, tiles);
+        }
+
+        const map = new maplibregl.Map(mapOptions);
+
+        // Single attribution control: style/sources + custom LLMaps label.
+        if (typeof maplibregl.AttributionControl === "function") {
+          const customAttr = config.custom_attribution || '© LLMaps';
+          map.addControl(new maplibregl.AttributionControl({
+            customAttribution: customAttr
+          }), "bottom-right");
+        }
+        if (useHash) enableMapHashSync(map);
+
+        const layers = config.layers || [];
+        const embedded = config.embedded_sources || embeddedSources || {};
+
+        map._loadLayers = () => {
+          if (map._layersLoading) {
+            console.warn('Layers are already loading, skipping duplicate call');
+            return Promise.resolve();
+          }
+          map._layersLoading = true;
+          return loadLayers(map, config, embedded, layerIdsFilter).then(() => {
+            applyFeatureStates(map, config);
+            map._layersLoading = false;
+            window._llmapsLayersReady = true;
+            window._llmapsReadyMap = map;
+            window._llmapsReadyCallbacks.forEach(fn => fn(map));
+          }).catch(err => {
+            map._layersLoading = false;
+            throw err;
+          });
+        };
+
+        map.on("load", function() {
+          map._loadLayers().then(() => {
+            map._layersLoaded = true;
+          });
+        });
+
+        return map;
+      }
+
+      /**
+       * Safely destroy a map instance and release its WebGL context.
+       * Call before removing the map container from DOM when using lazy_init
+       * or when evicting due to max_active_maps. Idempotent if map already removed.
+       */
+      function destroySingleMap(map) {
+        if (!map) return;
+        try {
+          if (typeof map.remove === "function") map.remove();
+        } catch (e) {
+          if (typeof console !== "undefined" && console.warn) console.warn("LLMaps: destroySingleMap", e);
+        }
+        map._layersLoaded = false;
+        map._layersLoading = false;
+        if (window._llmapsReadyMap === map) {
+          window._llmapsReadyMap = null;
+          window._llmapsLayersReady = false;
+        }
+        if (window.llmaps_maps && Array.isArray(window.llmaps_maps)) {
+          window.llmaps_maps = window.llmaps_maps.filter(function(m) { return m !== map; });
+        }
+        if (window.llmaps_map === map) window.llmaps_map = null;
+      }
+
+      function setupComparison(root, config) {
+        const comp = config.comparison;
+        const leftIds = comp.left_layers || [];
+        const rightIds = comp.right_layers || [];
+        root.id = "llmaps-comparison-container";
+        root.innerHTML = [
+          '<div id="llmaps-compare-before" class="llmaps-compare-map"></div>',
+          '<div id="llmaps-compare-after" class="llmaps-compare-map"></div>'
+        ].join("");
+
+        const embedded = config.embedded_sources || {};
+        const allConfigLayerIds = (config.layers || []).map(function(l) { return l.id; });
+        function withOutlineLayers(ids) {
+          var result = ids.slice();
+          ids.forEach(function(id) {
+            if (allConfigLayerIds.indexOf(id + "-outline") !== -1) result.push(id + "-outline");
+          });
+          return result;
+        }
+        const hashSyncEnabled = isHashPositionEnabled(config);
+        const beforeMap = createSingleMap(
+          "llmaps-compare-before",
+          config,
+          withOutlineLayers(leftIds),
+          embedded,
+          { hashSync: hashSyncEnabled }
+        );
+        const afterMap = createSingleMap(
+          "llmaps-compare-after",
+          config,
+          withOutlineLayers(rightIds),
+          embedded,
+          { hashSync: false }
+        );
+
+        if (typeof maplibregl.Compare !== "function") {
+          console.warn("maplibre-gl-compare not loaded; comparison uses basic sync only.");
+          beforeMap.on("moveend", function() {
+            afterMap.setCenter(beforeMap.getCenter());
+            afterMap.setZoom(beforeMap.getZoom());
+          });
+          afterMap.on("moveend", function() {
+            beforeMap.setCenter(afterMap.getCenter());
+            beforeMap.setZoom(afterMap.getZoom());
+          });
+          return { mapLeft: beforeMap, mapRight: afterMap };
+        }
+
+        var compare = new maplibregl.Compare(beforeMap, afterMap, "#llmaps-comparison-container", {
+          mousemove: false,
+          orientation: "vertical"
+        });
+
+        return { mapLeft: beforeMap, mapRight: afterMap };
+      }
+
+      function addComponents(config, mapOrMaps) {
+        const maps = Array.isArray(mapOrMaps) ? mapOrMaps : [mapOrMaps];
+        const map = maps[0];
+        const components = config.components || [];
+
+        // Get locale from config, default to en-US
+        const locale = config.locale || "en-US";
+        const normalizedLocale = String(locale).replace(/_/g, "-");
+
+        function formatValue(val, fieldName) {
+          if (val == null) return "";
+
+          // Special case: year field - never format with thousand separators
+          if (fieldName === 'year' && typeof val === 'number') {
+            return String(Math.round(val));
+          }
+
+          // If value is a number, format with locale-aware separators
+          if (typeof val === 'number') {
+            return val.toLocaleString(locale, {
+              maximumFractionDigits: 2
+            });
+          }
+
+          // If value is a string that looks like a number, parse and format it
+          if (typeof val === 'string') {
+            const trimmed = val.trim();
+            const parsed = Number(trimmed);
+
+            // Ensure parsing succeeded and the string is not empty
+            if (!isNaN(parsed) && trimmed !== '' && /^-?\d+\.?\d*$/.test(trimmed)) {
+              // Check if it's a year field or year-like value (4-digit integer 1900-2100)
+              if (fieldName === 'year' || (Number.isInteger(parsed) && parsed >= 1900 && parsed <= 2100 && trimmed.length === 4)) {
+                return String(Math.round(parsed));
+              }
+              return parsed.toLocaleString(locale, {
+                maximumFractionDigits: 2
+              });
+            }
+          }
+
+          // Otherwise return as string
+          return String(val);
+        }
+        components.forEach(c => {
+          if (c.type === "controls") {
+            if (c.zoom)
+              map.addControl(new maplibregl.NavigationControl(), "top-left");
+            if (c.scale && typeof maplibregl.ScaleControl === "function")
+              map.addControl(new maplibregl.ScaleControl(), "bottom-left");
+            if (c.fullscreen && maplibregl.FullscreenControl)
+              map.addControl(new maplibregl.FullscreenControl(), "top-left");
+          }
+        });
+
+        const basemapSwitcherConfig = components.find(c => c.type === "basemap_switcher");
+        const hasTileProviders = config.tile_providers && config.tile_providers.length > 0;
+
+        function tileUrl(tiles) {
+          const t = (tiles && tiles.url_template) || "";
+          return t.replace("{s}", (tiles.subdomains && tiles.subdomains[0]) || "a");
+        }
+        
+        // Make switchBasemap available globally for server-rendered legend
+        window.llmaps_switchBasemap = function(providerId) {
+          const provider = config.tile_providers.find(function(p) { return p.id === providerId; });
+          if (!provider) return;
+          const url = tileUrl(provider);
+          maps.forEach(function(m) {
+            if (!m.getLayer || !m.getSource) return;
+            if (m.getLayer("llmaps-base")) m.removeLayer("llmaps-base");
+            if (m.getSource("llmaps-base")) m.removeSource("llmaps-base");
+            m.addSource("llmaps-base", {
+              type: "raster",
+              tiles: [url],
+              tileSize: 256,
+              attribution: provider.attribution || ""
+            });
+            const layers = m.getStyle().layers;
+            const firstId = layers && layers[0] ? layers[0].id : undefined;
+            m.addLayer({ id: "llmaps-base", type: "raster", source: "llmaps-base" }, firstId);
+          });
+        };
+        
+        function createBasemapSelect(config, maps, currentId) {
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-basemap-select-wrap";
+          const select = document.createElement("select");
+          select.className = "llmaps-basemap-select";
+          config.tile_providers.forEach(function(provider) {
+            const opt = document.createElement("option");
+            opt.value = provider.id;
+            opt.textContent = provider.name || provider.id;
+            if (provider.id === currentId) opt.selected = true;
+            select.appendChild(opt);
+          });
+          select.addEventListener("change", function() {
+            window.llmaps_switchBasemap(select.value);
+          });
+          wrap.appendChild(select);
+          return wrap;
+        }
+
+        // Legend is now server-rendered, skip client-side generation
+
+        // Standalone basemap switcher (if not embedded in legend)
+        const legendConfig = components.find(c => c.type === "legend");
+        const basemapInLegend = legendConfig && hasTileProviders;
+
+        if (basemapSwitcherConfig && hasTileProviders && !basemapInLegend) {
+          const currentTiles = config.tiles || {};
+          const currentId = currentTiles.id || (config.tile_providers[0] && config.tile_providers[0].id);
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-basemap-switcher " + (basemapSwitcherConfig.position || "top-left");
+          wrap.style.position = "absolute";
+          wrap.style.zIndex = "10";
+          wrap.appendChild(createBasemapSelect(config, maps, currentId));
+          document.body.appendChild(wrap);
+        }
+
+        const popupConfig = components.find(c => c.type === "popup");
+        if (popupConfig && typeof maplibregl.Popup === "function") {
+          const defaultFields = popupConfig.fields || [];
+          const fieldLabels = popupConfig.field_labels || {};
+          const fieldsByLayer = popupConfig.fields_by_layer || {};
+          const popupTrigger = popupConfig.trigger || "click";
+          const layers = config.layers || [];
+
+          // Layers with sidebar: skip click popup (click opens sidebar), but allow hover popup
+          const _sidebarCfg = components.find(c => c.type === "sidebar");
+          const sidebarLayerIds = _sidebarCfg && _sidebarCfg.fields_by_layer
+            ? new Set(Object.keys(_sidebarCfg.fields_by_layer)) : new Set();
+
+          function popupContent(feature, layerId) {
+            const fields = fieldsByLayer[layerId] && fieldsByLayer[layerId].length
+              ? fieldsByLayer[layerId] : defaultFields;
+            const props = feature.properties || {};
+            if (!fields.length) return Object.keys(props).length ? JSON.stringify(props) : "";
+            const rows = fields.map(f => {
+              const label = fieldLabels[f] || f;
+              const val = props[f];
+              return "<tr><td>" + label + "</td><td>" + formatValue(val, f) + "</td></tr>";
+            });
+            return "<table style=\"font-size:12px;\">" + rows.join("") + "</table>";
+          }
+
+          function lngLat(feature) {
+            const g = feature.geometry;
+            if (!g || !g.coordinates) return null;
+            const c = g.coordinates;
+            if (g.type === "Point") return c;
+            if (g.type === "LineString" || g.type === "MultiPoint") return c[0];
+            if (g.type === "Polygon") return c[0][0];
+            if (g.type === "MultiLineString") return c[0][0];
+            if (g.type === "MultiPolygon") return c[0][0][0];
+            if (c[0] != null && typeof c[0] === "number") return c;
+            if (Array.isArray(c[0]) && c[0].length >= 2 && typeof c[0][0] === "number") return c[0];
+            return null;
+          }
+
+          function addPopupToMap(m) {
+            if (!m || !m.getLayer) return;
+
+            const hasFieldsByLayer = Object.keys(fieldsByLayer).length > 0;
+            if (popupTrigger === "hover") {
+              var hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+              layers.forEach(layerCfg => {
+                const layerId = layerCfg.id;
+                if (!m.getLayer(layerId)) return;
+                if (hasFieldsByLayer && !fieldsByLayer[layerId]) return;
+                m.on("mousemove", layerId, function(ev) {
+                  const feat = ev.features && ev.features[0];
+                  if (!feat) return;
+                  var html = popupContent(feat, layerId);
+                  if (!html) return;
+                  m.getCanvas().style.cursor = "pointer";
+                  hoverPopup.setLngLat(ev.lngLat).setHTML(html).addTo(m);
+                });
+                m.on("mouseleave", layerId, function() {
+                  m.getCanvas().style.cursor = "";
+                  hoverPopup.remove();
+                });
+              });
+            } else {
+              // Single map click + queryRenderedFeatures + layer type priority (points over polygons)
+              // When fields_by_layer is set, only layers listed there get popup (e.g. no popup on point layer)
+              const popupLayerIds = layers
+                .filter(function(l) {
+                  if (sidebarLayerIds.has(l.id) || !m.getLayer(l.id)) return false;
+                  if (hasFieldsByLayer && !fieldsByLayer[l.id]) return false;
+                  return true;
+                })
+                .map(function(l) { return l.id; });
+              const typePriority = { circle: 0, symbol: 1, line: 2, fill: 3 };
+              var currentPopup = null;
+              var selectedFeature = null;
+              var _prevHl = null; // { map, source, id }
+              function _hlClear() {
+                if (_prevHl) {
+                  _prevHl.map.removeFeatureState({ source: _prevHl.source, id: _prevHl.id }, 'selected');
+                  _prevHl = null;
+                }
+              }
+              function _hlEnsureLayer(m, sourceId, parentLayerType, sourceLayer) {
+                var hlId = 'llmaps-hl-' + sourceId;
+                if (m.getLayer(hlId)) return;
+                var isPoint = parentLayerType === 'circle' || parentLayerType === 'symbol';
+                var sel = ['boolean', ['feature-state', 'selected'], false];
+                var spec = isPoint
+                  ? { id: hlId, type: 'circle', source: sourceId,
+                      paint: { 'circle-radius': ['case', sel, 10, 0],
+                               'circle-color': 'transparent',
+                               'circle-stroke-color': '#111111',
+                               'circle-stroke-width': ['case', sel, 2.5, 0] } }
+                  : { id: hlId, type: 'line', source: sourceId,
+                      paint: { 'line-color': '#111111',
+                               'line-width': ['case', sel, 3.5, 0] } };
+                if (sourceLayer) spec['source-layer'] = sourceLayer;
+                m.addLayer(spec);
+              }
+              function _hlSet(m, feat) {
+                _hlClear();
+                if (!feat || feat.id == null) return;
+                var sourceId = feat.source;
+                _hlEnsureLayer(m, sourceId, feat.layer && feat.layer.type, feat.sourceLayer);
+                m.setFeatureState({ source: sourceId, id: feat.id }, { selected: true });
+                _prevHl = { map: m, source: sourceId, id: feat.id };
+              }
+              m.on("click", function(ev) {
+                if (currentPopup) {
+                  currentPopup.remove();
+                  currentPopup = null;
+                }
+                _hlSet(m, null);
+                selectedFeature = null;
+                if (!popupLayerIds.length) return;
+                var features = m.queryRenderedFeatures(ev.point, { layers: popupLayerIds });
+                if (!features.length) return;
+                features.sort(function(a, b) {
+                  var typeA = (m.getLayer(a.layer.id) && m.getLayer(a.layer.id).type) || "fill";
+                  var typeB = (m.getLayer(b.layer.id) && m.getLayer(b.layer.id).type) || "fill";
+                  return (typePriority[typeA] !== undefined ? typePriority[typeA] : 99) - (typePriority[typeB] !== undefined ? typePriority[typeB] : 99);
+                });
+                var feat = features[0];
+                var layerId = feat.layer.id;
+                _hlSet(m, feat);
+                selectedFeature = feat;
+                currentPopup = new maplibregl.Popup()
+                  .setLngLat(ev.lngLat)
+                  .setHTML(popupContent(feat, layerId))
+                  .addTo(m);
+                // Clear highlight when popup is closed manually
+                currentPopup.on('close', function() {
+                  _hlClear();
+                  currentPopup = null;
+                  selectedFeature = null;
+                });
+              });
+              m.getCanvas().style.cursor = "pointer";
+            }
+          }
+
+          window.llmapsOnLayersReady(function(m) {
+            addPopupToMap(m);
+          });
+          
+          // Export for external map instances (e.g., comparison maps created via custom JS)
+          window.llmapsAddPopupToMap = addPopupToMap;
+        }
+
+        // Sidebar
+        const sidebarConfig = components.find(c => c.type === "sidebar");
+        if (sidebarConfig) {
+          const sbWidth = sidebarConfig.width || 400;
+          const sbPosition = sidebarConfig.position || "right";
+          const sbFieldsByLayer = sidebarConfig.fields_by_layer || {};
+          const sbFieldLabels = sidebarConfig.field_labels || {};
+          const sbTitleField = sidebarConfig.title_field || null;
+          const sbTitleByLayer = sidebarConfig.title_by_layer || {};
+          const sbCloseOnMapClick = sidebarConfig.close_on_map_click !== false;
+          const sbZoomOnClick = sidebarConfig.zoom_on_click;
+          const sbHideEmptyFields = sidebarConfig.hide_empty_fields !== false;
+          const layers = config.layers || [];
+
+          // Create sidebar DOM
+          const sbEl = document.createElement("div");
+          sbEl.id = "llmaps-sidebar";
+          sbEl.className = "llmaps-sidebar " + sbPosition;
+          sbEl.style.setProperty("--llmaps-sidebar-width", sbWidth + "px");
+          document.body.appendChild(sbEl);
+
+          var sbIgnoreNextMapClick = false;
+
+          function sidebarOpen(layerId, feature) {
+            const props = feature.properties || {};
+            const fields = sbFieldsByLayer[layerId] || Object.keys(props);
+            const title = (sbTitleField && props[sbTitleField])
+              ? String(props[sbTitleField])
+              : (sbTitleByLayer[layerId] || "Feature info");
+
+            let html = '<div class="llmaps-sidebar-header">'
+              + '<h2 class="llmaps-sidebar-title">' + _sbEsc(title) + '</h2>'
+              + '<button class="llmaps-sidebar-close" title="Close">&times;</button>'
+              + '</div>'
+              + '<div class="llmaps-sidebar-content"><div class="llmaps-sidebar-section">';
+
+            fields.forEach(function(f) {
+              const label = sbFieldLabels[f] || f;
+              const val = props[f];
+              // Skip empty/null/whitespace-only values if enabled
+              if (sbHideEmptyFields) {
+                if (val == null) return;
+                if (typeof val === "string" && val.trim() === "") return;
+              }
+              var linkHtml = _sbLinkField(f, val);
+              var valueHtml = linkHtml !== false ? linkHtml : _sbEsc(formatValue(val, f));
+              html += '<div class="llmaps-sidebar-field">'
+                + '<span class="llmaps-sidebar-field-label">' + _sbEsc(label) + '</span>'
+                + '<span class="llmaps-sidebar-field-value">' + valueHtml + '</span>'
+                + '</div>';
+            });
+
+            html += '</div></div>';
+            sbEl.innerHTML = html;
+            sbEl.classList.add("open");
+
+            sbEl.querySelector(".llmaps-sidebar-close").addEventListener("click", sidebarClose);
+          }
+
+          function sidebarClose() {
+            sbEl.classList.remove("open");
+          }
+
+          function _sbEsc(str) {
+            var d = document.createElement("div");
+            d.textContent = str;
+            return d.innerHTML;
+          }
+
+          function _sbLinkField(fieldName, val) {
+            if (val == null || typeof val !== "string") return false;
+            var v = val.trim();
+            if (v.indexOf("http://") !== 0 && v.indexOf("https://") !== 0) return false;
+            if (fieldName !== "url" && fieldName !== "detail") return false;
+            var d = document.createElement("div");
+            d.textContent = v;
+            var escaped = d.innerHTML;
+            var href = v.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;");
+            return '<a href="' + href + '" target="_blank" rel="noopener noreferrer">' + escaped + '</a>';
+          }
+
+          // Expose API globally
+          window.llmapsSidebarOpen = sidebarOpen;
+          window.llmapsSidebarClose = sidebarClose;
+
+          // Register click handlers
+          window.llmapsOnLayersReady(function(m) {
+            var layerIds = Object.keys(sbFieldsByLayer);
+            if (!layerIds.length) {
+              layerIds = layers.map(function(l) { return l.id; });
+            }
+            layerIds.forEach(function(layerId) {
+              if (!m.getLayer(layerId)) return;
+              m.on("click", layerId, function(ev) {
+                var feat = ev.features && ev.features[0];
+                if (!feat) {
+                  if (ev.features && ev.features.length === 0 && console && typeof console.warn === "function")
+                    console.warn("LLMaps sidebar: click on layer " + layerId + " returned no features");
+                  return;
+                }
+                if (ev.originalEvent) ev.originalEvent.stopPropagation();
+                if (typeof ev.preventDefault === "function") ev.preventDefault();
+                sbIgnoreNextMapClick = true;
+                sidebarOpen(layerId, feat);
+                if (sbZoomOnClick != null) {
+                  var g = feat.geometry;
+                  if (g && g.type === "Point" && g.coordinates) {
+                    m.flyTo({ center: g.coordinates, zoom: sbZoomOnClick, duration: 1500 });
+                  }
+                }
+              });
+            });
+
+            if (sbCloseOnMapClick) {
+              m.on("click", function(ev) {
+                if (sbIgnoreNextMapClick) {
+                  sbIgnoreNextMapClick = false;
+                  return;
+                }
+                if (!ev.defaultPrevented) sidebarClose();
+              });
+            }
+          });
+        }
+
+        // Dashboard
+        const dashboardConfig = components.find(c => c.type === "dashboard");
+        if (dashboardConfig) {
+          const dashboardId = dashboardConfig.dashboard_id || "dashboard";
+          const dashboardPosition = dashboardConfig.position || "top-right";
+          const dashboardTitle = dashboardConfig.title || "Dashboard";
+          const dashboardWidth = dashboardConfig.width || 360;
+          const dashboardHeight = dashboardConfig.height;
+          const dashboardCollapsible = dashboardConfig.collapsible !== false;
+          const dashboardFilters = Array.isArray(dashboardConfig.filters) ? dashboardConfig.filters : [];
+          const dashboardEmptyState = dashboardConfig.empty_state || "No dashboard content yet.";
+          const dashboardEl = document.createElement("section");
+          const dashboardHeader = document.createElement("div");
+          const dashboardTitleEl = document.createElement("h2");
+          const dashboardBody = document.createElement("div");
+          const dashboardFilterBar = document.createElement("div");
+          const dashboardContent = document.createElement("div");
+          let dashboardToggleBtn = null;
+          const dashboardState = {};
+
+          dashboardEl.className = "llmaps-dashboard " + dashboardPosition;
+          dashboardEl.setAttribute("data-dashboard-id", dashboardId);
+          dashboardEl.style.setProperty("--llmaps-dashboard-width", dashboardWidth + "px");
+          if (dashboardHeight != null) {
+            dashboardEl.style.setProperty("--llmaps-dashboard-height", dashboardHeight + "px");
+          }
+
+          dashboardHeader.className = "llmaps-dashboard-header";
+          dashboardTitleEl.className = "llmaps-dashboard-title";
+          dashboardTitleEl.textContent = dashboardTitle;
+          dashboardHeader.appendChild(dashboardTitleEl);
+
+          if (dashboardCollapsible) {
+            dashboardToggleBtn = document.createElement("button");
+            dashboardToggleBtn.type = "button";
+            dashboardToggleBtn.className = "llmaps-dashboard-toggle";
+            dashboardToggleBtn.setAttribute("aria-label", "Toggle dashboard");
+            dashboardHeader.appendChild(dashboardToggleBtn);
+          }
+
+          dashboardBody.className = "llmaps-dashboard-body";
+          dashboardFilterBar.className = "llmaps-dashboard-filters";
+          dashboardContent.className = "llmaps-dashboard-content";
+          dashboardBody.appendChild(dashboardFilterBar);
+          dashboardBody.appendChild(dashboardContent);
+          dashboardEl.appendChild(dashboardHeader);
+          dashboardEl.appendChild(dashboardBody);
+
+          function dashboardSetContent(html) {
+            dashboardContent.innerHTML = "";
+            if (html && String(html).trim() !== "") {
+              dashboardContent.innerHTML = html;
+              dashboardContent.classList.remove("is-empty");
+              return;
+            }
+            dashboardContent.classList.add("is-empty");
+            const emptyEl = document.createElement("div");
+            emptyEl.className = "llmaps-dashboard-empty";
+            emptyEl.textContent = dashboardEmptyState;
+            dashboardContent.appendChild(emptyEl);
+          }
+
+          function dashboardDispatch(filterId, value) {
+            window.dispatchEvent(new CustomEvent("llmaps:dashboard-filter-change", {
+              detail: {
+                dashboardId: dashboardId,
+                filterId: filterId,
+                value: value,
+                state: Object.assign({}, dashboardState),
+              }
+            }));
+          }
+
+          function dashboardNormalizeOptions(options) {
+            if (!Array.isArray(options)) return [];
+            return options.map(function(option) {
+              if (option && typeof option === "object" && option.value !== undefined) {
+                return {
+                  value: String(option.value),
+                  label: String(option.label != null ? option.label : option.value),
+                };
+              }
+              return { value: String(option), label: String(option) };
+            });
+          }
+
+          function dashboardResolveDateLocale() {
+            if (!window.flatpickr) return "default";
+            if (normalizedLocale.toLowerCase().indexOf("ru") === 0) {
+              return (window.flatpickr.l10ns && window.flatpickr.l10ns.ru) || "ru";
+            }
+            return "default";
+          }
+
+          function dashboardCreateFilter(filterConfig, index) {
+            const filterId = filterConfig.id || ("filter-" + index);
+            const filterType = filterConfig.type || "select";
+            const filterWrap = document.createElement("label");
+            const filterLabel = document.createElement("span");
+            let input;
+            let emitEventName = filterType === "text" ? "input" : "change";
+
+            filterWrap.className = "llmaps-dashboard-filter";
+            filterWrap.setAttribute("data-filter-id", filterId);
+            filterLabel.className = "llmaps-dashboard-filter-label";
+            filterLabel.textContent = filterConfig.label || filterId;
+            filterWrap.appendChild(filterLabel);
+
+            if (filterType === "select") {
+              input = document.createElement("select");
+              dashboardNormalizeOptions(filterConfig.options).forEach(function(option) {
+                const optionEl = document.createElement("option");
+                optionEl.value = option.value;
+                optionEl.textContent = option.label;
+                input.appendChild(optionEl);
+              });
+            } else {
+              input = document.createElement("input");
+              input.type = "text";
+              if (filterConfig.placeholder) input.placeholder = filterConfig.placeholder;
+            }
+
+            input.className = "llmaps-dashboard-filter-input";
+            input.setAttribute("lang", normalizedLocale);
+            if (filterConfig.value != null) input.value = String(filterConfig.value);
+            dashboardState[filterId] = input.value;
+
+            if (filterType === "date" && window.flatpickr) {
+              window.flatpickr(input, {
+                dateFormat: "Y-m-d",
+                defaultDate: filterConfig.value != null ? String(filterConfig.value) : null,
+                allowInput: true,
+                disableMobile: true,
+                locale: dashboardResolveDateLocale(),
+                onChange: function(selectedDates, dateStr) {
+                  dashboardState[filterId] = dateStr;
+                  dashboardDispatch(filterId, dateStr);
+                },
+              });
+              input.addEventListener("input", function() {
+                dashboardState[filterId] = input.value;
+              });
+            } else {
+              input.addEventListener(emitEventName, function() {
+                dashboardState[filterId] = input.value;
+                dashboardDispatch(filterId, input.value);
+              });
+            }
+
+            filterWrap.appendChild(input);
+            dashboardFilterBar.appendChild(filterWrap);
+          }
+
+          function dashboardSetCollapsed(collapsed) {
+            dashboardEl.classList.toggle("collapsed", !!collapsed);
+            if (dashboardToggleBtn) {
+              dashboardToggleBtn.textContent = collapsed ? "+" : "-";
+              dashboardToggleBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            }
+          }
+
+          dashboardFilters.forEach(dashboardCreateFilter);
+          if (!dashboardFilters.length) {
+            dashboardFilterBar.style.display = "none";
+          }
+
+          if (dashboardToggleBtn) {
+            dashboardToggleBtn.addEventListener("click", function() {
+              dashboardSetCollapsed(!dashboardEl.classList.contains("collapsed"));
+            });
+          }
+
+          if (!window.llmapsDashboards) window.llmapsDashboards = {};
+          window.llmapsDashboards[dashboardId] = {
+            element: dashboardEl,
+            state: dashboardState,
+            setContent: dashboardSetContent,
+            setTitle: function(title) { dashboardTitleEl.textContent = title; },
+            setCollapsed: dashboardSetCollapsed,
+          };
+          window.llmapsDashboardSetContent = function(id, html) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            if (dashboard) dashboard.setContent(html);
+          };
+          window.llmapsDashboardSetTitle = function(id, title) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            if (dashboard) dashboard.setTitle(title);
+          };
+          window.llmapsDashboardGetState = function(id) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            return dashboard ? Object.assign({}, dashboard.state) : null;
+          };
+          window.llmapsDashboardSetCollapsed = function(id, collapsed) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            if (dashboard) dashboard.setCollapsed(collapsed);
+          };
+
+          map.getContainer().appendChild(dashboardEl);
+          dashboardSetContent(dashboardConfig.content_html || "");
+          dashboardSetCollapsed(!!dashboardConfig.collapsed);
+        }
+
+        // FeatureSearch — search within map data attributes
+        const featureSearchConfig = components.find(c => c.type === "feature_search");
+        if (featureSearchConfig) {
+          const fsPosition = featureSearchConfig.position || "top-center";
+          const fsPlaceholder = featureSearchConfig.placeholder || "Search...";
+          const fsSearchFields = featureSearchConfig.search_fields || {};
+          const fsFieldLabels = featureSearchConfig.field_labels || {};
+          const fsMaxResults = featureSearchConfig.max_results || 15;
+          const fsZoom = featureSearchConfig.zoom_on_select || 8;
+          const fsDebounce = featureSearchConfig.debounce_ms || 200;
+          const fsMinChars = featureSearchConfig.min_chars || 2;
+
+          // Build DOM
+          const fsWrap = document.createElement("div");
+          fsWrap.className = "llmaps-feature-search " + fsPosition;
+          const fsInput = document.createElement("input");
+          fsInput.type = "text";
+          fsInput.placeholder = fsPlaceholder;
+          fsInput.autocomplete = "off";
+          fsInput.className = "llmaps-feature-search-input";
+          fsWrap.appendChild(fsInput);
+          const fsDropdown = document.createElement("div");
+          fsDropdown.className = "llmaps-feature-search-dropdown";
+          fsWrap.appendChild(fsDropdown);
+          map.getContainer().appendChild(fsWrap);
+
+          // Cache source data for searching
+          var _fsCache = {};
+
+          function fsBuildCache() {
+            var sourceIds = Object.keys(fsSearchFields);
+            sourceIds.forEach(function(sourceId) {
+              if (_fsCache[sourceId]) return;
+              if (typeof window.llmapsGetSourceData === "function") {
+                window.llmapsGetSourceData(sourceId).then(function(geojson) {
+                  if (geojson && geojson.features) {
+                    _fsCache[sourceId] = geojson.features;
+                  }
+                });
+              }
+            });
+          }
+
+          function fsSearch(query) {
+            var results = [];
+            var qLower = query.toLowerCase();
+            var sourceIds = Object.keys(fsSearchFields);
+
+            for (var si = 0; si < sourceIds.length; si++) {
+              if (results.length >= fsMaxResults) break;
+              var sourceId = sourceIds[si];
+              var fields = fsSearchFields[sourceId] || [];
+              var features = _fsCache[sourceId] || [];
+
+              for (var fi = 0; fi < features.length; fi++) {
+                if (results.length >= fsMaxResults) break;
+                var feat = features[fi];
+                var props = feat.properties || {};
+
+                for (var ki = 0; ki < fields.length; ki++) {
+                  var fieldName = fields[ki];
+                  var val = props[fieldName];
+                  if (val == null) continue;
+                  if (String(val).toLowerCase().includes(qLower)) {
+                    var label = String(val);
+                    var secondary = "";
+                    for (var xi = 0; xi < fields.length; xi++) {
+                      if (xi === ki) continue;
+                      var sv = props[fields[xi]];
+                      if (sv != null) { secondary = String(sv); break; }
+                    }
+                    results.push({
+                      sourceId: sourceId,
+                      feature: feat,
+                      label: label,
+                      secondary: secondary,
+                      fieldLabel: fsFieldLabels[fieldName] || fieldName,
+                    });
+                    break;
+                  }
+                }
+              }
+            }
+            return results;
+          }
+
+          function fsRenderResults(results) {
+            fsDropdown.innerHTML = "";
+            if (results.length === 0) {
+              fsDropdown.innerHTML = '<div class="llmaps-feature-search-empty">No results</div>';
+              fsDropdown.classList.add("visible");
+              return;
+            }
+            results.forEach(function(r) {
+              var div = document.createElement("div");
+              div.className = "llmaps-feature-search-item";
+              var text = r.label;
+              if (r.secondary) text += " \u2014 " + r.secondary;
+              div.textContent = text;
+              var badge = document.createElement("span");
+              badge.className = "llmaps-feature-search-item-source";
+              badge.textContent = r.fieldLabel;
+              div.appendChild(badge);
+              div.addEventListener("click", function() {
+                fsDropdown.classList.remove("visible");
+                fsInput.value = "";
+                fsFlyToFeature(r.feature);
+                if (typeof window.llmapsSidebarOpen === "function") {
+                  var layerCfg = (config.layers || []).find(function(l) { return l.source === r.sourceId; });
+                  if (layerCfg) window.llmapsSidebarOpen(layerCfg.id, r.feature);
+                }
+              });
+              fsDropdown.appendChild(div);
+            });
+            fsDropdown.classList.add("visible");
+          }
+
+          function fsFlyToFeature(feature) {
+            var g = feature.geometry;
+            if (!g) return;
+            if (g.type === "Point" && g.coordinates) {
+              maps.forEach(function(m) {
+                m.flyTo({ center: g.coordinates, zoom: fsZoom, duration: 1500 });
+              });
+            } else {
+              var bounds = new maplibregl.LngLatBounds();
+              _fsForEachCoord(g, function(c) { bounds.extend(c); });
+              if (!bounds.isEmpty()) {
+                maps.forEach(function(m) {
+                  m.fitBounds(bounds, { padding: 50, maxZoom: fsZoom });
+                });
+              }
+            }
+          }
+
+          function _fsForEachCoord(geometry, fn) {
+            if (geometry.type === "Point") { fn(geometry.coordinates); return; }
+            if (geometry.type === "MultiPoint") { geometry.coordinates.forEach(fn); return; }
+            if (geometry.type === "LineString") { geometry.coordinates.forEach(fn); return; }
+            if (geometry.type === "Polygon") { geometry.coordinates[0].forEach(fn); return; }
+            if (geometry.type === "MultiPolygon") {
+              geometry.coordinates.forEach(function(poly) { poly[0].forEach(fn); });
+              return;
+            }
+            if (geometry.type === "MultiLineString") {
+              geometry.coordinates.forEach(function(line) { line.forEach(fn); });
+            }
+          }
+
+          var fsTimer;
+          fsInput.addEventListener("input", function() {
+            clearTimeout(fsTimer);
+            var q = fsInput.value.trim();
+            if (q.length < fsMinChars) { fsDropdown.classList.remove("visible"); return; }
+            fsTimer = setTimeout(function() { fsRenderResults(fsSearch(q)); }, fsDebounce);
+          });
+          fsInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              var firstItem = fsDropdown.querySelector(".llmaps-feature-search-item");
+              if (firstItem) firstItem.click();
+            }
+            if (e.key === "Escape") { fsDropdown.classList.remove("visible"); fsInput.blur(); }
+          });
+          document.addEventListener("click", function(e) {
+            if (!fsWrap.contains(e.target)) fsDropdown.classList.remove("visible");
+          });
+
+          window.llmapsOnLayersReady(function() { fsBuildCache(); });
+        }
+
+        const searchConfig = components.find(c => c.type === "search");
+        if (searchConfig && maps.length > 0) {
+          const wrap = document.createElement("div");
+          wrap.className = "llmaps-search-wrap " + (searchConfig.position || "top-left");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = searchConfig.placeholder || "Search address...";
+          input.id = "llmaps-address-search";
+          wrap.appendChild(input);
+          const suggestions = document.createElement("div");
+          suggestions.className = "llmaps-search-suggestions";
+          suggestions.id = "llmaps-search-suggestions";
+          wrap.appendChild(suggestions);
+          document.body.appendChild(wrap);
+
+          const zoomOnResult = searchConfig.zoom_on_result ?? 15;
+          const geocoderUrl = searchConfig.geocoder_url;
+          const geocoderParams = searchConfig.geocoder_params || {};
+          const autocomplete = searchConfig.autocomplete !== false;
+
+          function parseCoords(data) {
+            if (Array.isArray(data.center)) return data.center;
+            if (data.lon != null && data.lat != null) return [data.lon, data.lat];
+            if (data.lng != null && data.lat != null) return [data.lng, data.lat];
+            const f = data.features && data.features[0];
+            if (f && f.geometry && f.geometry.coordinates)
+              return f.geometry.coordinates;
+            const m = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+            if (m && m[0]) {
+              const pos = m[0].GeoObject.Point.pos;
+              return pos.split(" ").map(Number);
+            }
+            return null;
+          }
+
+          function buildGeocoderUrl(query, results) {
+            if (!geocoderUrl) return null;
+            const url = new URL(geocoderUrl);
+            url.searchParams.set("geocode", query);
+            if (results != null) url.searchParams.set("results", String(results));
+            Object.entries(geocoderParams).forEach(([k, v]) => url.searchParams.set(k, v));
+            return url.toString();
+          }
+
+          function flyToCoords(lon, lat) {
+            maps.forEach(m => {
+              if (m && m.flyTo) m.flyTo({ center: [lon, lat], zoom: zoomOnResult, duration: 2000 });
+            });
+          }
+
+          let debounceTimer;
+          function doSearch(address) {
+            const url = buildGeocoderUrl(address, 1);
+            if (!url) { console.warn("Search: geocoder_url not set"); return; }
+            fetch(url).then(r => r.json()).then(data => {
+              const coords = parseCoords(data);
+              if (coords) flyToCoords(coords[0], coords[1]);
+            }).catch(e => console.error("Geocoder error", e));
+          }
+
+          function showSuggestions(query) {
+            const url = buildGeocoderUrl(query, 5);
+            if (!url) return;
+            fetch(url).then(r => r.json()).then(data => {
+              const list = data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+              suggestions.innerHTML = "";
+              suggestions.classList.remove("visible");
+              if (list && list.length) {
+                list.slice(0, 5).forEach(item => {
+                  const text = item.GeoObject && item.GeoObject.metaDataProperty && item.GeoObject.metaDataProperty.GeocoderMetaData
+                    ? item.GeoObject.metaDataProperty.GeocoderMetaData.text
+                    : (item.GeoObject && item.GeoObject.name) || "";
+                  const div = document.createElement("div");
+                  div.textContent = text;
+                  div.onclick = () => { input.value = text; doSearch(text); suggestions.classList.remove("visible"); };
+                  suggestions.appendChild(div);
+                });
+                suggestions.classList.add("visible");
+              }
+            }).catch(() => {});
+          }
+
+          input.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); doSearch(input.value.trim()); }
+          });
+          if (autocomplete) {
+            input.addEventListener("input", function() {
+              clearTimeout(debounceTimer);
+              const q = input.value.trim();
+              if (q.length < 3) { suggestions.classList.remove("visible"); return; }
+              debounceTimer = setTimeout(() => showSuggestions(q), 300);
+            });
+            input.addEventListener("blur", () => setTimeout(() => suggestions.classList.remove("visible"), 200));
+          }
+        }
+      }
+
+
+
+      window._llmapsLifecycle = {
+        maxActiveMaps: 8,
+        active: [],
+        lastUsed: null,
+        observers: null
+      };
+
+      function _llmapsLifecycleTouch(entry) {
+        entry.lastUsed = Date.now();
+      }
+
+      function _llmapsLifecycleEvictLRU() {
+        const L = window._llmapsLifecycle;
+        if (L.active.length <= L.maxActiveMaps) return;
+        L.active.sort(function(a, b) { return (a.lastUsed || 0) - (b.lastUsed || 0); });
+        while (L.active.length > L.maxActiveMaps && L.active.length > 0) {
+          const entry = L.active.shift();
+          if (typeof entry.dispose === "function") entry.dispose();
+        }
+      }
+
+      function _llmapsLifecycleRemoveEntry(entry) {
+        window._llmapsLifecycle.active = window._llmapsLifecycle.active.filter(function(e) { return e !== entry; });
+      }
+
+      function initLifecycleWithObserver(rootId, MAP_CONFIG, createMapOnce) {
+        const root = document.getElementById(rootId);
+        if (!root) return;
+        const maxActiveMaps = Math.max(1, Math.min(16, (MAP_CONFIG.max_active_maps || 8)));
+        window._llmapsLifecycle.maxActiveMaps = maxActiveMaps;
+        window._llmapsLifecycle.lastUsed = window._llmapsLifecycle.lastUsed || Date.now();
+
+        const isComparison = MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers;
+        const visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+
+        function disposeCurrent() {
+          const L = window._llmapsLifecycle;
+          const entry = L.active.find(function(e) { return e.rootId === rootId; });
+          if (!entry) return;
+          if (typeof entry.dispose === "function") entry.dispose();
+          _llmapsLifecycleRemoveEntry(entry);
+        }
+
+        function ensureMap() {
+          const L = window._llmapsLifecycle;
+          var entry = L.active.find(function(e) { return e.rootId === rootId; });
+          if (entry) {
+            _llmapsLifecycleTouch(entry);
+            return;
+          }
+          _llmapsLifecycleEvictLRU();
+          var result = createMapOnce();
+          entry = { rootId: rootId, rootElement: root, lastUsed: Date.now() };
+          if (isComparison && result && (result.mapLeft || result.mapRight)) {
+            entry.maps = [result.mapLeft, result.mapRight].filter(Boolean);
+            window.llmaps_maps = entry.maps;
+            window.llmaps_map = entry.maps[0] || null;
+            if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+              initVisibilityOptimization(entry.maps, visibilityIds);
+            addComponents(MAP_CONFIG, entry.maps);
+            entry.dispose = function() {
+              if (entry.maps) entry.maps.forEach(function(m) { if (typeof destroySingleMap === "function") destroySingleMap(m); });
+              entry.maps = null;
+              if (entry.rootElement) { entry.rootElement.id = rootId; entry.rootElement.innerHTML = ""; }
+            };
+          } else {
+            var map = result;
+            entry.map = map;
+            window.llmaps_map = map;
+            window.llmaps_maps = [map];
+            if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+              initVisibilityOptimization(map, visibilityIds);
+            addComponents(MAP_CONFIG, map);
+            entry.dispose = function() {
+              if (entry.map && typeof destroySingleMap === "function") destroySingleMap(entry.map);
+              entry.map = null;
+            };
+          }
+          L.active.push(entry);
+        }
+
+        var observer = new IntersectionObserver(
+          function(entries) {
+            entries.forEach(function(ev) {
+              if (ev.target !== root) return;
+              if (ev.isIntersecting) ensureMap(); else disposeCurrent();
+            });
+          },
+          { root: null, rootMargin: "0px", threshold: 0.01 }
+        );
+        observer.observe(root);
+        if (window._llmapsLifecycle.observers) window._llmapsLifecycle.observers.push(observer); else window._llmapsLifecycle.observers = [observer];
+
+        if (root.getBoundingClientRect && root.getBoundingClientRect().height > 0 && root.getBoundingClientRect().width > 0) {
+          var rect = root.getBoundingClientRect();
+          if (rect.top < (window.innerHeight || document.documentElement.clientHeight) && rect.bottom > 0) ensureMap();
+        }
+      }
+
+      function createMap() {
+        const MAP_CONFIG = readConfig();
+        const root = document.getElementById("map-root");
+        if (!root) return;
+
+        const visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+
+        if (MAP_CONFIG.comparison && MAP_CONFIG.comparison.left_layers && MAP_CONFIG.comparison.right_layers) {
+          const { mapLeft, mapRight } = setupComparison(root, MAP_CONFIG);
+          return { mapLeft: mapLeft, mapRight: mapRight };
+        }
+
+        const map = createSingleMap(
+          "map-root",
+          MAP_CONFIG,
+          null,
+          MAP_CONFIG.embedded_sources,
+          { hashSync: isHashPositionEnabled(MAP_CONFIG) }
+        );
+        window.llmaps_map = map;
+        window.llmaps_maps = [map];
+        if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+          initVisibilityOptimization(map, visibilityIds);
+        addComponents(MAP_CONFIG, map);
+        return map;
+      }
+
+      function initMap() {
+        const MAP_CONFIG = readConfig();
+        var instanceCount = Math.max(1, MAP_CONFIG.map_instance_count || 1);
+        var useLifecycle = MAP_CONFIG.lazy_init && instanceCount >= 3 && typeof initLifecycleWithObserver === "function";
+        if (useLifecycle) {
+          initLifecycleWithObserver("map-root", MAP_CONFIG, createMap);
+          return;
+        }
+        var result = createMap();
+        if (result && (result.mapLeft || result.mapRight)) {
+          window.llmaps_maps = [result.mapLeft, result.mapRight];
+          var visibilityIds = MAP_CONFIG.visibility_optimization_source_ids || [];
+          if (visibilityIds.length && typeof initVisibilityOptimization === "function")
+            initVisibilityOptimization(window.llmaps_maps, visibilityIds);
+          addComponents(MAP_CONFIG, window.llmaps_maps);
+        }
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initMap);
+      } else {
+        initMap();
+      }
+        // Legend interactivity (server-rendered legend)
+        (function() {
+            const legendEl = document.querySelector('.llmaps-legend');
+            if (!legendEl) return;
+
+            // Toggle legend collapse/expand
+            const toggleBtn = document.getElementById('llmaps-legend-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    legendEl.classList.toggle('collapsed');
+                });
+            }
+
+            // Layer visibility toggles (iOS-style switches)
+            const toggles = legendEl.querySelectorAll('.llmaps-layer-toggle input[type="checkbox"]');
+            toggles.forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    const layerId = this.getAttribute('data-layer-id');
+                    const visibility = this.checked ? 'visible' : 'none';
+                    
+                    // Apply to all maps (supports comparison mode)
+                    const maps = window.llmaps_maps || [window.llmaps_map];
+                    maps.forEach(function(map) {
+                        if (map && map.getLayer && map.getLayer(layerId)) {
+                            map.setLayoutProperty(layerId, 'visibility', visibility);
+                        }
+                    });
+                });
+            });
+
+            // Basemap switcher
+            const basemapSelect = document.getElementById('llmaps-basemap-select');
+            if (basemapSelect && window.llmaps_switchBasemap) {
+                basemapSelect.addEventListener('change', function() {
+                    window.llmaps_switchBasemap(this.value);
+                });
+            }
+
+            // Instructions toggle
+            const tipsHeader = document.getElementById('llmaps-tips-header');
+            const tipsContent = document.getElementById('llmaps-tips-content');
+            if (tipsHeader && tipsContent) {
+                tipsHeader.addEventListener('click', function() {
+                    tipsHeader.classList.toggle('collapsed');
+                    tipsContent.classList.toggle('collapsed');
+                });
+            }
+        })();</script>
+    <script>
+window.addEventListener("llmaps:dashboard-filter-change", function(event) {
+  var detail = event.detail || {};
+  if (detail.dashboardId !== "overview") return;
+  var state = window.llmapsDashboardGetState("overview") || {};
+  var html = [
+    '<div>',
+    '<p style="margin:0 0 8px;font-weight:600;">Current dashboard state</p>',
+    '<p style="margin:0 0 4px;color:#4b5563;">Period: ' + (state.period || '-') + '</p>',
+    '<p style="margin:0 0 4px;color:#4b5563;">Snapshot date: ' + (state.date || '-') + '</p>',
+    '<p style="margin:0;color:#4b5563;">Quick note: ' + (state.query || '-') + '</p>',
+    '</div>'
+  ].join('');
+  window.llmapsDashboardSetContent("overview", html);
+});
+        </script>
+  </body>
+</html>

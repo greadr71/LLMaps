@@ -2,6 +2,7 @@
 
 from .basemap_switcher import BasemapSwitcher
 from .controls import Controls
+from .dashboard import Dashboard
 from .feature_search import FeatureSearch
 from .legend import Legend
 from .popup import Popup
@@ -12,6 +13,7 @@ from .storytelling import Scene, SceneComparison, Storytelling
 __all__ = [
     "BasemapSwitcher",
     "Controls",
+    "Dashboard",
     "FeatureSearch",
     "Legend",
     "Popup",

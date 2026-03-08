@@ -1,6 +1,6 @@
 {# Base HTML template for LLMaps. #}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ html_lang }}">
   <head>
     <meta charset="utf-8" />
     <title>{{ title or "LLMaps" }}</title>
@@ -10,6 +10,9 @@
       href="https://unpkg.com/maplibre-gl@5.16.0/dist/maplibre-gl.css"
       rel="stylesheet"
     />
+    {% if use_flatpickr %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    {% endif %}
     <style>{{ llmaps_css | safe }}{% if custom_css %}
 {{ custom_css | safe }}{% endif %}</style>
   </head>
@@ -41,6 +44,10 @@
     {% if use_swiper %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    {% endif %}
+    {% if use_flatpickr %}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
     {% endif %}
     {% if use_compression %}
     <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>

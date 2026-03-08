@@ -114,6 +114,13 @@ def render_map_html(
     env = _create_environment()
     template = env.get_template("base.html")
     use_compression = config.get("use_compression", False)
+    html_lang = str(config.get("locale") or "en-US").replace("_", "-")
+    components = config.get("components") or []
+    use_flatpickr = any(
+        component.get("type") == "dashboard"
+        and any((filter_item or {}).get("type") == "date" for filter_item in (component.get("filters") or []))
+        for component in components
+    )
     
     # Generate server-side legend HTML
     legend_html = generate_legend_html(config)
@@ -139,10 +146,12 @@ def render_map_html(
 
     return template.render(
         title=config.get("title") or "LLMaps",
+        html_lang=html_lang,
         map_config_json=json.dumps(config),
         llmaps_css=_load_base_css(config),
         llmaps_js=_render_base_js(config),
         use_compression=use_compression,
+        use_flatpickr=use_flatpickr,
         use_scrollama=use_scrollama,
         use_compare=use_compare,
         use_swiper=use_swiper,

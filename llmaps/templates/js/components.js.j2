@@ -6,6 +6,7 @@
 
         // Get locale from config, default to en-US
         const locale = config.locale || "en-US";
+        const normalizedLocale = String(locale).replace(/_/g, "-");
 
         function formatValue(val, fieldName) {
           if (val == null) return "";
@@ -391,6 +392,208 @@
               });
             }
           });
+        }
+
+        // Dashboard
+        const dashboardConfig = components.find(c => c.type === "dashboard");
+        if (dashboardConfig) {
+          const dashboardId = dashboardConfig.dashboard_id || "dashboard";
+          const dashboardPosition = dashboardConfig.position || "top-right";
+          const dashboardTitle = dashboardConfig.title || "Dashboard";
+          const dashboardWidth = dashboardConfig.width || 360;
+          const dashboardHeight = dashboardConfig.height;
+          const dashboardCollapsible = dashboardConfig.collapsible !== false;
+          const dashboardFilters = Array.isArray(dashboardConfig.filters) ? dashboardConfig.filters : [];
+          const dashboardEmptyState = dashboardConfig.empty_state || "No dashboard content yet.";
+          const dashboardEl = document.createElement("section");
+          const dashboardHeader = document.createElement("div");
+          const dashboardTitleEl = document.createElement("h2");
+          const dashboardBody = document.createElement("div");
+          const dashboardFilterBar = document.createElement("div");
+          const dashboardContent = document.createElement("div");
+          let dashboardToggleBtn = null;
+          const dashboardState = {};
+
+          dashboardEl.className = "llmaps-dashboard " + dashboardPosition;
+          dashboardEl.setAttribute("data-dashboard-id", dashboardId);
+          dashboardEl.style.setProperty("--llmaps-dashboard-width", dashboardWidth + "px");
+          if (dashboardHeight != null) {
+            dashboardEl.style.setProperty("--llmaps-dashboard-height", dashboardHeight + "px");
+          }
+
+          dashboardHeader.className = "llmaps-dashboard-header";
+          dashboardTitleEl.className = "llmaps-dashboard-title";
+          dashboardTitleEl.textContent = dashboardTitle;
+          dashboardHeader.appendChild(dashboardTitleEl);
+
+          if (dashboardCollapsible) {
+            dashboardToggleBtn = document.createElement("button");
+            dashboardToggleBtn.type = "button";
+            dashboardToggleBtn.className = "llmaps-dashboard-toggle";
+            dashboardToggleBtn.setAttribute("aria-label", "Toggle dashboard");
+            dashboardHeader.appendChild(dashboardToggleBtn);
+          }
+
+          dashboardBody.className = "llmaps-dashboard-body";
+          dashboardFilterBar.className = "llmaps-dashboard-filters";
+          dashboardContent.className = "llmaps-dashboard-content";
+          dashboardBody.appendChild(dashboardFilterBar);
+          dashboardBody.appendChild(dashboardContent);
+          dashboardEl.appendChild(dashboardHeader);
+          dashboardEl.appendChild(dashboardBody);
+
+          function dashboardSetContent(html) {
+            dashboardContent.innerHTML = "";
+            if (html && String(html).trim() !== "") {
+              dashboardContent.innerHTML = html;
+              dashboardContent.classList.remove("is-empty");
+              return;
+            }
+            dashboardContent.classList.add("is-empty");
+            const emptyEl = document.createElement("div");
+            emptyEl.className = "llmaps-dashboard-empty";
+            emptyEl.textContent = dashboardEmptyState;
+            dashboardContent.appendChild(emptyEl);
+          }
+
+          function dashboardDispatch(filterId, value) {
+            window.dispatchEvent(new CustomEvent("llmaps:dashboard-filter-change", {
+              detail: {
+                dashboardId: dashboardId,
+                filterId: filterId,
+                value: value,
+                state: Object.assign({}, dashboardState),
+              }
+            }));
+          }
+
+          function dashboardNormalizeOptions(options) {
+            if (!Array.isArray(options)) return [];
+            return options.map(function(option) {
+              if (option && typeof option === "object" && option.value !== undefined) {
+                return {
+                  value: String(option.value),
+                  label: String(option.label != null ? option.label : option.value),
+                };
+              }
+              return { value: String(option), label: String(option) };
+            });
+          }
+
+          function dashboardResolveDateLocale() {
+            if (!window.flatpickr) return "default";
+            if (normalizedLocale.toLowerCase().indexOf("ru") === 0) {
+              return (window.flatpickr.l10ns && window.flatpickr.l10ns.ru) || "ru";
+            }
+            return "default";
+          }
+
+          function dashboardCreateFilter(filterConfig, index) {
+            const filterId = filterConfig.id || ("filter-" + index);
+            const filterType = filterConfig.type || "select";
+            const filterWrap = document.createElement("label");
+            const filterLabel = document.createElement("span");
+            let input;
+            let emitEventName = filterType === "text" ? "input" : "change";
+
+            filterWrap.className = "llmaps-dashboard-filter";
+            filterWrap.setAttribute("data-filter-id", filterId);
+            filterLabel.className = "llmaps-dashboard-filter-label";
+            filterLabel.textContent = filterConfig.label || filterId;
+            filterWrap.appendChild(filterLabel);
+
+            if (filterType === "select") {
+              input = document.createElement("select");
+              dashboardNormalizeOptions(filterConfig.options).forEach(function(option) {
+                const optionEl = document.createElement("option");
+                optionEl.value = option.value;
+                optionEl.textContent = option.label;
+                input.appendChild(optionEl);
+              });
+            } else {
+              input = document.createElement("input");
+              input.type = "text";
+              if (filterConfig.placeholder) input.placeholder = filterConfig.placeholder;
+            }
+
+            input.className = "llmaps-dashboard-filter-input";
+            input.setAttribute("lang", normalizedLocale);
+            if (filterConfig.value != null) input.value = String(filterConfig.value);
+            dashboardState[filterId] = input.value;
+
+            if (filterType === "date" && window.flatpickr) {
+              window.flatpickr(input, {
+                dateFormat: "Y-m-d",
+                defaultDate: filterConfig.value != null ? String(filterConfig.value) : null,
+                allowInput: true,
+                disableMobile: true,
+                locale: dashboardResolveDateLocale(),
+                onChange: function(selectedDates, dateStr) {
+                  dashboardState[filterId] = dateStr;
+                  dashboardDispatch(filterId, dateStr);
+                },
+              });
+              input.addEventListener("input", function() {
+                dashboardState[filterId] = input.value;
+              });
+            } else {
+              input.addEventListener(emitEventName, function() {
+                dashboardState[filterId] = input.value;
+                dashboardDispatch(filterId, input.value);
+              });
+            }
+
+            filterWrap.appendChild(input);
+            dashboardFilterBar.appendChild(filterWrap);
+          }
+
+          function dashboardSetCollapsed(collapsed) {
+            dashboardEl.classList.toggle("collapsed", !!collapsed);
+            if (dashboardToggleBtn) {
+              dashboardToggleBtn.textContent = collapsed ? "+" : "-";
+              dashboardToggleBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            }
+          }
+
+          dashboardFilters.forEach(dashboardCreateFilter);
+          if (!dashboardFilters.length) {
+            dashboardFilterBar.style.display = "none";
+          }
+
+          if (dashboardToggleBtn) {
+            dashboardToggleBtn.addEventListener("click", function() {
+              dashboardSetCollapsed(!dashboardEl.classList.contains("collapsed"));
+            });
+          }
+
+          if (!window.llmapsDashboards) window.llmapsDashboards = {};
+          window.llmapsDashboards[dashboardId] = {
+            element: dashboardEl,
+            state: dashboardState,
+            setContent: dashboardSetContent,
+            setTitle: function(title) { dashboardTitleEl.textContent = title; },
+            setCollapsed: dashboardSetCollapsed,
+          };
+          window.llmapsDashboardSetContent = function(id, html) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            if (dashboard) dashboard.setContent(html);
+          };
+          window.llmapsDashboardSetTitle = function(id, title) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            if (dashboard) dashboard.setTitle(title);
+          };
+          window.llmapsDashboardGetState = function(id) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            return dashboard ? Object.assign({}, dashboard.state) : null;
+          };
+          window.llmapsDashboardSetCollapsed = function(id, collapsed) {
+            var dashboard = window.llmapsDashboards && window.llmapsDashboards[id];
+            if (dashboard) dashboard.setCollapsed(collapsed);
+          };
+
+          map.getContainer().appendChild(dashboardEl);
+          dashboardSetContent(dashboardConfig.content_html || "");
+          dashboardSetCollapsed(!!dashboardConfig.collapsed);
         }
 
         // FeatureSearch — search within map data attributes

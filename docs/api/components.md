@@ -98,6 +98,92 @@ Sidebar(
 
 ---
 
+## Dashboard
+
+Persistent overlay panel for map dashboards. Use it for always-visible filters, status summaries, and custom HTML blocks that should stay attached to the map viewport.
+
+```python
+from llmaps.components import Dashboard
+
+Dashboard(
+    dashboard_id: str = "dashboard",
+    position: Literal["top-left", "top-right", "bottom-left", "bottom-right"] = "top-right",
+    title: Optional[str] = None,
+    width: int = 360,
+    height: Optional[int] = None,
+    collapsible: bool = True,
+    collapsed: bool = False,
+    filters: List[Dict[str, Any]] = [],
+    content_html: str = "",
+    empty_state: str = "No dashboard content yet.",
+)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `dashboard_id` | str | `"dashboard"` | Stable dashboard identifier used by the frontend JS bridge. |
+| `position` | str | `"top-right"` | Overlay position on the map. |
+| `title` | str or None | None | Header title shown in the dashboard card. |
+| `width` | int | 360 | Dashboard width in pixels. |
+| `height` | int or None | None | Optional maximum dashboard height in pixels. |
+| `collapsible` | bool | True | Whether the user can collapse the dashboard. |
+| `collapsed` | bool | False | Whether the dashboard starts collapsed. |
+| `filters` | list of dict | [] | Declarative filter descriptors rendered in the dashboard filter bar. |
+| `content_html` | str | `""` | Initial HTML for the dashboard body. |
+| `empty_state` | str | `"No dashboard content yet."` | Placeholder text shown when `content_html` is empty. |
+
+### Filter descriptors
+
+Each item in `filters` is a serializable dict. Supported `type` values in v1 are `"select"`, `"date"`, and `"text"`.
+
+```python
+Dashboard(
+    dashboard_id="overview",
+    title="Overview",
+    filters=[
+        {
+            "id": "period",
+            "type": "select",
+            "label": "Period",
+            "value": "week",
+            "options": [
+                {"value": "day", "label": "Day"},
+                {"value": "week", "label": "Week"},
+                {"value": "month", "label": "Month"},
+            ],
+        },
+        {
+            "id": "date",
+            "type": "date",
+            "label": "Snapshot date",
+            "value": "2026-03-08",
+        },
+        {
+            "id": "query",
+            "type": "text",
+            "label": "Quick note",
+            "placeholder": "Type any label...",
+            "value": "All regions",
+        },
+    ],
+)
+```
+
+### JS bridge
+
+The generated frontend exposes a minimal dashboard bridge for custom JS integration:
+
+- `window.llmapsDashboardSetContent(id, html)`
+- `window.llmapsDashboardSetTitle(id, title)`
+- `window.llmapsDashboardGetState(id)`
+- `window.llmapsDashboardSetCollapsed(id, collapsed)`
+
+When a filter changes, the page emits a `llmaps:dashboard-filter-change` event on `window`. The event detail contains `dashboardId`, `filterId`, `value`, and `state`.
+
+**Relationship to Sidebar:** `Dashboard` is for persistent controls and context. `Sidebar` remains the primary component for click-driven feature details.
+
+---
+
 ## FeatureSearch
 
 Search within map data by feature attributes (not a geocoder). Provides a dropdown with matching features and flies to the selected result.

@@ -141,6 +141,27 @@ open gerrymandering_en.html
 
 ---
 
+### 6. [Dashboard Primitives](dashboard/)
+
+**Features**: Dashboard, filter bar, custom JS bridge, CircleLayer
+
+A minimal example of a persistent dashboard panel attached to the map viewport. Demonstrates:
+- First-class `Dashboard` component added through `Map.add_component()`
+- Declarative select, date, and text filters
+- Frontend event bridge via `llmaps:dashboard-filter-change`
+- Dynamic content updates with `window.llmapsDashboardSetContent()`
+
+**Data**: Small embedded GeoJSON with a few sample cities
+
+**Run**:
+```bash
+cd dashboard
+python build_map.py
+open map.html
+```
+
+---
+
 ## API Coverage
 
 Every public feature of llmaps is demonstrated across these examples:
@@ -156,6 +177,7 @@ Every public feature of llmaps is demonstrated across these examples:
 | `Popup` | all examples |
 | `Storytelling` | gerrymandering |
 | `Sidebar` | cafes, world_population, earthquakes |
+| `Dashboard` | dashboard |
 | `Controls` | all examples |
 | `Search` (geocoding) | cafes |
 | `FeatureSearch` | cafes |
