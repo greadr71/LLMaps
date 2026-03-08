@@ -24,6 +24,28 @@ Thank you for considering contributing to LLMaps.
 - Prefer dataclasses for configuration objects (Map, layers, sources, components).
 - Keep the public API stable and documented in `llmaps/LLM_CONTEXT.md` (and thus `get_llm_context()`) and `docs/api/`.
 
+## Spec-driven workflow for public API changes
+
+LLMaps uses a lightweight spec-driven workflow for meaningful public changes. The goal is not extra ceremony. The goal is to make public behavior, documentation impact, and verification explicit before code lands.
+
+Use this workflow when changing:
+
+- `Map` parameters or methods
+- layers, sources, or components
+- expression helpers
+- embedded, comparison, storytelling, or other documented map behavior
+- frontend-facing JS utilities described in `LLM_CONTEXT.md`
+
+Start with these files:
+
+- `CONSTITUTION.md` — project principles for public API work
+- `specs/README.md` — when to write a spec and how to use the templates
+- `specs/templates/spec-template.md` — feature behavior and docs impact
+- `specs/templates/plan-template.md` — affected code paths, docs, and verification
+- `specs/templates/tasks-template.md` — execution breakdown
+
+You usually do not need a feature spec for typo fixes, narrow docs-only edits, or internal refactors that do not change behavior.
+
 ## Documentation checklist
 
 For any public API change, update the documentation. Below is a complete list of files and dependency matrix.
@@ -107,11 +129,19 @@ LLMaps uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - [ ] `docs/recipes/` updated if pattern affected
 - [ ] Examples in `examples/` work with new API
 
+### Additional checklist for spec-driven features
+
+- [ ] A feature folder exists under `specs/[###-feature-name]/` when the change affects public API behavior
+- [ ] `spec.md` describes the intended public behavior and edge cases
+- [ ] `plan.md` names affected code paths, docs, examples, and verification steps
+- [ ] `tasks.md` covers tests/examples before implementation is considered complete
+
 ## Pull requests
 
 - Describe the change and why it is needed.
 - Ensure existing tests pass and add tests for new behaviour where appropriate.
 - Update documentation (LLM_CONTEXT.md, docs/api, or recipes) if the public API or usage changes.
+- If the PR changes meaningful public behavior, link the corresponding folder under `specs/`.
 
 ## Scope
 

@@ -141,6 +141,8 @@ Everything reduces to a serializable dict — no framework magic. The generator 
 
 - **LLM context** — run `python -c "import llmaps; open('llmaps_context.md','w').write(llmaps.get_llm_context())"` and use @llmaps_context.md in chat for a compact API reference.
 - **[PHILOSOPHY.md](PHILOSOPHY.md)** — Concept, design principles, comparison with alternatives.
+- **[CONSTITUTION.md](CONSTITUTION.md)** — Development principles for meaningful public API changes.
+- **[specs/README.md](specs/README.md)** — Lightweight spec-driven workflow and templates for planning public features.
 - **[docs/api/](docs/api/)** — Map, layers, sources, components (parameters and examples).
 - **[docs/recipes/](docs/recipes/)** — Heatmap, comparison, embedded map, feature-state highlighting.
 
@@ -170,3 +172,5 @@ MIT. See [LICENSE](LICENSE).
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+For meaningful public API changes, use the lightweight spec workflow in [specs/README.md](specs/README.md) before implementation starts.

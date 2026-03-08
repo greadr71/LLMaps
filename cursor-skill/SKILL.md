@@ -33,6 +33,7 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 - **llmaps/** — package: `map.py`, `tiles.py`, `expressions.py`, `layers/`, `sources/`, `components/`, `core/` (generator, config), `optimizers/`, `templates/`.
 - **examples/** — per-example dirs with `prepare_data.py`, `build_map.py`, `map.html`, `data/`.
 - **docs/api/** — map, layers, sources, components; **docs/recipes/** — heatmap, embedded-map, comparison, feature-state-highlighting.
+- **specs/** — lightweight feature specs for meaningful public API changes; includes `templates/` for spec, plan, and task documents.
 - No CLI; use `Map`, `add_layer`, `add_component`, `auto_extent`, `save()` / `to_html()`.
 
 ### Documentation update rules
@@ -40,6 +41,7 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 - For **any** public API change: update `llmaps/LLM_CONTEXT.md` (and thus `get_llm_context()`) and the corresponding file in `docs/api/` (map.md, layers.md, sources.md, components.md).
 - **Matrix (from CONTRIBUTING):** Map param/method → map.md + LLM_CONTEXT + map.py docstring; new/changed layer → layers.md + LLM_CONTEXT + docstring + `layers/__init__.py`; same pattern for sources and components. Tile/expression/JS/embedded changes → listed docs + LLM_CONTEXT.
 - Pre-commit checklist: docstrings, LLM_CONTEXT, docs/api, docs/recipes if pattern affected, examples still run.
+- For meaningful public behavior changes, also consult `CONSTITUTION.md` and add a feature folder under `specs/` before implementation.
 
 ### Extending the library
 
@@ -53,6 +55,7 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 - Install: `pip install -e .` from repo root.
 - Examples: from an example dir (e.g. `examples/cafes/`), run `python prepare_data.py` then `python build_map.py`; open `map.html`.
 - Tests: `pytest tests/` (currently only `.gitkeep` in tests).
+- For planned public API work: create `specs/[###-feature-name]/spec.md`, `plan.md`, and `tasks.md` from the templates before implementation.
 
 ### Tech stack
 
@@ -60,7 +63,7 @@ Python ≥3.10, Hatch, Jinja2, pandas, geopandas, shapely, geobuf, h3, jenkspy, 
 
 ### References
 
-- In-repo: `llmaps/LLM_CONTEXT.md` (canonical API stubs and scenarios), CONTRIBUTING.md (doc matrix), PHILOSOPHY.md (design principles).
+- In-repo: `llmaps/LLM_CONTEXT.md` (canonical API stubs and scenarios), CONTRIBUTING.md (doc matrix), PHILOSOPHY.md (design principles), `CONSTITUTION.md`, and `specs/README.md`.
 - Do not treat CLAUDE.md in llmaps as library API docs; it is workspace-specific (YouTrack, sheets).
 
 ### Maintaining this skill
