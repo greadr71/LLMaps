@@ -31,7 +31,7 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 ### Repo structure
 
 - **llmaps/** — package: `map.py`, `tiles.py`, `expressions.py`, `layers/`, `sources/`, `components/`, `core/` (generator, config), `optimizers/`, `templates/`.
-- **examples/** — per-example dirs with `prepare_data.py`, `build_map.py`, `map.html`, `data/`.
+- **examples/** — categorized example dirs: `technical/` and `real-world/`, each containing per-example dirs with `prepare_data.py`, `build_map.py`, `map.html` (or custom output HTML), `data/`.
 - **docs/api/** — map, layers, sources, components; **docs/recipes/** — heatmap, embedded-map, comparison, feature-state-highlighting.
 - **specs/** — lightweight feature specs for meaningful public API changes; includes `templates/` for spec, plan, and task documents.
 - No CLI; use `Map`, `add_layer`, `add_component`, `auto_extent`, `save()` / `to_html()`.
@@ -53,7 +53,7 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 ### Running and developing
 
 - Install: `pip install -e .` from repo root.
-- Examples: from an example dir (e.g. `examples/cafes/`), run `python prepare_data.py` then `python build_map.py`; open `map.html`.
+- Examples: from an example dir (e.g. `examples/real-world/cafes/`), run `python prepare_data.py` then `python build_map.py`; open `map.html`. For technical examples like `examples/technical/dashboard/`, run `python build_map.py`.
 - Tests: `pytest tests/` (currently only `.gitkeep` in tests).
 - For planned public API work: create `specs/[###-feature-name]/spec.md`, `plan.md`, and `tasks.md` from the templates before implementation.
 

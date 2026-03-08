@@ -1,7 +1,7 @@
 """Build the gerrymandering scrollytelling story map.
 
 Usage:
-    cd llmaps/examples/gerrymandering
+    cd llmaps/examples/real-world/gerrymandering
     python build_map.py
 """
 

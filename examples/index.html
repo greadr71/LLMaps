@@ -299,7 +299,7 @@
     <div class="container">
         <header>
             <h1>LLMaps Examples</h1>
-            <p class="subtitle">Beautiful, interactive maps with Python — real-world examples</p>
+            <p class="subtitle">Beautiful, interactive maps with Python - technical and real-world examples</p>
             <div class="links">
                 <a href="https://github.com/greadr71/llmaps" target="_blank">GitHub</a>
                 <a href="https://pypi.org/project/llmaps/" target="_blank">PyPI</a>
@@ -312,7 +312,7 @@
             <div class="example-card example-card--featured" data-map-card>
                 <iframe
                     class="card-preview"
-                    src="gerrymandering/gerrymandering_en.html?step=4"
+                    src="real-world/gerrymandering/gerrymandering_en.html?step=4"
                     scrolling="no"
                     data-map-frame
                 ></iframe>
@@ -335,8 +335,8 @@
                         <span class="tag">Popup</span>
                     </div>
                     <div class="card-actions">
-                        <a href="gerrymandering/gerrymandering_en.html" class="btn btn-primary" target="_blank" data-open-map>Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/gerrymandering"
+                        <a href="real-world/gerrymandering/gerrymandering_en.html" class="btn btn-primary" target="_blank" data-open-map>Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/real-world/gerrymandering"
                            class="btn btn-secondary" target="_blank">View Code</a>
                     </div>
                 </div>
@@ -344,7 +344,7 @@
 
             <!-- Cafes Example -->
             <div class="example-card">
-                <iframe class="card-preview" src="cafes/map.html" scrolling="no"></iframe>
+                <iframe class="card-preview" src="real-world/cafes/map.html" scrolling="no"></iframe>
                 <div class="card-content">
                     <h2 class="card-title">Paris Cafes & Restaurants</h2>
                     <p class="card-description">
@@ -358,8 +358,8 @@
                         <span class="tag">Sidebar</span>
                     </div>
                     <div class="card-actions">
-                        <a href="cafes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/cafes"
+                        <a href="real-world/cafes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/real-world/cafes"
                            class="btn btn-secondary" target="_blank">View Code</a>
                     </div>
                 </div>
@@ -367,7 +367,7 @@
 
             <!-- World Population Example -->
             <div class="example-card">
-                <iframe class="card-preview" src="world_population/map.html" scrolling="no"></iframe>
+                <iframe class="card-preview" src="real-world/world_population/map.html" scrolling="no"></iframe>
                 <div class="card-content">
                     <h2 class="card-title">World Population</h2>
                     <p class="card-description">
@@ -381,8 +381,8 @@
                         <span class="tag">color ramps</span>
                     </div>
                     <div class="card-actions">
-                        <a href="world_population/map.html" class="btn btn-primary" target="_blank">Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/world_population"
+                        <a href="real-world/world_population/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/real-world/world_population"
                            class="btn btn-secondary" target="_blank">View Code</a>
                     </div>
                 </div>
@@ -390,7 +390,7 @@
 
             <!-- Earthquakes Example -->
             <div class="example-card">
-                <iframe class="card-preview" src="earthquakes/map.html" scrolling="no"></iframe>
+                <iframe class="card-preview" src="real-world/earthquakes/map.html" scrolling="no"></iframe>
                 <div class="card-content">
                     <h2 class="card-title">Global Earthquakes</h2>
                     <p class="card-description">
@@ -404,8 +404,8 @@
                         <span class="tag">Sidebar</span>
                     </div>
                     <div class="card-actions">
-                        <a href="earthquakes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
-                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/earthquakes"
+                        <a href="real-world/earthquakes/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/real-world/earthquakes"
                            class="btn btn-secondary" target="_blank">View Code</a>
                     </div>
                 </div>
@@ -424,6 +424,29 @@
                    target="_blank">
                     Get started on GitHub →
                 </a>
+            </div>
+
+            <!-- Dashboard Technical Example -->
+            <div class="example-card">
+                <iframe class="card-preview" src="technical/dashboard/map.html" scrolling="no"></iframe>
+                <div class="card-content">
+                    <h2 class="card-title">Dashboard Primitives</h2>
+                    <p class="card-description">
+                        Minimal technical example of the Dashboard component,
+                        filter controls, and JS bridge integration.
+                    </p>
+                    <div class="card-tags">
+                        <span class="tag">Dashboard</span>
+                        <span class="tag">CircleLayer</span>
+                        <span class="tag">JS bridge</span>
+                        <span class="tag">Technical</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="technical/dashboard/map.html" class="btn btn-primary" target="_blank">Open Map</a>
+                        <a href="https://github.com/greadr71/llmaps/tree/main/examples/technical/dashboard"
+                           class="btn btn-secondary" target="_blank">View Code</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -447,11 +470,11 @@
 
             function applyLang(lang) {
                 var src = lang === 'ru'
-                    ? 'gerrymandering/gerrymandering_ru.html?step=4'
-                    : 'gerrymandering/gerrymandering_en.html?step=4';
+                    ? 'real-world/gerrymandering/gerrymandering_ru.html?step=4'
+                    : 'real-world/gerrymandering/gerrymandering_en.html?step=4';
                 var openMapSrc = lang === 'ru'
-                    ? 'gerrymandering/gerrymandering_ru.html'
-                    : 'gerrymandering/gerrymandering_en.html';
+                    ? 'real-world/gerrymandering/gerrymandering_ru.html'
+                    : 'real-world/gerrymandering/gerrymandering_en.html';
                 frame.src = src;
                 openLink.href = openMapSrc;
                 buttons.forEach(function (btn) {

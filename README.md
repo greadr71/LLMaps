@@ -97,13 +97,20 @@ m.save("my_map.html")
 
 Explore interactive maps showcasing key features and capabilities: [**LLMaps Examples Gallery**](https://greadr71.github.io/LLMaps/examples/)
 
-Real-world examples with source code:
+### Real-World Examples
 
 | Example | Features | Data |
 |---------|----------|------|
-| [Paris Cafes & Restaurants](examples/cafes/) | CircleLayer, Search, FeatureSearch, BasemapSwitcher, Popup, Sidebar | OpenStreetMap Overpass |
-| [World Population](examples/world_population/) | FillLayer, feature-state styling, Jenks classification, color ramps | Natural Earth |
-| [Earthquakes](examples/earthquakes/) | H3Layer, animated H3 heatmap, temporal filtering | USGS Earthquake API |
+| [Paris Cafes & Restaurants](examples/real-world/cafes/) | CircleLayer, Search, FeatureSearch, BasemapSwitcher, Popup, Sidebar | OpenStreetMap Overpass |
+| [World Population](examples/real-world/world_population/) | FillLayer, feature-state styling, Jenks classification, color ramps | Natural Earth |
+| [Earthquakes](examples/real-world/earthquakes/) | CircleLayer, interpolate expressions, Jenks classification, temporal filtering | USGS Earthquake API |
+| [Pennsylvania Gerrymandering Story](examples/real-world/gerrymandering/) | FillLayer, Storytelling, comparison mode, custom overlays | PA election and district data |
+
+### Technical Examples
+
+| Example | Features | Data |
+|---------|----------|------|
+| [Dashboard Primitives](examples/technical/dashboard/) | Dashboard component, filter bridge events, lightweight integration pattern | Small embedded GeoJSON |
 
 ## Built With
 

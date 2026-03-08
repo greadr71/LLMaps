@@ -47,11 +47,21 @@ examples/*/data/*.dbf
 examples/*/data/*.shx
 examples/*/data/*.prj
 examples/*/data/*.cpg
+examples/*/*/data/*.geojson
+examples/*/*/data/*.csv
+examples/*/*/data/*.parquet
+examples/*/*/data/*.zip
+examples/*/*/data/*.shp
+examples/*/*/data/*.dbf
+examples/*/*/data/*.shx
+examples/*/*/data/*.prj
+examples/*/*/data/*.cpg
 
 # Keep .gitkeep to preserve directory structure
 !examples/*/data/.gitkeep
-!examples/gerrymandering/data/pa_gerrymandered_2016.geojson
-!examples/gerrymandering/data/pa_remedial_2018.geojson
+!examples/*/*/data/.gitkeep
+!examples/real-world/gerrymandering/data/pa_gerrymandered_2016.geojson
+!examples/real-world/gerrymandering/data/pa_remedial_2018.geojson
 
 # HTML outputs are committed (for GitHub Pages)
 # Do NOT ignore *.html in examples/
