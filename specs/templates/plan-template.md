@@ -18,13 +18,17 @@
 
 ## Constitution Check
 
-- [ ] Public API scope is explicitly identified.
-- [ ] Backward compatibility impact is described.
-- [ ] Documentation impact is named before implementation starts.
-- [ ] Verification path exists before coding starts.
-- [ ] The design uses the simplest change that fits the current repo structure.
+Use [CONSTITUTION.md](../../CONSTITUTION.md) as the source of truth.
+
+- [ ] Article I (Public API First): public API scope is explicitly identified.
+- [ ] Article I (Public API First): backward compatibility impact is described.
+- [ ] Article III (Documentation Parity): documentation impact is named before implementation starts.
+- [ ] Article IV (Verification Before Merge): verification path exists before coding starts.
+- [ ] Article VI (Simplicity Over Process): the design uses the simplest change that fits the current repo structure.
 
 ## Affected Code Paths
+
+Note: this llmaps template intentionally uses "Affected Code Paths" instead of the generic spec-kit "Project Structure" alternatives, because llmaps is a single existing Python library and the main planning risk is missing touched files, not choosing an application architecture style.
 
 Keep only the paths that apply.
 

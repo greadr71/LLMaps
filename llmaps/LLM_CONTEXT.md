@@ -89,6 +89,7 @@ Dashboard(dashboard_id="dashboard", position="top-right", title=None, width=360,
           collapsible=True, collapsed=False, filters=[], content_html="",
           empty_state="No dashboard content yet.")
 # filters: list of dicts with serializable descriptors. Supported types: "select", "date", "text".
+# current scope: one Dashboard instance per map (first component wins if multiple are added).
 FeatureSearch(position="top-center", placeholder="Search...", search_fields={}, field_labels={},
               max_results=15, zoom_on_select=8, debounce_ms=200, min_chars=2)
 # search_fields: source_id -> list of attribute names to search

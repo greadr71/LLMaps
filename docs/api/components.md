@@ -182,6 +182,8 @@ When a filter changes, the page emits a `llmaps:dashboard-filter-change` event o
 
 **Relationship to Sidebar:** `Dashboard` is for persistent controls and context. `Sidebar` remains the primary component for click-driven feature details.
 
+**Current scope note:** v1 supports a single dashboard instance per map. If multiple `Dashboard` components are added, only the first one is initialized on the generated page.
+
 ---
 
 ## FeatureSearch

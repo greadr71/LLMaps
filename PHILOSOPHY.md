@@ -69,3 +69,5 @@ The goal is: *fewer edits, fewer bugs* when generating map code with an LLM.
 ## Summary
 
 LLMaps combines a small, predictable Python API with a component-based design and an LLM-oriented doc set. It targets developers who want to generate or maintain map code quickly (including with LLMs) and ship a single HTML map without a backend. The philosophy is: **simple to call, explicit in structure, and built on solid open-source building blocks.**
+
+For public API development governance and review rules, see [CONSTITUTION.md](CONSTITUTION.md).

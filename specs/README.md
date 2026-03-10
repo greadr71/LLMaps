@@ -61,3 +61,8 @@ A feature is not done until all applicable items below are true:
 - [specs/templates/spec-template.md](templates/spec-template.md)
 - [specs/templates/plan-template.md](templates/plan-template.md)
 - [specs/templates/tasks-template.md](templates/tasks-template.md)
+
+## See Also
+
+- [CONTRIBUTING.md](../CONTRIBUTING.md) for the documentation matrix and release checklist.
+- [CONSTITUTION.md](../CONSTITUTION.md) for the principles that govern public API changes.

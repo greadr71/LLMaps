@@ -18,11 +18,13 @@ Add a first-class `Dashboard` component to LLMaps as a persistent, serializable 
 
 ## Constitution Check
 
-- [x] Public API scope is explicitly identified.
-- [x] Backward compatibility impact is described.
-- [x] Documentation impact is named before implementation starts.
-- [x] Verification path exists before coding starts.
-- [x] The design uses the simplest change that fits the current repo structure.
+Source: [CONSTITUTION.md](../../CONSTITUTION.md)
+
+- [x] Article I (Public API First): public API scope is explicitly identified.
+- [x] Article I (Public API First): backward compatibility impact is described.
+- [x] Article III (Documentation Parity): documentation impact is named before implementation starts.
+- [x] Article IV (Verification Before Merge): verification path exists before coding starts.
+- [x] Article VI (Simplicity Over Process): the design uses the simplest change that fits the current repo structure.
 
 ## Affected Code Paths
 
