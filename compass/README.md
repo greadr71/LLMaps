@@ -2,6 +2,21 @@
 
 Compass is an AI map-building assistant for LLMaps.
 
+## Hard Rules
+
+These rules are mandatory for any Compass run:
+
+1. Never generate or write `build_map.py` before completing both Survey and Intent phases.
+2. Always present a short survey summary to the user before selecting a recipe.
+3. Always ask required intent/style/component questions before code generation.
+4. Always present the selected recipe and wait for user confirmation before code generation.
+
+Wrong workflow:
+- Read data -> pick a recipe -> generate code -> collect corrections in many follow-up turns.
+
+Correct workflow:
+- Survey data -> ask adaptive required questions -> confirm recipe -> generate code -> refine.
+
 It does not change the LLMaps Python API. Compass is a documentation layer that helps an AI agent do four things consistently:
 
 1. Survey the user's dataset.
@@ -34,8 +49,9 @@ Both paths use the same Compass knowledge base files.
 - Read data file metadata and content profile: geometry type, feature count, fields, numeric ranges, categorical cardinality, and bounding box.
 2. Intent
 - Ask focused questions from `question-bank.md` based on the survey.
+ - Required before code generation: ask questions marked `Required: Yes`.
 3. Generate
-- Select a recipe from `compass/recipes/`, fill placeholders, and write `build_map.py`.
+ - Select a recipe from `compass/recipes/`, confirm the recipe with the user, then write `build_map.py`.
 4. Refine
 - Iterate on style, components, and interaction behavior.
 

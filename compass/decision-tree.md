@@ -16,6 +16,11 @@ This document defines how Compass selects a recipe and generates `build_map.py`.
 - Categorical fields and unique counts.
 - Bounding box.
 
+## CHECKPOINT: Survey Confirmation
+
+Before routing, present the survey summary to the user and wait for acknowledgment.
+Do not continue to recipe routing until this checkpoint is complete.
+
 ## Geometry Routing
 
 ### A) POINTS Branch (`Point`, `MultiPoint`)
@@ -99,7 +104,19 @@ After recipe selection, apply adaptive defaults:
 - Default `use_compression=True`.
 - Keep enabled for large GeoJSON/H3 workflows.
 
+## CHECKPOINT: Intent Confirmation
+
+Before terminal generation, ask required questions from `compass/question-bank.md` and any adaptive follow-up questions based on geometry and intent.
+Then present the selected recipe path and wait for user confirmation.
+
 ## Terminal
+
+Precondition:
+- The user has acknowledged survey summary.
+- Required questions have been asked and answered (or defaults accepted explicitly).
+- The selected recipe has been confirmed by the user.
+
+If any precondition is missing, stop and return to survey/intent steps.
 
 1. Select final recipe.
 2. Fill placeholders from survey + user answers.

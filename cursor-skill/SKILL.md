@@ -9,6 +9,33 @@ description: Guides using and contributing to LLMaps: Python library for interac
 
 Compass is the default map-building workflow for data-to-map requests.
 
+### Critical Gate
+
+When building a map with LLMaps, do not generate or write `build_map.py` until all Compass pre-code steps are completed.
+
+Required order:
+1. Survey: inspect data and provide a short survey summary to the user.
+2. Stop and ask: ask required intent/style/component questions from `compass/question-bank.md`.
+3. Confirm: present selected recipe from `compass/decision-tree.md` and wait for user confirmation.
+4. Generate: only then generate runnable `build_map.py` and refine on request.
+
+### Question-First Planning Policy (Strict)
+
+This policy is mandatory for plan generation and is designed to maximize clarifying questions before implementation details.
+
+1. Never provide implementation steps, file-level edit plans, or code skeletons before Question phase is complete.
+2. Always ask all questions marked `Required: Yes` from `compass/question-bank.md`.
+3. In addition to required questions, ask at least 2 adaptive clarifying questions when candidates exist (style, components, popup/sidebar, tiles, locale, output path).
+4. If defaults could be applied, still ask user confirmation instead of silently applying defaults during planning.
+5. Recipe confirmation is a hard stop: do not proceed to generation planning until the user explicitly confirms the selected recipe.
+6. If user request is ambiguous (geometry columns, ID field, output folder, map purpose), ask questions first and pause.
+
+Preflight checklist before any `build_map.py` plan details:
+- Survey summary shown and acknowledged.
+- Required questions asked and answered.
+- Adaptive questions asked or explicitly skipped by user.
+- Recipe selected and explicitly confirmed by user.
+
 - Overview: `compass/README.md`
 - Decision logic: `compass/decision-tree.md`
 - Adaptive questions: `compass/question-bank.md`
@@ -21,9 +48,15 @@ When a user asks to create a map from data (for example: "create an interactive 
 Required flow:
 
 1. Survey data.
-2. Ask focused intent questions.
-3. Select recipe via `compass/decision-tree.md`.
+2. Ask focused intent questions (including all questions marked `Required: Yes` in `compass/question-bank.md`).
+3. Select recipe via `compass/decision-tree.md` and confirm it with the user.
 4. Generate runnable `build_map.py` and refine on request.
+
+Behavioral guardrails for this flow:
+- Do not jump from survey directly to recipe/code, even if the dataset looks straightforward.
+- Do not embed hidden assumptions in plans; convert assumptions into explicit questions.
+- If multiple valid outcomes exist, ask the user to choose (for example: popup vs sidebar, OSM vs Carto tiles, hover vs click popup).
+- In planning mode, prefer one short question round before drafting implementation steps.
 
 If user explicitly invokes command form, use:
 

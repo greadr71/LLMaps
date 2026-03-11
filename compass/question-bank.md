@@ -2,6 +2,8 @@
 
 Use these questions adaptively. Do not ask all questions in one run.
 
+You must ask all questions marked `Required: Yes` before generating any code.
+
 Each item contains:
 - `ID`: stable identifier.
 - `Condition`: when to ask.
@@ -44,6 +46,7 @@ Each item contains:
 ### Q-INT-01
 - Text: What is the primary goal: explore points, compare areas, or tell a story?
 - Condition: Always after survey.
+- Required: Yes.
 - Options: Explore, Compare, Storytelling.
 - Default: Explore.
 - Effect: Routes to core recipe family.
@@ -118,6 +121,7 @@ Each item contains:
 ### Q-CMP-01
 - Text: Do you want details on hover/click popup?
 - Condition: Any recipe except pure storytelling.
+- Required: Yes.
 - Options: Hover popup, click popup, no popup.
 - Default: Hover popup for exploratory maps.
 - Effect: Configures `Popup(trigger=...)` or removes popup.
@@ -146,6 +150,7 @@ Each item contains:
 ### Q-CMP-05
 - Text: Should I include a legend with layer labels and ramps?
 - Condition: Always unless user rejects.
+- Required: Yes.
 - Options: Yes, no.
 - Default: Yes.
 - Effect: Adds/removes Legend component.
@@ -155,6 +160,7 @@ Each item contains:
 ### Q-STY-01
 - Text: Which basemap style do you prefer?
 - Condition: Always.
+- Required: Yes.
 - Options: osm, carto-light, carto-dark, yandex, 2gis.
 - Default: Auto by context (light for choropleth, dark for night emphasis).
 - Effect: Sets map `tiles` and optional switcher behavior.
