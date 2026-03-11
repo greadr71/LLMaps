@@ -6,7 +6,13 @@
 
 ## Summary
 
-Compass is an AI-assisted map-building workflow for llmaps. It adds a new `compass/` directory with agent-agnostic reference documents (decision tree, question bank, code recipes) and agent-specific command files under `cursor-skill/commands/`. No Python API changes are involved — this is purely a knowledge/documentation addition that helps AI agents guide users from raw data to a working `build_map.py`.
+Compass is an AI-assisted map-building workflow for llmaps. It adds a new `compass/` directory with agent-agnostic reference documents (decision tree, question bank, code recipes) and agent-specific integration: both implicit activation via the skill file (`SKILL.md`) and explicit commands under `cursor-skill/commands/`. No Python API changes are involved — this is purely a knowledge/documentation addition that helps AI agents guide users from raw data to a working `build_map.py`.
+
+### Dual Activation Architecture
+
+- **Implicit (primary path)**: `SKILL.md` is updated with a Compass workflow instruction. When the agent detects the user wants to create a map from data, it reads `compass/decision-tree.md` and follows the workflow automatically. The user never types a special command.
+- **Explicit (alternative path)**: Named commands (`/llmaps.compass`, `/llmaps.compass-survey`, `/llmaps.compass-refine`) provide direct entry points for users who prefer structured interaction.
+- **Same knowledge base**: Both paths use the same `compass/` reference docs. The difference is only in how the workflow is triggered.
 
 ## Technical Context
 
@@ -49,7 +55,7 @@ New directories and files created:
 
 - [ ] [llmaps/LLM_CONTEXT.md](../../llmaps/LLM_CONTEXT.md) — review scenario lookup table for completeness against Compass recipes; add Compass mention if appropriate
 - [ ] [README.md](../../README.md) — add "Getting Started with Compass" section for newcomers
-- [ ] [cursor-skill/SKILL.md](../../cursor-skill/SKILL.md) — add Compass assistant reference and link to `compass/README.md`
+- [ ] [cursor-skill/SKILL.md](../../cursor-skill/SKILL.md) — add Compass workflow instruction (implicit activation: when user asks to create a map from data, follow `compass/decision-tree.md`) and link to `compass/README.md`
 
 Note on `docs/recipes/` vs `compass/recipes/`: These serve different purposes and are NOT duplicates. `docs/recipes/` contains human-facing how-to guides for specific llmaps patterns (storytelling, comparison, etc.). `compass/recipes/` contains AI-agent dialogue templates — full `build_map.py` scripts with `{PLACEHOLDER}` markers that the AI agent fills in during a Compass conversation. They are structured for machine consumption, not human reading.
 
@@ -95,7 +101,7 @@ After Cursor validation: copy `compass.md` to Claude command format (`.claude/co
 
 ## Implementation Notes
 
-- **Two-layer architecture**: Knowledge base (`compass/`) is read-only reference material. Agent commands (`cursor-skill/commands/`) contain behavioral instructions that link to the knowledge base via file read instructions (e.g. "Read `compass/decision-tree.md` for branching logic").
+- **Two-layer architecture**: Knowledge base (`compass/`) is read-only reference material. Agent integration has two paths: (1) `SKILL.md` contains a Compass workflow instruction that auto-activates when the user asks to create a map, and (2) explicit commands (`cursor-skill/commands/`) provide direct entry points. Both paths link to the knowledge base via file read instructions (e.g. "Read `compass/decision-tree.md` for branching logic").
 - **Recipe placeholder convention**: Use `{UPPER_SNAKE_CASE}` markers (e.g. `{SOURCE_PATH}`, `{VALUE_FIELD}`, `{COLOR_PALETTE}`). The AI agent fills these during conversation.
 - **Question bank is append-only**: New questions get new IDs (Q-xxx-NN), existing questions are not removed.
 - **Decision tree grows with the library**: When new layer types or components are added to llmaps, the decision tree should be updated to include new branches.

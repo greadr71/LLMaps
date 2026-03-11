@@ -47,17 +47,18 @@ Depends on Phase 2 (commands reference knowledge base files).
 
 Parallel with Phase 3.
 
-- [ ] T018 Update `cursor-skill/SKILL.md` — add "Compass Assistant" section with brief description and link to `compass/README.md`.
+- [ ] T018 Update `cursor-skill/SKILL.md` — add Compass workflow instruction: when user asks to create a map from data, agent MUST follow `compass/decision-tree.md`. Add "Compass Assistant" section with brief description and link to `compass/README.md`. This enables implicit activation (no `/command` needed).
 - [ ] T019 [P] Update `README.md` — add "Getting Started with Compass" section for newcomers (after Quick Start, before Examples).
 - [ ] T020 [P] Review `llmaps/LLM_CONTEXT.md` scenario lookup table — verify all 8 Compass recipes map to existing scenarios. If any recipe covers a scenario not in the table, flag for update.
 
 ## Phase 5: Validation
 
-- [ ] T021 Smoke-test: invoke `/llmaps.compass` in Cursor with `examples/real-world/cafes/data/paris_cafes.geojson` → verify survey, questions, and generated `build_map.py` are correct.
-- [ ] T022 [P] Recipe validation: manually fill placeholders in at least 4 recipes (points-basic, choropleth, hexagons, search-sidebar) → run `python build_map.py` → verify `map.html` renders.
-- [ ] T023 [P] Decision tree walkthrough: trace 3 data profiles (points <10k, polygons numeric, points ≥10k) through `compass/decision-tree.md` → verify correct recipe is reached.
-- [ ] T024 Verify `cursor-skill/SKILL.md`, `README.md`, and `LLM_CONTEXT.md` reflect Compass correctly.
-- [ ] T025 Confirm all created files are in English (per PHILOSOPHY.md).
+- [ ] T021 Implicit activation test: in Cursor (with llmaps skill active), write "Create an interactive map from `examples/real-world/cafes/data/paris_cafes.geojson`" (no `/command`) → verify the agent follows the Compass workflow (survey, questions, `build_map.py`).
+- [ ] T022 Explicit activation test: invoke `/llmaps.compass` with the same cafes data → verify identical workflow is followed.
+- [ ] T023 [P] Recipe validation: manually fill placeholders in at least 4 recipes (points-basic, choropleth, hexagons, search-sidebar) → run `python build_map.py` → verify `map.html` renders.
+- [ ] T024 [P] Decision tree walkthrough: trace 3 data profiles (points <10k, polygons numeric, points ≥10k) through `compass/decision-tree.md` → verify correct recipe is reached.
+- [ ] T025 Verify `cursor-skill/SKILL.md`, `README.md`, and `LLM_CONTEXT.md` reflect Compass correctly.
+- [ ] T026 Confirm all created files are in English (per PHILOSOPHY.md).
 
 ## Delivery Notes
 
