@@ -5,6 +5,32 @@ description: Guides using and contributing to LLMaps: Python library for interac
 
 # LLMaps
 
+## Compass Assistant
+
+Compass is the default map-building workflow for data-to-map requests.
+
+- Overview: `compass/README.md`
+- Decision logic: `compass/decision-tree.md`
+- Adaptive questions: `compass/question-bank.md`
+- Code templates: `compass/recipes/`
+
+### Implicit Activation Rule
+
+When a user asks to create a map from data (for example: "create an interactive map from X.geojson"), you MUST follow Compass workflow even if no explicit command is provided.
+
+Required flow:
+
+1. Survey data.
+2. Ask focused intent questions.
+3. Select recipe via `compass/decision-tree.md`.
+4. Generate runnable `build_map.py` and refine on request.
+
+If user explicitly invokes command form, use:
+
+- `/llmaps.compass`
+- `/llmaps.compass-survey`
+- `/llmaps.compass-refine`
+
 ## Using llmaps (pip install or without the repo)
 
 Form context **as exhaustively as possible**. Do not limit context to a single file; when the user or the task needs full understanding, read the relevant files from the installed package.

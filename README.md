@@ -14,6 +14,7 @@ Encapsulates best practices for interactive web map development behind a predict
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Getting Started with Compass](#getting-started-with-compass)
 - [Examples](#examples)
 - [Built With](#built-with)
 - [Comparison with Alternatives](#comparison-with-alternatives)
@@ -92,6 +93,31 @@ m.add_component(Controls(zoom=True, scale=True))
 m.auto_extent()
 m.save("my_map.html")
 ```
+
+## Getting Started with Compass
+
+Compass is an AI-first workflow that helps you go from raw data to a working `build_map.py` with minimal prompting.
+
+It is documentation-only and uses existing LLMaps APIs.
+
+### What Compass Does
+
+1. Surveys your dataset (geometry, fields, stats, bbox).
+2. Asks a few focused questions about intent and style.
+3. Chooses a recipe and generates runnable map code.
+4. Refines colors, components, and interactions on request.
+
+### Where It Lives
+
+- `compass/README.md` — overview and workflow
+- `compass/decision-tree.md` — recipe selection logic
+- `compass/question-bank.md` — adaptive interview prompts
+- `compass/recipes/` — `build_map.py` templates with placeholders
+
+### Activation Modes
+
+- Implicit: ask naturally, for example `Create an interactive map from examples/real-world/cafes/data/paris_cafes.geojson`.
+- Explicit: use `/llmaps.compass`, `/llmaps.compass-survey`, or `/llmaps.compass-refine` in Cursor.
 
 ## Examples
 
