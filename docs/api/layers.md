@@ -76,7 +76,7 @@ FillLayer(
 
 **Note on stroke_width:** MapLibre GL JS natively supports only 1px outlines via `fill-outline-color`. For `stroke_width <= 1`, the standard fill outline is used. For `stroke_width > 1`, LLMaps automatically generates an additional line layer `{id}-outline` with the specified width.
 
-**Expressions:** `fill_color` and `fill_opacity` accept MapLibre expressions for dynamic styling. For **static** choropleth (colors from a GeoJSON property), set `feature_state` (e.g. `{"active": True, "color": "POP_EST"}`) — no custom JS needed. For **interactive** highlighting (e.g. click-to-recolor), use `add_custom_js` with the JS utilities. See [feature-state recipe](../recipes/feature-state-highlighting.md) and `llmaps.expressions` helpers (`feature_state_color`, `feature_state_value`).
+**Expressions:** `fill_color` and `fill_opacity` accept MapLibre expressions for dynamic styling. For **static** choropleth (colors from a GeoJSON property), set `feature_state` (e.g. `{"active": True, "color": "POP_EST"}`) — no custom JS needed. For **interactive** highlighting and smooth transitions, use `add_custom_js` with the JS utilities (`llmapsSetFeatureState`, `llmapsAnimateFeatureState`). See [feature-state recipe](../recipes/feature-state-highlighting.md) and `llmaps.expressions` helpers (`feature_state_color`, `feature_state_value`, `feature_state_fade_mix`, `feature_state_fade_value`, `feature_state_fade_color`).
 
 ---
 

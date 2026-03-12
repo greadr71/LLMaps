@@ -55,6 +55,156 @@
         map.setFeatureState({ source: sourceId, id: featureId }, state);
       };
 
+      // Feature-state animation utilities (single shared RAF loop)
+      window._llmapsFeatureStateAnims = window._llmapsFeatureStateAnims || {};
+      window._llmapsFeatureStateAnimRaf = window._llmapsFeatureStateAnimRaf || null;
+
+      function _llmapsAnimKey(sourceId, featureId, sourceLayer) {
+        return String(sourceId) + "::" + String(sourceLayer || "") + "::" + String(featureId);
+      }
+
+      function _llmapsAnimEase(name, t) {
+        if (name === "linear") return t;
+        // default: easeInOutSine
+        return -(Math.cos(Math.PI * t) - 1) / 2;
+      }
+
+      function _llmapsRunFeatureStateAnimLoop(ts) {
+        var map = window.llmaps_map;
+        var store = window._llmapsFeatureStateAnims || {};
+        var keys = Object.keys(store);
+        if (!map || keys.length === 0) {
+          window._llmapsFeatureStateAnimRaf = null;
+          return;
+        }
+
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var anim = store[key];
+          if (!anim) continue;
+          if (!map.getSource(anim.sourceId)) {
+            delete store[key];
+            continue;
+          }
+
+          var elapsed = Math.max(0, ts - anim.startTs);
+          var progress = anim.duration <= 0 ? 1 : Math.min(1, elapsed / anim.duration);
+          var eased = _llmapsAnimEase(anim.easing, progress);
+          var frameState = {};
+
+          for (var sKey in anim.targetState) {
+            if (!Object.prototype.hasOwnProperty.call(anim.targetState, sKey)) continue;
+            var targetVal = anim.targetState[sKey];
+            var startVal = anim.startState[sKey];
+            if (typeof targetVal === "number" && typeof startVal === "number" && isFinite(targetVal) && isFinite(startVal)) {
+              frameState[sKey] = startVal + (targetVal - startVal) * eased;
+            } else {
+              frameState[sKey] = targetVal;
+            }
+          }
+
+          // For fade-out patterns keep active=true during transition
+          if (
+            Object.prototype.hasOwnProperty.call(anim.targetState, "active") &&
+            anim.targetState.active === false &&
+            typeof anim.targetState.fade_mix === "number" &&
+            progress < 1
+          ) {
+            frameState.active = true;
+          }
+
+          var featureSelector = { source: anim.sourceId, id: anim.featureId };
+          if (anim.sourceLayer) featureSelector.sourceLayer = anim.sourceLayer;
+          try {
+            map.setFeatureState(featureSelector, frameState);
+          } catch (e) {
+            delete store[key];
+            continue;
+          }
+
+          if (progress >= 1) {
+            try {
+              map.setFeatureState(featureSelector, anim.targetState);
+            } catch (e2) {}
+            delete store[key];
+          }
+        }
+
+        if (Object.keys(store).length > 0) {
+          window._llmapsFeatureStateAnimRaf = requestAnimationFrame(_llmapsRunFeatureStateAnimLoop);
+        } else {
+          window._llmapsFeatureStateAnimRaf = null;
+        }
+      }
+
+      /**
+       * Animate feature-state for one feature.
+       *
+       * @param {string} sourceId
+       * @param {string|number} featureId
+       * @param {Object} targetState - final state object
+       * @param {Object} options - { duration?: number, easing?: "linear"|"easeInOutSine", sourceLayer?: string }
+       */
+      window.llmapsAnimateFeatureState = function(sourceId, featureId, targetState, options) {
+        var map = window.llmaps_map;
+        if (!map || !map.getSource(sourceId)) return;
+        if (featureId == null || !targetState || typeof targetState !== "object") return;
+
+        var opts = options || {};
+        var duration = Number(opts.duration);
+        if (!isFinite(duration) || duration < 0) duration = 220;
+        var easing = (opts.easing === "linear" || opts.easing === "easeInOutSine") ? opts.easing : "easeInOutSine";
+        var sourceLayer = opts.sourceLayer || null;
+
+        var featureSelector = { source: sourceId, id: featureId };
+        if (sourceLayer) featureSelector.sourceLayer = sourceLayer;
+        var startStateRaw = {};
+        try {
+          startStateRaw = map.getFeatureState(featureSelector) || {};
+        } catch (e) {
+          startStateRaw = {};
+        }
+
+        var startState = {};
+        for (var sKey in targetState) {
+          if (!Object.prototype.hasOwnProperty.call(targetState, sKey)) continue;
+          var targetVal = targetState[sKey];
+          var currentVal = startStateRaw[sKey];
+          if (typeof targetVal === "number" && isFinite(targetVal)) {
+            if (typeof currentVal === "number" && isFinite(currentVal)) {
+              startState[sKey] = currentVal;
+            } else if (sKey === "fade_mix" && typeof startStateRaw.active === "boolean") {
+              startState[sKey] = startStateRaw.active ? 1 : 0;
+            } else {
+              startState[sKey] = targetVal;
+            }
+          } else {
+            startState[sKey] = currentVal;
+          }
+        }
+
+        if (duration <= 0) {
+          map.setFeatureState(featureSelector, targetState);
+          return;
+        }
+
+        var animKey = _llmapsAnimKey(sourceId, featureId, sourceLayer);
+        window._llmapsFeatureStateAnims[animKey] = {
+          sourceId: sourceId,
+          sourceLayer: sourceLayer,
+          featureId: featureId,
+          startTs: performance.now(),
+          duration: duration,
+          easing: easing,
+          startState: startState,
+          targetState: targetState
+        };
+
+        if (window._llmapsFeatureStateAnimRaf == null) {
+          window._llmapsFeatureStateAnimRaf = requestAnimationFrame(_llmapsRunFeatureStateAnimLoop);
+        }
+      };
+
       /**
        * Public utility: retrieve GeoJSON data for a source.
        * Works with embedded (+ compressed) and remote sources.

@@ -101,6 +101,78 @@ def feature_state_value(
     ]
 
 
+def feature_state_fade_mix(
+    state_key: str = "active",
+    fade_mix_key: str = "fade_mix",
+) -> List[Any]:
+    """Build a robust fade-mix expression with fallback to boolean state.
+
+    Returns a 0..1 numeric expression suitable for interpolation in paint
+    properties. When ``fade_mix_key`` is absent, falls back to ``state_key``
+    semantics (``True -> 1``, otherwise ``0``).
+    """
+    return [
+        "coalesce",
+        ["feature-state", fade_mix_key],
+        ["case", ["==", ["feature-state", state_key], True], 1, 0],
+    ]
+
+
+def feature_state_fade_value(
+    active: Union[int, float] = 0.7,
+    inactive: Union[int, float] = 0.2,
+    *,
+    state_key: str = "active",
+    fade_mix_key: str = "fade_mix",
+) -> List[Any]:
+    """Build an interpolated numeric expression by fade mix.
+
+    Useful for smooth ``fill-opacity`` (and other numeric paint values) where
+    state changes should be animated via ``fade_mix``.
+    """
+    return [
+        "interpolate",
+        ["linear"],
+        feature_state_fade_mix(state_key=state_key, fade_mix_key=fade_mix_key),
+        0,
+        inactive,
+        1,
+        active,
+    ]
+
+
+def feature_state_fade_color(
+    color_ramp_key: str,
+    color_stops: Sequence[ColorStop],
+    inactive: str = "#F0F0F0",
+    *,
+    state_key: str = "active",
+    fade_mix_key: str = "fade_mix",
+) -> List[Any]:
+    """Build an interpolated color expression by fade mix.
+
+    At ``fade_mix=0`` color is ``inactive``. At ``fade_mix=1`` color is taken
+    from the ``color_ramp_key`` interpolation built from ``color_stops``.
+    """
+    ramp: List[Any] = [
+        "interpolate",
+        ["linear"],
+        ["feature-state", color_ramp_key],
+    ]
+    for value, color in color_stops:
+        ramp.extend([value, color])
+
+    return [
+        "interpolate",
+        ["linear"],
+        feature_state_fade_mix(state_key=state_key, fade_mix_key=fade_mix_key),
+        0,
+        inactive,
+        1,
+        ramp,
+    ]
+
+
 def _colors_from_cmap(cmap: str, n: int) -> List[str]:
     """Sample *n* hex colors from a matplotlib colormap."""
     try:

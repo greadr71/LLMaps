@@ -54,7 +54,12 @@ For interactive recoloring (e.g. click a polygon to highlight it), use **`add_cu
 from llmaps import Map
 from llmaps.sources import FileSource
 from llmaps.layers import FillLayer
-from llmaps.expressions import feature_state_color, feature_state_value
+from llmaps.expressions import (
+    feature_state_color,
+    feature_state_value,
+    feature_state_fade_color,
+    feature_state_fade_value,
+)
 
 # Source with promote_id — each feature needs a unique "_fid" property
 src = FileSource(
@@ -67,8 +72,7 @@ src = FileSource(
 layer = FillLayer(
     id="regions-layer",
     source=src,
-    fill_color=feature_state_color(
-        state_key="active",
+    fill_color=feature_state_fade_color(
         color_ramp_key="delivery_hours",
         color_stops=[
             (0, "#004d33"),
@@ -78,13 +82,14 @@ layer = FillLayer(
             (72, "#CC0000"),
         ],
         inactive="#F0F0F0",
-        default="#E0E0E0",
-    ),
-    fill_opacity=feature_state_value(
         state_key="active",
+        fade_mix_key="fade_mix",
+    ),
+    fill_opacity=feature_state_fade_value(
         active=0.7,
         inactive=0.2,
-        default=0.6,
+        state_key="active",
+        fade_mix_key="fade_mix",
     ),
 )
 
@@ -101,11 +106,19 @@ window.llmapsOnLayersReady(function(map) {
         // Clear previous states
         window.llmapsClearFeatureStates('regions');
 
-        // Set new state — fill-color expression will react instantly
+        // Set base values first
         window.llmapsSetFeatureState('regions', feat.id, {
             active: true,
+            fade_mix: 0,
             delivery_hours: feat.properties.delivery_hours || 0,
         });
+
+        // Animate fade-in to avoid abrupt appearance
+        window.llmapsAnimateFeatureState('regions', feat.id, {
+            active: true,
+            fade_mix: 1,
+            delivery_hours: feat.properties.delivery_hours || 0,
+        }, { duration: 280, easing: 'easeInOutSine' });
     });
 });
 """)
@@ -144,6 +157,7 @@ Produces this MapLibre expression:
 | Function | Description |
 |----------|-------------|
 | `window.llmapsSetFeatureState(sourceId, featureId, state)` | Set state on a single feature |
+| `window.llmapsAnimateFeatureState(sourceId, featureId, targetState, options)` | Animate state with shared RAF loop (`duration`, `easing`) |
 | `window.llmapsClearFeatureStates(sourceId)` | Clear all feature states on a source |
 | `window.llmapsGetSourceData(sourceId)` | Get GeoJSON data (async, works with compression) |
 | `window.llmapsOnLayersReady(fn)` | Register callback for when layers are loaded |
@@ -158,4 +172,4 @@ Produces this MapLibre expression:
 
 - [Layers API — FillLayer](../api/layers.md#filllayer) — expression support
 - [Sources API — promote_id](../api/sources.md#basesource)
-- Expressions: `feature_state_color`, `feature_state_value`, `compute_color_stops` — in `llmaps.expressions`; compact ref in `get_llm_context()` output
+- Expressions: `feature_state_color`, `feature_state_value`, `feature_state_fade_mix`, `feature_state_fade_value`, `feature_state_fade_color`, `compute_color_stops` — in `llmaps.expressions`; compact ref in `get_llm_context()` output

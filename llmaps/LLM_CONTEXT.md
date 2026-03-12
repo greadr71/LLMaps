@@ -130,6 +130,7 @@ For **static** choropleth (colors from GeoJSON property), use layer `feature_sta
 ```javascript
 await window.llmapsGetSourceData(sourceId)   // Promise<GeoJSON>
 window.llmapsSetFeatureState(sourceId, featureId, state)
+window.llmapsAnimateFeatureState(sourceId, featureId, targetState, { duration: 280, easing: "easeInOutSine" })
 window.llmapsClearFeatureStates(sourceId)
 window.llmapsOnLayersReady(fn)
 window.llmapsData   // user data from embed_data(key, data)
@@ -147,12 +148,25 @@ window.llmapsDashboardSetCollapsed(id, collapsed)
 Requires promote_id on source. Use with FillLayer(fill_color=..., fill_opacity=...).
 
 ```python
-from llmaps.expressions import feature_state_color, feature_state_value, compute_color_stops
+from llmaps.expressions import (
+    feature_state_color,
+    feature_state_value,
+    feature_state_fade_mix,
+    feature_state_fade_value,
+    feature_state_fade_color,
+    compute_color_stops,
+)
 
 feature_state_color(state_key, color_ramp_key, color_stops, inactive="#F0F0F0", default="#E0E0E0")
 # Returns MapLibre expression for fill_color. color_stops: [(value, color), ...]
 feature_state_value(state_key, active=0.7, inactive=0.2, default=0.6)
 # Returns expression for fill_opacity or circle-radius
+feature_state_fade_mix(state_key="active", fade_mix_key="fade_mix")
+# Returns robust 0..1 fade mix expression (fallback: active -> 1/0)
+feature_state_fade_value(active=0.7, inactive=0.2, state_key="active", fade_mix_key="fade_mix")
+# Returns interpolated numeric expression by fade mix (e.g. fill-opacity)
+feature_state_fade_color(color_ramp_key, color_stops, inactive="#F0F0F0", state_key="active", fade_mix_key="fade_mix")
+# Returns interpolated color expression by fade mix (inactive color -> ramp)
 compute_color_stops(values, n_stops=5, colors=None, percentiles=None, precision=1, method="quantile", cmap=None)
 # values: array-like. Returns list of (value, color) for feature_state_color.
 # method: "quantile" (default), "jenks" (natural breaks, requires jenkspy), "equal_interval"
