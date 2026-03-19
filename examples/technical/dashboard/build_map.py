@@ -71,7 +71,7 @@ def main() -> None:
         tiles="carto-light",
         embedded=True,
         use_compression=False,
-        locale="ru-RU",
+        locale="en-US",
     )
     m.add_layer(layer)
     m.add_component(legend)

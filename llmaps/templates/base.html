@@ -47,7 +47,10 @@
     {% endif %}
     {% if use_flatpickr %}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+    {% set _flatpickr_lang = (html_lang or "en") | lower | replace("_", "-") %}
+    {% if _flatpickr_lang == "ru" or _flatpickr_lang.startswith("ru-") %}
+    <script src="https://unpkg.com/flatpickr/dist/l10n/ru.js"></script>
+    {% endif %}
     {% endif %}
     {% if use_compression %}
     <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>

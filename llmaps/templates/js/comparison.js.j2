@@ -24,7 +24,7 @@
           config,
           withOutlineLayers(leftIds),
           embedded,
-          { hashSync: hashSyncEnabled }
+          { hashSync: false }
         );
         const afterMap = createSingleMap(
           "llmaps-compare-after",
@@ -33,6 +33,38 @@
           embedded,
           { hashSync: false }
         );
+
+        function enableComparisonHashSync(mapLeft, mapRight) {
+          if (!hashSyncEnabled) return;
+
+          var isSyncing = false;
+          function syncHashFrom(source) {
+            if (isSyncing) return;
+            isSyncing = true;
+            updateLocationHash(formatMapHash(source));
+            isSyncing = false;
+          }
+
+          var initialHash = parseMapHash(window.location.hash);
+          if (initialHash) {
+            mapLeft.jumpTo(initialHash);
+            mapRight.jumpTo(initialHash);
+          } else if (mapLeft && typeof mapLeft.getCenter === "function") {
+            updateLocationHash(formatMapHash(mapLeft));
+          }
+
+          mapLeft.on("moveend", function() { syncHashFrom(mapLeft); });
+          mapRight.on("moveend", function() { syncHashFrom(mapRight); });
+
+          window.addEventListener("hashchange", function() {
+            var hashState = parseMapHash(window.location.hash);
+            if (!hashState || isSyncing) return;
+            isSyncing = true;
+            mapLeft.jumpTo(hashState);
+            mapRight.jumpTo(hashState);
+            isSyncing = false;
+          });
+        }
 
         if (typeof maplibregl.Compare !== "function") {
           console.warn("maplibre-gl-compare not loaded; comparison uses basic sync only.");
@@ -44,6 +76,7 @@
             beforeMap.setCenter(afterMap.getCenter());
             beforeMap.setZoom(afterMap.getZoom());
           });
+          enableComparisonHashSync(beforeMap, afterMap);
           return { mapLeft: beforeMap, mapRight: afterMap };
         }
 
@@ -52,5 +85,6 @@
           orientation: "vertical"
         });
 
+        enableComparisonHashSync(beforeMap, afterMap);
         return { mapLeft: beforeMap, mapRight: afterMap };
       }
