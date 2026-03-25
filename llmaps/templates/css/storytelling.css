@@ -1,5 +1,12 @@
 /* LLMaps Storytelling / Scrollytelling component styles */
 
+/* Prevent body-level elastic overscroll from leaking through iframes */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* ── Main wrapper: narrative + map side by side ── */
 .llmaps-story-wrapper {
   display: flex;
