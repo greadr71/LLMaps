@@ -767,7 +767,7 @@ body {
   z-index: 15;
   width: 360px;
 }
-.llmaps-feature-search.top-left { top: 12px; left: 12px; }
+.llmaps-feature-search.top-left { top: 12px; left: 50px; }
 .llmaps-feature-search.top-right { top: 12px; right: 12px; }
 .llmaps-feature-search.top-center { top: 12px; left: 50%; transform: translateX(-50%); }
 

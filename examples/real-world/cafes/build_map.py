@@ -132,7 +132,7 @@ def main():
         center=[2.3522, 48.8566],  # Paris center
         zoom=13,
         title="Paris Cafes & Restaurants",
-        tiles="osm",
+        tiles="carto-light",
     )
 
     # Add all components
