@@ -31,6 +31,7 @@
         }
         if (layerConfig.minzoom != null) layer.minzoom = layerConfig.minzoom;
         if (layerConfig.maxzoom != null) layer.maxzoom = layerConfig.maxzoom;
+        if (layerConfig.filter != null) layer.filter = layerConfig.filter;
         map.addLayer(layer);
       }
 

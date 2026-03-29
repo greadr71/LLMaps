@@ -70,6 +70,14 @@ H3Layer(id, source, h3_column=None, resolution=8, aggregation="count", property_
 VectorTileLayer(id, source, source_layer="", geometry_type="circle", dynamic_stats=False,
                 property_field=None, colors=["#e0d4f7", "#6829c5"], radius_range=None, opacity=0.8)
 # geometry_type: "circle"|"fill"|"line". source must be VectorTileSource.
+SymbolLayer(id, source, source_layer=None,
+            icon_image=None, icon_size=1.0, icon_anchor="center",
+            icon_allow_overlap=True, icon_ignore_placement=False, icon_offset=[0.0, 0.0],
+            icon_opacity=1.0,
+            text_field=None, text_size=12.0, text_anchor="top", text_offset=[0.0, 0.5],
+            text_color="#222222", text_opacity=1.0, text_halo_color="rgba(255,255,255,0.8)", text_halo_width=0.0)
+# icon_image: string (pre-registered image name) or MapLibre expression list. text_field: plain property name
+# (auto-wrapped to ["get", name]) or expression list. source_layer: set for VectorTileSource only.
 
 # Sources — all have id. Use promote_id= for feature-state / setFeatureState.
 FileSource(id, path, file_format=None, *, promote_id=None)   # .geojson, .csv, .parquet

@@ -42,7 +42,7 @@ Encapsulates best practices for interactive web map development behind a predict
 
 | Category | Classes |
 |----------|---------|
-| **Layers** | `CircleLayer`, `FillLayer`, `H3Layer`, `VectorTileLayer` |
+| **Layers** | `CircleLayer`, `FillLayer`, `H3Layer`, `VectorTileLayer`, `SymbolLayer` |
 | **Sources** | `FileSource`, `ApiSource`, `VectorTileSource` |
 | **Components** | `Legend`, `Popup`, `Sidebar`, `Search`, `FeatureSearch`, `Controls`, `BasemapSwitcher`, `Storytelling` |
 

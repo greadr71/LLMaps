@@ -8,7 +8,7 @@ configuration dictionary.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 from ..sources.base import BaseSource
 
@@ -41,6 +41,8 @@ class BaseLayer:
         Here ``active`` is a constant ``True`` for every feature, while
         ``color`` reads the ``POP_EST`` property from each GeoJSON feature.
         Requires ``promote_id`` on the corresponding source.
+    filter:
+        Optional MapLibre filter expression (list), e.g. ``["has", "thumb"]``.
     """
 
     id: str
@@ -50,6 +52,7 @@ class BaseLayer:
     maxzoom: Optional[float] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
     feature_state: Optional[Dict[str, Any]] = None
+    filter: Optional[List[Any]] = None
 
     layer_type: str = "base"
 
@@ -74,6 +77,8 @@ class BaseLayer:
             config["maxzoom"] = self.maxzoom
         if self.feature_state is not None:
             config["featureState"] = self.feature_state
+        if self.filter is not None:
+            config["filter"] = self.filter
 
         return config
 

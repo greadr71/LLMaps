@@ -4,6 +4,7 @@ from .base import BaseLayer
 from .circle import CircleLayer
 from .fill import FillLayer
 from .h3 import H3Layer
+from .symbol import SymbolLayer
 from .vector_tile import VectorTileLayer
 
 __all__ = [
@@ -11,6 +12,7 @@ __all__ = [
     "CircleLayer",
     "FillLayer",
     "H3Layer",
+    "SymbolLayer",
     "VectorTileLayer",
 ]
 

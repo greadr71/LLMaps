@@ -155,6 +155,73 @@ VectorTileLayer(
 
 ---
 
+## SymbolLayer
+
+Icon markers with optional text labels using MapLibre GL JS `"symbol"` layer type. Icons are pre-registered images (SVG, PNG) added with `map.addImage()` in custom JS. Works with GeoJSON sources and vector tile sources.
+
+```python
+from llmaps.layers import SymbolLayer
+from llmaps.sources import VectorTileSource
+
+source = VectorTileSource(id="tiles", tiles_url="https://example.com/tiles/{z}/{x}/{y}.pbf")
+
+SymbolLayer(
+    id: str,
+    source: BaseSource,
+    source_layer: Optional[str] = None,
+    icon_image: Optional[Union[str, List]] = None,
+    icon_size: float = 1.0,
+    icon_anchor: str = "center",
+    icon_allow_overlap: bool = True,
+    icon_ignore_placement: bool = False,
+    icon_offset: List[float] = [0.0, 0.0],
+    icon_opacity: float = 1.0,
+    text_field: Optional[Union[str, List]] = None,
+    text_size: float = 12.0,
+    text_anchor: str = "top",
+    text_offset: List[float] = [0.0, 0.5],
+    text_color: str = "#222222",
+    text_opacity: float = 1.0,
+    text_halo_color: str = "rgba(255,255,255,0.8)",
+    text_halo_width: float = 0.0,
+)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `id` | str | required | Unique layer id. |
+| `source` | BaseSource | required | Any source with point geometries. |
+| `source_layer` | str or None | None | PBF layer name. Set only for VectorTileSource; omit for GeoJSON. |
+| `icon_image` | str, list, or None | None | Pre-registered image name or MapLibre expression. |
+| `icon_size` | float | 1.0 | Icon scale factor. |
+| `icon_anchor` | str | `"center"` | Anchor point on the icon. |
+| `icon_allow_overlap` | bool | True | Draw icon even when colliding with other symbols. |
+| `icon_ignore_placement` | bool | False | Allow other symbols to overlap this icon. |
+| `icon_offset` | [dx, dy] | [0, 0] | Pixel offset from anchor. |
+| `icon_opacity` | float | 1.0 | Icon opacity (0–1). |
+| `text_field` | str, list, or None | None | Property name or expression for label text. Plain strings are auto-wrapped as `["get", name]`. |
+| `text_size` | float | 12.0 | Font size in pixels. |
+| `text_anchor` | str | `"top"` | Anchor for text placement. |
+| `text_offset` | [dx, dy] | [0, 0.5] | Text offset in ems. |
+| `text_color` | str | `"#222222"` | Text fill color. |
+| `text_opacity` | float | 1.0 | Text opacity. |
+| `text_halo_color` | str | `rgba(255,255,255,0.8)` | Halo color for text legibility. |
+| `text_halo_width` | float | 0.0 | Halo width in pixels; 0 = no halo. |
+
+**Image registration:** Images must be pre-registered via `map.addImage(name, imageData)` in custom JS (via `m.add_custom_js(...)`) before the layer renders. Use `icon_image` as a MapLibre expression to select images dynamically per feature:
+
+```python
+layer = SymbolLayer(
+    id="offices",
+    source=src,
+    source_layer="atlas.offices",
+    icon_image=["concat", "office-icon-", ["to-string", ["get", "type"]]],
+    icon_allow_overlap=True,
+)
+```
+
+---
+
 ## See also
 
 - [Sources](sources.md) — FileSource, ApiSource, VectorTileSource
