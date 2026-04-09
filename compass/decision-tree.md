@@ -96,11 +96,18 @@ After recipe selection, apply adaptive defaults:
 - Dark emphasis or seismic/night-like context: `carto-dark`.
 - Regional preference can override to `yandex` or `2gis`.
 
-2. Locale:
+2. Color palette selection:
+- Sequential palettes for absolute numeric values (`bathymetry`, `arctic-chill`, `rain-blues`).
+- Diverging palettes for centered values/anomalies around a meaningful midpoint (`crameri-vik`, `drought-index`).
+- Qualitative palettes for categorical classes (`crameri-viko`) or explicit category color maps.
+- Default for numeric ramps: blindsafe + perceptually uniform sequential palette `arctic-chill`.
+- If suggested palettes do not fit user preference, provide manual palette picker: https://dominicroye.github.io/color-for-geoscience/
+
+3. Locale:
 - Default `en-US`.
 - Use user locale when explicitly requested (for number formatting in Popup/Sidebar).
 
-3. Compression:
+4. Compression:
 - Default `use_compression=True`.
 - Keep enabled for large GeoJSON/H3 workflows.
 

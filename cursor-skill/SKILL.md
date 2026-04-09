@@ -118,7 +118,7 @@ LLMaps is a Python library for interactive web maps: declarative API → single 
 
 ### Tech stack
 
-Python ≥3.10, Hatch, Jinja2, pandas, geopandas, shapely, geobuf, h3, jenkspy, matplotlib. Frontend: MapLibre GL JS via CDN in `llmaps/templates/`; no Node in repo.
+Python ≥3.10, Hatch, Jinja2, pandas, geopandas, shapely, geobuf, h3, jenkspy. Frontend: MapLibre GL JS via CDN in `llmaps/templates/`; no Node in repo.
 
 ### References
 

@@ -22,7 +22,7 @@ from llmaps.expressions import feature_state_color, compute_color_stops
 
 src = FileSource(id="countries", path="data/countries.geojson", promote_id="ISO_A3")
 populations = [f["properties"]["POP_EST"] for f in geojson["features"] if f["properties"].get("POP_EST", 0) > 0]
-color_stops = compute_color_stops(populations, method="jenks", cmap="YlOrRd", n_stops=7)
+color_stops = compute_color_stops(populations, method="jenks", palette="seismic-intensity", n_stops=7)
 
 layer = FillLayer(
     id="population-layer",

@@ -17,7 +17,7 @@ def main() -> None:
         geojson = json.load(f)
 
     values = [f["properties"].get("POP_EST") for f in geojson["features"] if f["properties"].get("POP_EST") and f["properties"].get("POP_EST") > 0]
-    color_stops = compute_color_stops(values, method="quantile", n_stops=5, cmap="viridis")
+    color_stops = compute_color_stops(values, method="quantile", n_stops=5, palette="arctic-chill")
 
     source = FileSource(id="countries", path=str(data_path), promote_id="ISO_A3")
     layer = FillLayer(

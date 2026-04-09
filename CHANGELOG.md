@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.0.0 - Geoscience palettes (breaking)
+
+- **Added:** New `llmaps.palettes` module with embedded geoscience palettes (61 palettes, all blindsafe-vetted) and discovery helpers: `get_palette()`, `get_palette_colors()`, `list_palettes()`.
+- **Changed:** `compute_color_stops()` now supports `palette=` parameter; uses `arctic-chill` (sequential, blindsafe, PU) as default when `colors` and `palette` are both omitted.
+- **Fixed:** Example color palette choices for better visual clarity:
+  - Earthquakes (depth on dark basemap): `bathymetry` → `arctic-chill` (shallow=white, visible on dark).
+  - World population: `seismic-intensity` → `crameri-lajolla` (smooth cream→brown gradient).
+- **Removed:** `cmap=` parameter from `compute_color_stops()` (breaking change).
+- **Removed:** matplotlib (≈60 MB) from runtime dependencies.
+- **Docs:** Compass recipes and examples migrated from `cmap=` to `palette=` with geoscience palette IDs. Added `docs/recipes/palette-selection.md` guide.
+
 ## 1.0.2 - Project URL metadata fix
 
 - **Fixed:** Updated PyPI project URLs (`Homepage`, `Documentation`, `Source`, `Issues`) to the canonical repository `https://github.com/greadr71/LLMaps`.

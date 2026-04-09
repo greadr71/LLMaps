@@ -175,8 +175,13 @@ feature_state_fade_value(active=0.7, inactive=0.2, state_key="active", fade_mix_
 # Returns interpolated numeric expression by fade mix (e.g. fill-opacity)
 feature_state_fade_color(color_ramp_key, color_stops, inactive="#F0F0F0", state_key="active", fade_mix_key="fade_mix")
 # Returns interpolated color expression by fade mix (inactive color -> ramp)
-compute_color_stops(values, n_stops=5, colors=None, percentiles=None, precision=1, method="quantile", cmap=None)
+compute_color_stops(values, n_stops=5, colors=None, palette=None, percentiles=None, precision=1, method="quantile")
 # values: array-like. Returns list of (value, color) for feature_state_color.
 # method: "quantile" (default), "jenks" (natural breaks, requires jenkspy), "equal_interval"
-# cmap: matplotlib colormap name (e.g. "plasma", "viridis", "plasma_r"). Overrides colors.
+# palette: embedded geoscience palette id from llmaps.palettes (used when colors is not provided)
+
+from llmaps.palettes import get_palette, get_palette_colors, list_palettes
+# list_palettes(type="sequential", blindsafe=True, perceptually_uniform=True)  # filter for best palettes
+# get_palette_colors("arctic-chill", n=7)  # resample to exactly N colors
+# get_palette_colors("crameri-lajolla", n=5)  # for population density
 ```

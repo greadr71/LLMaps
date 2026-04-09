@@ -3,11 +3,20 @@
 from pathlib import Path
 
 from .map import Map
-from . import components, expressions, layers, sources, tiles
+from . import components, expressions, layers, palettes, sources, tiles
 
-__all__ = ["Map", "components", "expressions", "layers", "sources", "tiles", "get_llm_context"]
+__all__ = [
+    "Map",
+    "components",
+    "expressions",
+    "layers",
+    "palettes",
+    "sources",
+    "tiles",
+    "get_llm_context",
+]
 
-__version__ = "1.0.2"
+__version__ = "2.0.0"
 
 
 def get_llm_context() -> str:

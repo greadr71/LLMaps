@@ -86,3 +86,4 @@ if __name__ == "__main__":
 
 - `{COLOR_MAP}` is a flattened list of category and color pairs, for example:
   `"A", "#1f78b4", "B", "#33a02c", "C", "#e31a1c"`
+- For category-first generation, start with a qualitative palette (for example `crameri-viko`) and map categories to palette colors deterministically.

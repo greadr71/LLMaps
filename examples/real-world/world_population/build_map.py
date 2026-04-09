@@ -41,14 +41,13 @@ def main():
         if f["properties"].get("POP_EST", 0) > 0
     ]
     
-    # Compute color stops using Jenks natural breaks
-    # This finds natural groupings in the data
-    # Using 'YlOrRd' (Yellow-Orange-Red) colormap from matplotlib
+    # Compute color stops using Jenks natural breaks.
+    # Uses a warm-to-cool palette suitable for density mapping.
     n_stops = 7
     color_stops = compute_color_stops(
         populations, 
         method="jenks", 
-        cmap="YlOrRd", 
+        palette="crameri-lajolla",
         n_stops=n_stops
     )
     

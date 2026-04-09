@@ -10,6 +10,7 @@ from pathlib import Path
 from llmaps import Map
 from llmaps.components import Controls, Legend, Popup
 from llmaps.layers import H3Layer
+from llmaps.palettes import get_palette_colors
 from llmaps.sources import FileSource
 
 
@@ -26,7 +27,7 @@ def main() -> None:
         resolution={RESOLUTION},
         aggregation="{AGGREGATION}",
         property_field="{VALUE_FIELD}",
-        colors={COLOR_PALETTE},
+        colors=get_palette_colors("{PALETTE_ID}"),
         opacity={LAYER_OPACITY},
         stroke_width={STROKE_WIDTH},
     )
@@ -79,7 +80,7 @@ if __name__ == "__main__":
 - `{MAP_TITLE}`
 - `{RESOLUTION}`
 - `{AGGREGATION}`
-- `{COLOR_PALETTE}`
+- `{PALETTE_ID}`
 
 ## Optional placeholders
 

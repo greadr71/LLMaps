@@ -112,9 +112,10 @@ Each item contains:
 ### Q-LYR-06
 - Text: Which color palette should I use?
 - Condition: Any styled recipe.
-- Options: viridis, plasma, YlOrRd, custom hex list.
-- Default: viridis for numeric, explicit map for categorical.
-- Effect: Sets `{COLOR_PALETTE}` or `{COLOR_MAP}`.
+- Options: sequential (e.g. `bathymetry`, `arctic-chill`), diverging (e.g. `crameri-vik`), qualitative (e.g. `crameri-viko`), custom hex list.
+- Default: blindsafe + perceptually uniform sequential palette (`arctic-chill`) for numeric, explicit map for categorical.
+- Effect: Sets `{PALETTE_ID}` or `{COLOR_MAP}`.
+- Fallback: if suggested palettes are not a visual fit, offer manual picker: https://dominicroye.github.io/color-for-geoscience/
 
 ## Group 4: Components
 

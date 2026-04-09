@@ -1,0 +1,1783 @@
+[
+  {
+    "id": "eccharts-blue-white-red-9",
+    "name": "ECMWF Blue–White–Red Diverging (9)",
+    "type": "diverging",
+    "variable": "temperature anomaly",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.4444,
+    "range": "negative to positive anomaly",
+    "center": "0 (no anomaly)",
+    "context": "Temperature anomalies, extended range, probability anomaly products",
+    "also_useful": [
+      "geopotential anomaly",
+      "MSLP anomaly",
+      "precipitation anomaly"
+    ],
+    "colors": [
+      "#0000B2",
+      "#1A4CE6",
+      "#6699FF",
+      "#CCE6FF",
+      "#FFFFFF",
+      "#FFE6CC",
+      "#FF804C",
+      "#E61A1A",
+      "#990000"
+    ]
+  },
+  {
+    "id": "eccharts-blue-white-red-20",
+    "name": "ECMWF Blue–White–Red Diverging (20)",
+    "type": "diverging",
+    "variable": "temperature anomaly",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.5441,
+    "range": "negative to positive anomaly",
+    "center": "0",
+    "context": "Higher-resolution diverging temperature / geopotential anomaly maps",
+    "also_useful": [
+      "EFI",
+      "climate departure",
+      "SOT"
+    ],
+    "colors": [
+      "#000099",
+      "#0000CC",
+      "#0033E6",
+      "#1A66F2",
+      "#4C99FF",
+      "#80BFFF",
+      "#B2DEFF",
+      "#D9EDFF",
+      "#EDF7FF",
+      "#FFFFFF",
+      "#FFF7ED",
+      "#FFEDD9",
+      "#FFCCA6",
+      "#FFA666",
+      "#FF8040",
+      "#FF4C1A",
+      "#F21A0D",
+      "#CC0000",
+      "#A60000",
+      "#800000"
+    ]
+  },
+  {
+    "id": "eccharts-precipitation",
+    "name": "ECMWF Precipitation",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.5454,
+    "range": "0 to ~100 mm",
+    "center": null,
+    "context": "Total precipitation, accumulated rain (medium-range), rain rate",
+    "also_useful": [
+      "convective precipitation",
+      "snowfall water equivalent"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#E0F0FF",
+      "#A8D8EA",
+      "#7DC4E0",
+      "#50B0D0",
+      "#2090B0",
+      "#006890",
+      "#004870",
+      "#206840",
+      "#40A030",
+      "#70C020",
+      "#A8D818",
+      "#D0E810",
+      "#F0F000",
+      "#F8C800",
+      "#F09000",
+      "#E06820",
+      "#C84020",
+      "#A02020",
+      "#701010"
+    ]
+  },
+  {
+    "id": "eccharts-precipitation-blue-orange-20",
+    "name": "ECMWF Precipitation Blue–Orange (20)",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.8615,
+    "range": "0 to ~200 mm/24h",
+    "center": null,
+    "context": "Heavy precipitation events, ensemble precipitation, extreme precipitation",
+    "also_useful": [
+      "convective precipitation",
+      "total precipitation probability"
+    ],
+    "colors": [
+      "#F7F7FF",
+      "#D9E6FF",
+      "#B2D1FA",
+      "#80B8F2",
+      "#4C99E6",
+      "#1A7AD9",
+      "#0059BF",
+      "#0040A6",
+      "#00268C",
+      "#001473",
+      "#591A00",
+      "#802600",
+      "#A63300",
+      "#CC4700",
+      "#E6610D",
+      "#FA801A",
+      "#FFA626",
+      "#FFC740",
+      "#FFE666",
+      "#FFFF99"
+    ]
+  },
+  {
+    "id": "eccharts-green-blue-12",
+    "name": "ECMWF Green–Blue Humidity (12)",
+    "type": "sequential",
+    "variable": "relative humidity",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3944,
+    "range": "0 to 100 %",
+    "center": null,
+    "context": "Relative humidity at pressure levels (700, 850, 925 hPa)",
+    "also_useful": [
+      "specific humidity",
+      "dew point depression",
+      "cloud cover"
+    ],
+    "colors": [
+      "#FFFFB2",
+      "#D9F299",
+      "#B2E680",
+      "#80D966",
+      "#4CCC66",
+      "#1ABF73",
+      "#00B28C",
+      "#009EA6",
+      "#0085BF",
+      "#0066CC",
+      "#0040D1",
+      "#001ABF"
+    ]
+  },
+  {
+    "id": "eccharts-grey-20",
+    "name": "ECMWF Cloud Cover Grey (20)",
+    "type": "sequential",
+    "variable": "cloud cover",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1037,
+    "range": "0 to 1 (fraction)",
+    "center": null,
+    "context": "Total cloud cover, high/medium/low cloud cover",
+    "also_useful": [
+      "cloud base height",
+      "ceiling"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#F2F2F2",
+      "#E6E6E6",
+      "#D9D9D9",
+      "#CCCCCC",
+      "#BFBFBF",
+      "#B2B2B2",
+      "#A6A6A6",
+      "#999999",
+      "#8C8C8C",
+      "#808080",
+      "#737373",
+      "#666666",
+      "#595959",
+      "#4C4C4C",
+      "#404040",
+      "#333333",
+      "#262626",
+      "#1A1A1A",
+      "#0D0D0D"
+    ]
+  },
+  {
+    "id": "eccharts-white-blue-15",
+    "name": "ECMWF Snow/Ice White–Blue (15)",
+    "type": "sequential",
+    "variable": "snow depth",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2061,
+    "range": "0 to ~3 m",
+    "center": null,
+    "context": "Snow depth, snowfall accumulation, sea ice cover",
+    "also_useful": [
+      "snow water equivalent",
+      "snow density",
+      "ice temperature"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#F0F5FF",
+      "#DBEBFF",
+      "#C2DEFF",
+      "#A6D1FF",
+      "#8CBFFF",
+      "#6BABF7",
+      "#4C94ED",
+      "#337AE0",
+      "#1F61CC",
+      "#0F47BA",
+      "#0533A6",
+      "#001F8C",
+      "#000F73",
+      "#000059"
+    ]
+  },
+  {
+    "id": "eccharts-wave-height-10",
+    "name": "ECMWF Wave Height (10)",
+    "type": "sequential",
+    "variable": "significant wave height",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.6342,
+    "range": "0 to ~15 m",
+    "center": null,
+    "context": "Significant wave height, total swell, wind wave height",
+    "also_useful": [
+      "wave period",
+      "wave energy flux"
+    ],
+    "colors": [
+      "#E6F7FF",
+      "#A6DEF7",
+      "#4CBFE6",
+      "#0099D1",
+      "#007AB8",
+      "#1AA64C",
+      "#8CCC00",
+      "#E6CC00",
+      "#FF8000",
+      "#D90000"
+    ]
+  },
+  {
+    "id": "eccharts-sst-17",
+    "name": "ECMWF Sea Surface Temperature (17)",
+    "type": "sequential",
+    "variable": "sea surface temperature",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3658,
+    "range": "-2 to +35 °C",
+    "center": null,
+    "context": "Sea surface temperature, lake temperature",
+    "also_useful": [
+      "skin temperature over ocean",
+      "marine heat waves"
+    ],
+    "colors": [
+      "#59008C",
+      "#2600CC",
+      "#001AF2",
+      "#0059E6",
+      "#008CD9",
+      "#00B8CC",
+      "#00CCA6",
+      "#00CC66",
+      "#00C71A",
+      "#40C700",
+      "#8CCC00",
+      "#CCCC00",
+      "#FAB800",
+      "#FF8500",
+      "#FF4C00",
+      "#FF0000",
+      "#B20000"
+    ]
+  },
+  {
+    "id": "eccharts-z500-contour",
+    "name": "ECMWF Geopotential 500 hPa (11)",
+    "type": "sequential",
+    "variable": "geopotential",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.532,
+    "range": "488 to 600 dam (500 hPa)",
+    "center": null,
+    "context": "500 hPa geopotential, thickness, 300 hPa height",
+    "also_useful": [
+      "potential vorticity",
+      "tropopause pressure"
+    ],
+    "colors": [
+      "#000099",
+      "#0033CC",
+      "#3380F2",
+      "#99CCFF",
+      "#E6F2FF",
+      "#FFFFFF",
+      "#FFF2E6",
+      "#FFB280",
+      "#FF4C1A",
+      "#CC0000",
+      "#8C0000"
+    ]
+  },
+  {
+    "id": "eccharts-cape-10",
+    "name": "ECMWF CAPE (10)",
+    "type": "sequential",
+    "variable": "CAPE",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2431,
+    "range": "0 to ~5000 J/kg",
+    "center": null,
+    "context": "Convective available potential energy (CAPE), convective indices",
+    "also_useful": [
+      "CIN",
+      "K-index",
+      "Total Totals",
+      "Lifted index"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#FFFACC",
+      "#FFEB80",
+      "#FFD133",
+      "#FFAD00",
+      "#FF8000",
+      "#FA4C00",
+      "#E61A00",
+      "#BF001A",
+      "#8C0033"
+    ]
+  },
+  {
+    "id": "eccharts-efi-blue-red-10",
+    "name": "ECMWF EFI Blue–Red (10)",
+    "type": "diverging",
+    "variable": "EFI",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3616,
+    "range": "-1 to +1",
+    "center": "0",
+    "context": "Extreme Forecast Index (EFI) for temperature, wind, precipitation, snow",
+    "also_useful": [
+      "SOT (Shift of Tails)",
+      "seasonal anomaly probability"
+    ],
+    "colors": [
+      "#0000A6",
+      "#0026D9",
+      "#1A66F2",
+      "#73B2FF",
+      "#D9EDFF",
+      "#FFEDD9",
+      "#FFB273",
+      "#F2591A",
+      "#D91A00",
+      "#990000"
+    ]
+  },
+  {
+    "id": "eccharts-probability-10",
+    "name": "ECMWF Probability (10)",
+    "type": "sequential",
+    "variable": "probability",
+    "blindsafe": false,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1776,
+    "range": "0 to 100 %",
+    "center": null,
+    "context": "Probability of exceedance for any threshold (T2m, TP, wind, SWH)",
+    "also_useful": [
+      "EFI",
+      "reliability",
+      "ROC skill"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#FFFFCC",
+      "#FFF299",
+      "#FFE066",
+      "#FFC733",
+      "#FFA600",
+      "#FF7A00",
+      "#F24700",
+      "#D91400",
+      "#A60000"
+    ]
+  },
+  {
+    "id": "eccharts-geff-fwi",
+    "name": "ECMWF GEFF Fire Weather Index",
+    "type": "sequential",
+    "variable": "fire weather index",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2627,
+    "range": "0 to ~100+ FWI",
+    "center": null,
+    "context": "Global ECMWF Fire Forecast (GEFF) — Fire Weather Index",
+    "also_useful": [
+      "fire danger risk",
+      "drought code",
+      "ISI"
+    ],
+    "colors": [
+      "#008000",
+      "#33B200",
+      "#80D900",
+      "#CCE600",
+      "#FFE600",
+      "#FFB200",
+      "#FF8000",
+      "#FF4000",
+      "#FF0000",
+      "#CC0033",
+      "#99004C",
+      "#660066"
+    ]
+  },
+  {
+    "id": "eccharts-aod-yellow-brown-14",
+    "name": "ECMWF Aerosol Optical Depth Yellow–Brown (14)",
+    "type": "sequential",
+    "variable": "aerosol optical depth",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2134,
+    "range": "0 to ~2 AOD",
+    "center": null,
+    "context": "Aerosol optical depth at 550 nm (CAMS), dust AOD, sulphate AOD",
+    "also_useful": [
+      "PM2.5",
+      "PM10",
+      "UV index",
+      "visibility"
+    ],
+    "colors": [
+      "#FFFFE6",
+      "#FFF7BF",
+      "#FFED8C",
+      "#FFDE59",
+      "#FFCC26",
+      "#FFB200",
+      "#FA9400",
+      "#ED7300",
+      "#E05400",
+      "#CC3800",
+      "#B21F00",
+      "#940D00",
+      "#730000",
+      "#4C0000"
+    ]
+  },
+  {
+    "id": "eccharts-visibility-red-white-10",
+    "name": "ECMWF Visibility Red–White (10)",
+    "type": "sequential",
+    "variable": "visibility",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.339,
+    "range": "0 to >10 km",
+    "center": null,
+    "context": "Visibility, fog probability, ceiling",
+    "also_useful": [
+      "low cloud cover",
+      "relative humidity near surface"
+    ],
+    "colors": [
+      "#990000",
+      "#D90000",
+      "#FF3300",
+      "#FF7300",
+      "#FFA600",
+      "#FFD133",
+      "#FFED8C",
+      "#FFFACC",
+      "#FFFFF2",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": "eccharts-soil-moisture-12",
+    "name": "ECMWF Soil Moisture (12)",
+    "type": "sequential",
+    "variable": "soil moisture",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.5011,
+    "range": "0 to 1 (volumetric fraction)",
+    "center": null,
+    "context": "Volumetric soil water layers 1–4, surface moisture",
+    "also_useful": [
+      "evaporation",
+      "runoff",
+      "drought index"
+    ],
+    "colors": [
+      "#F2E0B8",
+      "#D9BA85",
+      "#B89459",
+      "#997338",
+      "#7A591F",
+      "#738026",
+      "#599E33",
+      "#2EB24C",
+      "#00B87A",
+      "#00A6A6",
+      "#0080C7",
+      "#004CCC"
+    ]
+  },
+  {
+    "id": "thermo-classic",
+    "name": "ThermClassic",
+    "type": "diverging",
+    "variable": "temperature",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2501,
+    "range": "-30 to 50 °C",
+    "center": 0,
+    "context": "Temperature anomalies, climate maps, departure from normal",
+    "also_useful": [
+      "sea surface temp anomaly",
+      "soil temperature anomaly"
+    ],
+    "colors": [
+      "#053061",
+      "#2166ac",
+      "#4393c3",
+      "#92c5de",
+      "#d1e5f0",
+      "#f7f7f7",
+      "#fddbc7",
+      "#f4a582",
+      "#d6604d",
+      "#b2182b",
+      "#67001f"
+    ]
+  },
+  {
+    "id": "drought-severity",
+    "name": "Drought Severity",
+    "type": "sequential",
+    "variable": "drought",
+    "blindsafe": false,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1185,
+    "range": "D0 (abnormally dry) to D4 (exceptional drought)",
+    "center": null,
+    "context": "Drought severity classification (US Drought Monitor scale D0–D4), PDSI, SPI, soil moisture deficit",
+    "also_useful": [
+      "PDSI",
+      "SPI",
+      "soil moisture anomaly",
+      "fire risk"
+    ],
+    "colors": [
+      "#FDF5D0",
+      "#FCEAA1",
+      "#F8E070",
+      "#F4B354",
+      "#EC8439",
+      "#E05020",
+      "#C84232",
+      "#AF3540",
+      "#96274B",
+      "#7C1B55",
+      "#600F5F",
+      "#3E0668"
+    ]
+  },
+  {
+    "id": "temp-nws",
+    "name": "NWS Temperature",
+    "type": "sequential",
+    "variable": "temperature",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.6614,
+    "range": "-51 to 66 °C",
+    "center": null,
+    "context": "Surface air temperature, weather forecast maps, NWS-style products",
+    "also_useful": [
+      "sea surface temp",
+      "heat stress",
+      "urban heat island"
+    ],
+    "colors": [
+      "#F8FAFF",
+      "#E8F2FC",
+      "#D4E7F8",
+      "#C0DAF2",
+      "#A8CBEA",
+      "#90BADC",
+      "#7BAACE",
+      "#6899BF",
+      "#5788AE",
+      "#1C2D6B",
+      "#1F3878",
+      "#234688",
+      "#3A618C",
+      "#2D6B80",
+      "#2E7070",
+      "#4A7A5A",
+      "#7A8840",
+      "#AAAA30",
+      "#C8A020",
+      "#CC7818",
+      "#C04830",
+      "#AE2A50",
+      "#921828",
+      "#760E14",
+      "#5C0A0A"
+    ]
+  },
+  {
+    "id": "sst-pacific",
+    "name": "SST Pacific",
+    "type": "sequential",
+    "variable": "sea surface temp",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.5219,
+    "range": "0 to 32 °C",
+    "center": null,
+    "context": "Sea surface temperature, ocean heat content",
+    "also_useful": [
+      "temperature",
+      "lake surface temp"
+    ],
+    "colors": [
+      "#001f4d",
+      "#0a3d8f",
+      "#1565c0",
+      "#1e88e5",
+      "#29b6f6",
+      "#80deea",
+      "#a5d6a7",
+      "#ffee58",
+      "#ff7043",
+      "#d32f2f",
+      "#7b0000"
+    ]
+  },
+  {
+    "id": "desert-heat",
+    "name": "Desert Heat",
+    "type": "sequential",
+    "variable": "temperature",
+    "blindsafe": false,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1978,
+    "range": "0 to 60 °C",
+    "center": null,
+    "context": "Surface temperature, heat stress, urban heat island",
+    "also_useful": [
+      "land surface temperature",
+      "WBGT"
+    ],
+    "colors": [
+      "#fdf6ec",
+      "#f9e4c0",
+      "#f5c97e",
+      "#e8a24e",
+      "#d07a2a",
+      "#b0501a",
+      "#8a2f10",
+      "#6b1a09",
+      "#4a0e04"
+    ]
+  },
+  {
+    "id": "arctic-chill",
+    "name": "Arctic Chill",
+    "type": "sequential",
+    "variable": "temperature",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.141,
+    "range": "-50 to 0 °C",
+    "center": null,
+    "context": "Polar temperatures, permafrost, sea ice extent",
+    "also_useful": [
+      "snow cover",
+      "cold extremes"
+    ],
+    "colors": [
+      "#ffffff",
+      "#daeeff",
+      "#aed8f5",
+      "#74b8ec",
+      "#3a93d9",
+      "#1a6ab5",
+      "#0d4a8a",
+      "#053060",
+      "#01193a"
+    ]
+  },
+  {
+    "id": "rain-blues",
+    "name": "Rain Blues",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2694,
+    "range": "0 to 300 mm",
+    "center": null,
+    "context": "Monthly/annual precipitation totals",
+    "also_useful": [
+      "runoff",
+      "streamflow"
+    ],
+    "colors": [
+      "#f7fbff",
+      "#deebf7",
+      "#c6dbef",
+      "#9ecae1",
+      "#6baed6",
+      "#4292c6",
+      "#2171b5",
+      "#08519c",
+      "#08306b"
+    ]
+  },
+  {
+    "id": "drought-index",
+    "name": "Drought Index",
+    "type": "diverging",
+    "variable": "precipitation",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1487,
+    "range": "-3 to 3 SPI",
+    "center": 0,
+    "context": "SPI, PDSI, drought monitoring; anomaly maps where negative = drought, positive = excess",
+    "also_useful": [
+      "precipitation anomaly",
+      "humidity",
+      "streamflow anomaly"
+    ],
+    "colors": [
+      "#003c30",
+      "#01665e",
+      "#35978f",
+      "#80cdc1",
+      "#c7eae5",
+      "#f5f5f5",
+      "#f6e8c3",
+      "#dfc27d",
+      "#bf812d",
+      "#8c510a",
+      "#543005"
+    ]
+  },
+  {
+    "id": "precip-teal-cascade",
+    "name": "Teal Cascade",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.0701,
+    "range": "0 to 200 mm",
+    "center": null,
+    "context": "Monthly precipitation, climatological normals",
+    "also_useful": [
+      "runoff",
+      "streamflow",
+      "soil moisture"
+    ],
+    "colors": [
+      "#d1eeea",
+      "#a8dbd9",
+      "#85c4c9",
+      "#68abb8",
+      "#4f90a6",
+      "#3b738f",
+      "#2a5674"
+    ]
+  },
+  {
+    "id": "precip-lichen-slate",
+    "name": "Lichen & Slate",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.5316,
+    "range": "0 to 400 mm",
+    "center": null,
+    "context": "Annual precipitation totals, humid climates",
+    "also_useful": [
+      "evapotranspiration",
+      "water balance"
+    ],
+    "colors": [
+      "#F1F7E7",
+      "#E1EED6",
+      "#CBE2C8",
+      "#A3CDC2",
+      "#83B4BF",
+      "#6898B8",
+      "#4F7EB2",
+      "#42689F",
+      "#37517E",
+      "#323232"
+    ]
+  },
+  {
+    "id": "precip-mist-violet",
+    "name": "Mist & Violet",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.4652,
+    "range": "0 to 500 mm",
+    "center": null,
+    "context": "Orographic precipitation, fog water input, montane rainfall",
+    "also_useful": [
+      "cloud water content",
+      "humidity"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#F1F5E4",
+      "#D4E9CA",
+      "#BBE0CE",
+      "#B0CCD7",
+      "#A9B9D3",
+      "#A497CC",
+      "#9271A0",
+      "#42234D"
+    ]
+  },
+  {
+    "id": "precip-tropical-burst",
+    "name": "Tropical Burst",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.306,
+    "range": "0 to 600 mm",
+    "center": null,
+    "context": "Tropical convective rainfall, ITCZ, monsoon peaks",
+    "also_useful": [
+      "extreme rainfall",
+      "flash flood risk"
+    ],
+    "colors": [
+      "#FEFCF3",
+      "#DBEFDA",
+      "#B7E0C1",
+      "#7CD1BA",
+      "#00BFC3",
+      "#00A5CA",
+      "#2485D0",
+      "#4967D4",
+      "#6F3BBA",
+      "#970094"
+    ]
+  },
+  {
+    "id": "precip-meadow-dusk",
+    "name": "Meadow & Dusk",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.5392,
+    "range": "0 to 300 mm",
+    "center": null,
+    "context": "Seasonal rainfall, transitional climate regimes",
+    "also_useful": [
+      "vegetation response",
+      "evapotranspiration"
+    ],
+    "colors": [
+      "#F3F9EB",
+      "#E5F1DB",
+      "#B6DFBD",
+      "#90CDBD",
+      "#6BB8C2",
+      "#549FBC",
+      "#6284A9",
+      "#856A8D",
+      "#B9677E",
+      "#E98551"
+    ]
+  },
+  {
+    "id": "monsoon-burst",
+    "name": "Monsoon Burst",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1713,
+    "range": "0 to 500 mm/day",
+    "center": null,
+    "context": "Heavy rainfall events, tropical convection",
+    "also_useful": [
+      "flood risk",
+      "extreme events"
+    ],
+    "colors": [
+      "#f0fafa",
+      "#b2e2e2",
+      "#66c2a4",
+      "#2ca25f",
+      "#006d2c",
+      "#00441b"
+    ]
+  },
+  {
+    "id": "snowfall",
+    "name": "Snowfall",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1419,
+    "range": "0 to 100 cm",
+    "center": null,
+    "context": "Snowfall depth, snow water equivalent",
+    "also_useful": [
+      "snow cover",
+      "arctic cryosphere"
+    ],
+    "colors": [
+      "#f8f9ff",
+      "#dce4f5",
+      "#b9caeb",
+      "#8aaad7",
+      "#5b84bc",
+      "#3060a0",
+      "#1a3e7a",
+      "#0b2557",
+      "#040f33"
+    ]
+  },
+  {
+    "id": "bathymetry",
+    "name": "Bathymetry",
+    "type": "sequential",
+    "variable": "elevation",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1979,
+    "range": "-11000 to 0 m",
+    "center": null,
+    "context": "Ocean depth, seafloor topography",
+    "also_useful": [
+      "lake depth",
+      "submarine geomorphology"
+    ],
+    "colors": [
+      "#020d17",
+      "#071a30",
+      "#0a2a54",
+      "#0d3f7a",
+      "#0f5498",
+      "#1570b8",
+      "#1a8fd1",
+      "#3bb5e3",
+      "#7dd5f0",
+      "#b8eaf9",
+      "#e0f7ff"
+    ]
+  },
+  {
+    "id": "hypsometric",
+    "name": "Hypsometric Tint",
+    "type": "sequential",
+    "variable": "elevation",
+    "blindsafe": false,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1911,
+    "range": "0 to 8849 m",
+    "center": null,
+    "context": "Land elevation, atlas cartography",
+    "also_useful": [
+      "terrain classification",
+      "geomorphology"
+    ],
+    "colors": [
+      "#AADDAA",
+      "#BED799",
+      "#CED288",
+      "#DDCC77",
+      "#C1A35F",
+      "#A47B49",
+      "#885533",
+      "#A07B62",
+      "#B4A394",
+      "#DAD0C8",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": "wind-speed",
+    "name": "Wind Speed",
+    "type": "sequential",
+    "variable": "wind",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2583,
+    "range": "0 to 60 m/s",
+    "center": null,
+    "context": "Surface wind speed, gust intensity",
+    "also_useful": [
+      "ocean currents",
+      "jet stream"
+    ],
+    "colors": [
+      "#f5f5f5",
+      "#d9e8f5",
+      "#a8cce8",
+      "#74aadc",
+      "#4685c4",
+      "#2f60a8",
+      "#1e3f82",
+      "#150f5c",
+      "#0b0030"
+    ]
+  },
+  {
+    "id": "storm-alert",
+    "name": "Storm Alert",
+    "type": "sequential",
+    "variable": "wind",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.526,
+    "range": "0 to 100 kt",
+    "center": null,
+    "context": "Tropical cyclone intensity, severe weather warnings",
+    "also_useful": [
+      "extreme precipitation",
+      "storm surge"
+    ],
+    "colors": [
+      "#ffffcc",
+      "#ffeda0",
+      "#fed976",
+      "#feb24c",
+      "#fd8d3c",
+      "#fc4e2a",
+      "#e31a1c",
+      "#bd0026",
+      "#800026",
+      "#4a0066"
+    ]
+  },
+  {
+    "id": "relative-humidity",
+    "name": "RH Classic",
+    "type": "diverging",
+    "variable": "humidity",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.35,
+    "range": "0 to 100 %",
+    "center": 50,
+    "context": "Relative humidity drought–wet gradient; diverges from neutral (~50 %) toward arid amber and saturated violet",
+    "also_useful": [
+      "precipitation anomaly",
+      "drought index",
+      "soil moisture anomaly"
+    ],
+    "colors": [
+      "#7f3b08",
+      "#b35806",
+      "#e08214",
+      "#fdb863",
+      "#fee0b6",
+      "#f7f7f7",
+      "#d8daeb",
+      "#b2abd2",
+      "#8073ac",
+      "#542788",
+      "#2d004b"
+    ]
+  },
+  {
+    "id": "soil-moisture",
+    "name": "Soil Moisture",
+    "type": "sequential",
+    "variable": "humidity",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1539,
+    "range": "0 to 1 (m³/m³)",
+    "center": null,
+    "context": "Volumetric soil water content, field capacity, wilting point",
+    "also_useful": [
+      "drought monitoring",
+      "land surface models"
+    ],
+    "colors": [
+      "#f5f0e0",
+      "#e8d5a0",
+      "#d4b060",
+      "#b8853a",
+      "#946020",
+      "#703a10",
+      "#502005",
+      "#300e02"
+    ]
+  },
+  {
+    "id": "evi-trop",
+    "name": "EVI Tropical",
+    "type": "sequential",
+    "variable": "vegetation",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3369,
+    "range": "0 to 0.8 EVI",
+    "center": null,
+    "context": "Enhanced Vegetation Index, tropical and subtropical forests",
+    "also_useful": [
+      "LAI",
+      "GPP",
+      "canopy density"
+    ],
+    "colors": [
+      "#f5f5a0",
+      "#d4e06a",
+      "#a6c84a",
+      "#77ae2a",
+      "#508f10",
+      "#2e7000",
+      "#165000",
+      "#053018"
+    ]
+  },
+  {
+    "id": "aqi-standard",
+    "name": "AQI Standard",
+    "type": "sequential",
+    "variable": "air quality",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3363,
+    "range": "0 to 500 AQI",
+    "center": null,
+    "context": "Air Quality Index following US EPA category thresholds",
+    "also_useful": [
+      "PM2.5",
+      "ozone",
+      "health risk maps"
+    ],
+    "colors": [
+      "#00e400",
+      "#ffff00",
+      "#ff7e00",
+      "#ff0000",
+      "#8f3f97",
+      "#7e0023"
+    ]
+  },
+  {
+    "id": "pm25-exposure",
+    "name": "PM2.5 Exposure",
+    "type": "sequential",
+    "variable": "air quality",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2385,
+    "range": "0 to 150 μg/m³",
+    "center": null,
+    "context": "Fine particulate matter concentration, air pollution monitoring",
+    "also_useful": [
+      "NO2",
+      "black carbon",
+      "visibility"
+    ],
+    "colors": [
+      "#f7f7f7",
+      "#e0e0e0",
+      "#bdbdbd",
+      "#969696",
+      "#737373",
+      "#525252",
+      "#252525",
+      "#000000"
+    ]
+  },
+  {
+    "id": "solar-radiation",
+    "name": "Solar Rad",
+    "type": "sequential",
+    "variable": "radiation",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.6755,
+    "range": "0 to 1000 W/m²",
+    "center": null,
+    "context": "Shortwave radiation, insolation, solar energy potential",
+    "also_useful": [
+      "UV index",
+      "photosynthetically active radiation",
+      "net radiation"
+    ],
+    "colors": [
+      "#0d0d0d",
+      "#1a1a4a",
+      "#2a2a8a",
+      "#3366cc",
+      "#5599dd",
+      "#88bbee",
+      "#ffdd44",
+      "#ffaa00",
+      "#ff6600",
+      "#cc2200"
+    ]
+  },
+  {
+    "id": "seismic-intensity",
+    "name": "Seismic Intensity",
+    "type": "sequential",
+    "variable": "seismicity",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.9288,
+    "range": "I to XII MMI",
+    "center": null,
+    "context": "Earthquake intensity, Modified Mercalli Intensity scale, ground shaking hazard",
+    "also_useful": [
+      "peak ground acceleration",
+      "seismic risk",
+      "tsunami potential"
+    ],
+    "colors": [
+      "#ffffff",
+      "#bfefff",
+      "#80d0ff",
+      "#40aaff",
+      "#ffff00",
+      "#ffcc00",
+      "#ff9900",
+      "#ff4400",
+      "#cc0000",
+      "#880000",
+      "#440000"
+    ]
+  },
+  {
+    "id": "pysteps-default",
+    "name": "pysteps Default",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.6439,
+    "range": "0.08 to 160 mm/h",
+    "center": null,
+    "context": "Radar-based precipitation nowcasting, real-time rainfall intensity monitoring",
+    "also_useful": [
+      "radar reflectivity",
+      "convective precipitation",
+      "flood risk"
+    ],
+    "colors": [
+      "#9C7E94",
+      "#640064",
+      "#AF00AF",
+      "#DC00DC",
+      "#3232C8",
+      "#0064FF",
+      "#009696",
+      "#00C832",
+      "#64FF00",
+      "#96FF00",
+      "#C8FF00",
+      "#FFFF00",
+      "#FFC800",
+      "#FFA000",
+      "#FF7D00",
+      "#E11900"
+    ]
+  },
+  {
+    "id": "pysteps-bom-rf3",
+    "name": "pysteps BOM-RF3",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.8794,
+    "range": "0 to 150 mm/h",
+    "center": null,
+    "context": "Australian Bureau of Meteorology radar rainfall display, operational weather forecasting",
+    "also_useful": [
+      "radar reflectivity",
+      "runoff",
+      "flood risk"
+    ],
+    "colors": [
+      "#FFFFFF",
+      "#F5F5FF",
+      "#B4B4FF",
+      "#7878FF",
+      "#1414FF",
+      "#00D8C3",
+      "#009690",
+      "#006666",
+      "#FFFF00",
+      "#FFC800",
+      "#FF9600",
+      "#FF6400",
+      "#FF0000",
+      "#C80000",
+      "#780000",
+      "#280000"
+    ]
+  },
+  {
+    "id": "pysteps-steps-nl",
+    "name": "pysteps STEPS-NL",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.8521,
+    "range": "0.1 to 40 mm/h",
+    "center": null,
+    "context": "KNMI (Netherlands) radar precipitation nowcasting, operational forecasting",
+    "also_useful": [
+      "radar reflectivity",
+      "runoff",
+      "convective precipitation"
+    ],
+    "colors": [
+      "#D3D3D3",
+      "#87CEFA",
+      "#00BFFF",
+      "#0000FF",
+      "#00008B",
+      "#FFFF00",
+      "#FFD700",
+      "#FF8C00",
+      "#FF0000",
+      "#8B0000"
+    ]
+  },
+  {
+    "id": "pysteps-steps-be",
+    "name": "pysteps STEPS-BE",
+    "type": "sequential",
+    "variable": "precipitation",
+    "blindsafe": false,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.9055,
+    "range": "0.1 to 100 mm/h",
+    "center": null,
+    "context": "RMI (Belgium) radar precipitation nowcasting, operational forecasting",
+    "also_useful": [
+      "radar reflectivity",
+      "convective precipitation",
+      "runoff"
+    ],
+    "colors": [
+      "#00FFFF",
+      "#00BFFF",
+      "#1E90FF",
+      "#0000FF",
+      "#7FFF00",
+      "#32CD32",
+      "#008000",
+      "#006400",
+      "#FFFF00",
+      "#FFD700",
+      "#FFA500",
+      "#FF0000",
+      "#FF00FF",
+      "#8B008B"
+    ]
+  },
+  {
+    "id": "crameri-batlow",
+    "name": "Batlow",
+    "type": "sequential",
+    "variable": "multi-variable",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.255,
+    "range": "any continuous variable",
+    "center": null,
+    "context": "General-purpose perceptually-uniform sequential for any geoscientific variable",
+    "also_useful": [
+      "temperature",
+      "precipitation",
+      "wind speed",
+      "seismicity",
+      "gravity"
+    ],
+    "colors": [
+      "#031C5A",
+      "#185562",
+      "#577647",
+      "#9A915B",
+      "#CAAEAA",
+      "#F8CAF6"
+    ]
+  },
+  {
+    "id": "crameri-oslo",
+    "name": "Oslo",
+    "type": "sequential",
+    "variable": "snow / ice",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.0602,
+    "range": "0–100% (fraction or depth)",
+    "center": null,
+    "context": "Snow cover fraction, sea-ice extent, frost-day count, ice thickness",
+    "also_useful": [
+      "albedo",
+      "reflectance",
+      "cold spell duration"
+    ],
+    "colors": [
+      "#010203",
+      "#122D48",
+      "#2C5D96",
+      "#7396C9",
+      "#B9CBE4",
+      "#FCFDFE"
+    ]
+  },
+  {
+    "id": "crameri-lajolla",
+    "name": "Lajolla",
+    "type": "sequential",
+    "variable": "aridity / drought",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1332,
+    "range": "0–1 aridity index or drought severity",
+    "center": null,
+    "context": "Aridity index, PDSI drought severity, vapor pressure deficit, fire danger index",
+    "also_useful": [
+      "heat stress",
+      "soil dryness",
+      "desiccation"
+    ],
+    "colors": [
+      "#FFFECA",
+      "#F6D672",
+      "#E79452",
+      "#B7633F",
+      "#683F20",
+      "#1C1B02"
+    ]
+  },
+  {
+    "id": "crameri-davos",
+    "name": "Davos",
+    "type": "sequential",
+    "variable": "pressure / geopotential",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2712,
+    "range": "surface to upper troposphere (hPa / dam)",
+    "center": null,
+    "context": "Geopotential height (500 hPa), atmospheric pressure layers, deep-ocean pressure",
+    "also_useful": [
+      "water column",
+      "potential temperature",
+      "density"
+    ],
+    "colors": [
+      "#00094D",
+      "#2F5A96",
+      "#6D8E94",
+      "#B3C4C7",
+      "#FCFDFD"
+    ]
+  },
+  {
+    "id": "crameri-hawaii",
+    "name": "Hawaii",
+    "type": "sequential",
+    "variable": "geologic mapping",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2098,
+    "range": "categorical or continuous geological units",
+    "center": null,
+    "context": "Geological maps, lithology, chronostratigraphy, multi-class land surface",
+    "also_useful": [
+      "land use",
+      "soil type",
+      "crustal composition"
+    ],
+    "colors": [
+      "#8D0472",
+      "#954147",
+      "#9C7524",
+      "#A1A849",
+      "#AACDA2",
+      "#B3F1FB"
+    ]
+  },
+  {
+    "id": "crameri-turku",
+    "name": "Turku",
+    "type": "sequential",
+    "variable": "CAPE / OLR",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.1803,
+    "range": "0–3000 J/kg (CAPE) or 200–290 W/m² (OLR)",
+    "center": null,
+    "context": "Convective available potential energy, outgoing longwave radiation, surface emissivity",
+    "also_useful": [
+      "thermal emissivity",
+      "convective instability",
+      "storm intensity"
+    ],
+    "colors": [
+      "#020202",
+      "#3C3C32",
+      "#71704C",
+      "#A79D76",
+      "#D3C2AE",
+      "#FEE5E4"
+    ]
+  },
+  {
+    "id": "crameri-grayc",
+    "name": "GrayC",
+    "type": "sequential",
+    "variable": "hillshade / radar",
+    "blindsafe": true,
+    "perceptually_uniform": true,
+    "uniformity_cv": 0.0259,
+    "range": "intensity or reflectivity (unitless)",
+    "center": null,
+    "context": "DEM hillshade relief, SAR backscatter, radar reflectivity, bathymetric shading",
+    "also_useful": [
+      "grayscale intensity",
+      "terrain slope",
+      "backscatter"
+    ],
+    "colors": [
+      "#FEFEFE",
+      "#C6C6C6",
+      "#919191",
+      "#5F5F5F",
+      "#2F2F2F",
+      "#000000"
+    ]
+  },
+  {
+    "id": "crameri-vik",
+    "name": "Vik",
+    "type": "diverging",
+    "variable": "temperature anomaly",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3312,
+    "range": "-5 to +5 °C anomaly (or any bipolar)",
+    "center": 0.0,
+    "context": "Temperature anomaly, SST anomaly, heat wave intensity index, ENSO departure",
+    "also_useful": [
+      "pressure anomaly",
+      "geopotential anomaly",
+      "climate index"
+    ],
+    "colors": [
+      "#011462",
+      "#106294",
+      "#A7C9DA",
+      "#E8E1DD",
+      "#CDB7B6",
+      "#935B5E",
+      "#5B020A"
+    ]
+  },
+  {
+    "id": "crameri-cork",
+    "name": "Cork",
+    "type": "diverging",
+    "variable": "salinity / ocean pH",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.6292,
+    "range": "e.g. ±2 PSU salinity or ±0.2 pH units",
+    "center": 0.0,
+    "context": "Ocean salinity anomaly, seawater pH, soil acidity, ion concentration gradient",
+    "also_useful": [
+      "chemical gradient",
+      "freshwater fraction",
+      "alkalinity"
+    ],
+    "colors": [
+      "#2C1D4F",
+      "#3C6795",
+      "#AABFD3",
+      "#D8E4E6",
+      "#D7E2E0",
+      "#BBC6B7",
+      "#7E895C",
+      "#434E05"
+    ]
+  },
+  {
+    "id": "crameri-lisbon",
+    "name": "Lisbon",
+    "type": "diverging",
+    "variable": "precipitation anomaly",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3264,
+    "range": "−3 to +3 SPI or PDSI (drought/wet)",
+    "center": 0.0,
+    "context": "Standardised Precipitation Index, Palmer Drought Index, river discharge anomaly",
+    "also_useful": [
+      "wetness index",
+      "runoff anomaly",
+      "groundwater departure"
+    ],
+    "colors": [
+      "#E3E3FD",
+      "#6083AE",
+      "#132940",
+      "#181B1C",
+      "#464841",
+      "#898B79",
+      "#FCFCD6"
+    ]
+  },
+  {
+    "id": "crameri-berlin",
+    "name": "Berlin",
+    "type": "diverging",
+    "variable": "wind vorticity",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.2132,
+    "range": "−5×10⁻⁴ to +5×10⁻⁴ s⁻¹ (relative vorticity)",
+    "center": 0.0,
+    "context": "Relative vorticity, wind divergence, atmospheric circulation anomaly, Rossby wave activity",
+    "also_useful": [
+      "geostrophic wind",
+      "pressure tendency",
+      "jet stream anomaly"
+    ],
+    "colors": [
+      "#9CB0FE",
+      "#3382A8",
+      "#112732",
+      "#472D2B",
+      "#A46D6C",
+      "#FDABAB"
+    ]
+  },
+  {
+    "id": "crameri-broc",
+    "name": "Broc",
+    "type": "diverging",
+    "variable": "vegetation anomaly",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.6122,
+    "range": "−0.5 to +0.5 NDVI anomaly",
+    "center": 0.0,
+    "context": "NDVI anomaly, GPP departure, LAI anomaly, greening/browning trends",
+    "also_useful": [
+      "land carbon flux",
+      "phenology anomaly",
+      "photosynthesis index"
+    ],
+    "colors": [
+      "#2C1B4E",
+      "#3D6A97",
+      "#B3C5D7",
+      "#E4EAED",
+      "#E1E4E1",
+      "#C2C5BC",
+      "#73755D",
+      "#272702"
+    ]
+  },
+  {
+    "id": "crameri-tofino",
+    "name": "Tofino",
+    "type": "diverging",
+    "variable": "sea surface height",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3572,
+    "range": "±30 cm SSH anomaly (or ocean divergence)",
+    "center": 0.0,
+    "context": "Sea surface height anomaly (altimetry), steric height, ocean eddy detection, convergence/divergence",
+    "also_useful": [
+      "dynamic topography",
+      "geostrophic current",
+      "eddy kinetic energy"
+    ],
+    "colors": [
+      "#DBD7FE",
+      "#98A8E1",
+      "#5777BA",
+      "#19253D",
+      "#0E1615",
+      "#374030",
+      "#899365",
+      "#D9E49A"
+    ]
+  },
+  {
+    "id": "crameri-viko",
+    "name": "VikO",
+    "type": "qualitative",
+    "variable": "wind direction",
+    "blindsafe": true,
+    "perceptually_uniform": false,
+    "uniformity_cv": 0.3658,
+    "range": "0–360° (cyclic directional)",
+    "center": null,
+    "context": "Wind direction, ocean current bearing, wave propagation direction, topographic aspect",
+    "also_useful": [
+      "current direction",
+      "wave direction",
+      "slope aspect"
+    ],
+    "colors": [
+      "#4E1A3E",
+      "#365E8F",
+      "#A1B8C8",
+      "#D1BBB2",
+      "#B99D9C",
+      "#855B6C",
+      "#511B3D"
+    ]
+  }
+]

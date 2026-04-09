@@ -9,11 +9,10 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
+from .palettes import DEFAULT_PALETTE_ID, get_palette_colors
+
 # Color stop: (threshold_value, css_color)
 ColorStop = Tuple[Union[int, float], str]
-
-# Default 5-class diverging palette: green → yellow → red
-_DEFAULT_COLORS = ["#004d33", "#00AA44", "#FFCC00", "#FF6600", "#CC0000"]
 
 
 def feature_state_color(
@@ -173,22 +172,6 @@ def feature_state_fade_color(
     ]
 
 
-def _colors_from_cmap(cmap: str, n: int) -> List[str]:
-    """Sample *n* hex colors from a matplotlib colormap."""
-    try:
-        import matplotlib
-    except ImportError:
-        raise ImportError(
-            "matplotlib is required for cmap support. "
-            "Install it with: pip install matplotlib"
-        ) from None
-    import numpy as np
-
-    cm = matplotlib.colormaps[cmap]
-    rgba = cm(np.linspace(0, 1, n))
-    return [matplotlib.colors.to_hex(c) for c in rgba]
-
-
 def _jenks_breaks(arr: Any, n_stops: int) -> List[float]:
     """Compute Jenks natural breaks thresholds."""
     try:
@@ -208,10 +191,10 @@ def compute_color_stops(
     values: Any,
     n_stops: int = 5,
     colors: Optional[Sequence[str]] = None,
+    palette: Optional[str] = None,
     percentiles: Optional[Sequence[float]] = None,
     precision: int = 1,
     method: str = "quantile",
-    cmap: Optional[str] = None,
 ) -> List[ColorStop]:
     """Compute color stops from a numeric data distribution.
 
@@ -229,8 +212,11 @@ def compute_color_stops(
         Number of color stops to generate.  Ignored when *percentiles*
         is provided explicitly.
     colors:
-        CSS color strings for each stop.  Overridden by *cmap* when both
-        are provided.  Defaults to a green-yellow-red diverging palette.
+        CSS color strings for each stop.  Cannot be combined with *palette*.
+        Highest-priority color source.
+    palette:
+        Embedded geoscience palette id from :mod:`llmaps.palettes`.
+        Used when *colors* is not provided.
     percentiles:
         Explicit percentile values (0-100).  Only used with
         ``method="quantile"`` (the default).
@@ -239,10 +225,6 @@ def compute_color_stops(
     method:
         Classification method: ``"quantile"`` (default), ``"jenks"``
         (natural breaks, requires *jenkspy*), or ``"equal_interval"``.
-    cmap:
-        Matplotlib colormap name (e.g. ``"plasma"``, ``"viridis"``).
-        When provided, *colors* is ignored and colours are sampled from
-        the colormap.  Requires *matplotlib*.
 
     Returns
     -------
@@ -255,8 +237,8 @@ def compute_color_stops(
     >>> import pandas as pd
     >>> from llmaps.expressions import compute_color_stops
     >>> stops = compute_color_stops(pd.Series([1, 5, 10, 20, 50]))
-    >>> # [(1.0, '#004d33'), (5.0, '#00AA44'), (10.0, '#FFCC00'), ...]
-    >>> stops = compute_color_stops([0, 50, 200, 500], method="jenks", cmap="plasma")
+    >>> # Uses default geoscience palette
+    >>> stops = compute_color_stops([0, 50, 200, 500], method="jenks", palette="bathymetry")
     """
     import numpy as np
 
@@ -272,16 +254,12 @@ def compute_color_stops(
         n_stops = len(percentiles)
 
     # --- resolve colors ---
-    if cmap is not None:
-        colors = _colors_from_cmap(cmap, n_stops)
-    elif colors is None:
-        if n_stops <= len(_DEFAULT_COLORS):
-            colors = _DEFAULT_COLORS[:n_stops]
-        else:
-            colors = [
-                _DEFAULT_COLORS[int(i * (len(_DEFAULT_COLORS) - 1) / (n_stops - 1))]
-                for i in range(n_stops)
-            ]
+    if colors is not None and palette is not None:
+        raise ValueError("Provide either 'colors' or 'palette', not both")
+
+    if colors is None:
+        palette_id = palette or DEFAULT_PALETTE_ID
+        colors = get_palette_colors(palette_id, n=n_stops)
 
     if len(colors) != n_stops:
         raise ValueError(

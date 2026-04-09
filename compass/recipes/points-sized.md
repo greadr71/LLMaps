@@ -99,4 +99,4 @@ if __name__ == "__main__":
 - `{COLOR_STOPS}` should be flattened stop pairs, for example:
   `0, "#f7fbff", 50, "#6baed6", 100, "#08306b"`
 - If user wants fixed size but dynamic color, replace `radius_expr` with a constant.
-- `{COLOR_PALETTE}` can be used upstream to produce `{COLOR_STOPS}`.
+- `{PALETTE_ID}` can be used upstream (via `compute_color_stops(..., palette="{PALETTE_ID}")`) to produce `{COLOR_STOPS}`.

@@ -89,7 +89,7 @@ def main() -> None:
     color_stops = compute_color_stops(
         depths,
         method="jenks",
-        cmap="plasma_r",
+        palette="arctic-chill",
         n_stops=5,
     )
     

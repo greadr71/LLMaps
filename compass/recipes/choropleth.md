@@ -33,7 +33,7 @@ def main() -> None:
         values,
         method="{CLASSIFICATION_METHOD}",
         n_stops={N_STOPS},
-        cmap="{COLOR_PALETTE}",
+        palette="{PALETTE_ID}",
     )
 
     source = FileSource(
@@ -112,4 +112,4 @@ if __name__ == "__main__":
 - `{PROMOTE_ID}`
 - `{CLASSIFICATION_METHOD}`
 - `{N_STOPS}`
-- `{COLOR_PALETTE}`
+- `{PALETTE_ID}`
