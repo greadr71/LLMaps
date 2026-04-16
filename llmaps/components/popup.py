@@ -7,7 +7,7 @@ from typing import Dict, Iterable, List, Literal, Mapping, Optional
 
 from .base import BaseComponent
 
-Trigger = Literal["click", "hover"]
+Trigger = Literal["click", "hover", "both"]
 
 
 @dataclass
@@ -27,9 +27,11 @@ class Popup(BaseComponent):
         Optional per-layer override for ``fields``. Keys are layer ids and
         values are ordered lists of field names.
     trigger:
-        Event that opens the popup: ``"click"`` (default) or ``"hover"``.
+        Event that opens the popup: ``"click"`` (default), ``"hover"``,
+        or ``"both"``.
         When ``"hover"``, the popup follows the cursor and disappears
-        when the mouse leaves the feature.
+        when the mouse leaves the feature. ``"both"`` enables hover preview
+        and click-to-pin behavior in one component.
     """
 
     fields: List[str] = field(default_factory=list)

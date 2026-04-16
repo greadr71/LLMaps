@@ -163,7 +163,18 @@
             if (!m || !m.getLayer) return;
 
             const hasFieldsByLayer = Object.keys(fieldsByLayer).length > 0;
-            if (popupTrigger === "hover") {
+            const enableHover = popupTrigger === "hover" || popupTrigger === "both";
+            const enableClick = popupTrigger === "click" || popupTrigger === "both";
+            var selectedFeature = null;
+
+            function featureKey(feature, layerId) {
+              if (!feature) return null;
+              var lid = layerId || (feature.layer && feature.layer.id) || "";
+              if (feature.id != null) return lid + ":" + String(feature.id);
+              return null;
+            }
+
+            if (enableHover) {
               var hoverPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
               layers.forEach(layerCfg => {
                 const layerId = layerCfg.id;
@@ -172,6 +183,11 @@
                 m.on("mousemove", layerId, function(ev) {
                   const feat = ev.features && ev.features[0];
                   if (!feat) return;
+                  // If the same feature is already selected by click, do not
+                  // re-trigger hover popup for it.
+                  if (selectedFeature && featureKey(feat, layerId) && featureKey(selectedFeature, selectedFeature.layer && selectedFeature.layer.id) === featureKey(feat, layerId)) {
+                    return;
+                  }
                   var html = popupContent(feat, layerId);
                   if (!html) return;
                   m.getCanvas().style.cursor = "pointer";
@@ -182,7 +198,9 @@
                   hoverPopup.remove();
                 });
               });
-            } else {
+            }
+
+            if (enableClick) {
               // Single map click + queryRenderedFeatures + layer type priority (points over polygons)
               // When fields_by_layer is set, only layers listed there get popup (e.g. no popup on point layer)
               const popupLayerIds = layers
@@ -194,7 +212,6 @@
                 .map(function(l) { return l.id; });
               const typePriority = { circle: 0, symbol: 1, line: 2, fill: 3 };
               var currentPopup = null;
-              var selectedFeature = null;
               var _prevHl = null; // { map, source, id }
               function _hlClear() {
                 if (_prevHl) {
