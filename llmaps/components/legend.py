@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 from .base import BaseComponent
 
@@ -51,6 +51,15 @@ class Legend(BaseComponent):
         "Tips" section at the bottom of the legend.
     collapsed:
         Whether the Tips section should be collapsed by default.
+    tips_title:
+        Optional heading for the instructions block. When omitted, a default
+        is chosen from the map ``locale`` (e.g. ``en-US`` → "💡 Tips",
+        ``ru-RU`` → "💡 Подсказки").
+    size_legends:
+        Optional extra size-legend specs (same shape as layer
+        ``metadata["llmaps_size_legend"]``) merged after auto-collected layer
+        legends. Normally you do not set this; use
+        :class:`~llmaps.components.data_driven_size.DataDrivenSize` on a layer.
     """
 
     position: str = "top-right"
@@ -66,6 +75,8 @@ class Legend(BaseComponent):
     layer_descriptions: Mapping[str, str] = field(default_factory=dict)
     instructions: Optional[list[str]] = None
     collapsed: bool = True
+    tips_title: Optional[str] = None
+    size_legends: Optional[List[Dict[str, Any]]] = None
 
     def __post_init__(self) -> None:
         self.component_type = "legend"
@@ -95,5 +106,9 @@ class Legend(BaseComponent):
             base["layer_color_ramps"] = dict(self.layer_color_ramps)
         if self.instructions:
             base["instructions"] = list(self.instructions)
+        if self.tips_title is not None:
+            base["tips_title"] = self.tips_title
+        if self.size_legends:
+            base["size_legends"] = [dict(s) for s in self.size_legends]
         return base
 

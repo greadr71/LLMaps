@@ -41,6 +41,7 @@ CircleLayer(
 | `radius` | float | 6.0 | Circle radius in pixels. |
 | `color` | str | `"#3182bd"` | Fill color (CSS color). |
 | `opacity` | float | 0.8 | Fill opacity (0–1). |
+| `data_driven_size` | `DataDrivenSize` or None | None | When set and the source is a local `FileSource`, `Map.to_dict()` replaces `circle-radius`, optionally `circle-color` from `DataDrivenSize.color_stops`, and adds a size (and color) legend (see [DataDrivenSize](components.md#datadrivensize)). |
 
 **When to use:** Point data, markers, small datasets. For large point sets use `H3Layer` or `VectorTileLayer`.
 
@@ -207,6 +208,7 @@ SymbolLayer(
 | `text_opacity` | float | 1.0 | Text opacity. |
 | `text_halo_color` | str | `rgba(255,255,255,0.8)` | Halo color for text legibility. |
 | `text_halo_width` | float | 0.0 | Halo width in pixels; 0 = no halo. |
+| `data_driven_size` | `DataDrivenSize` or None | None | Same as on `CircleLayer`, applied to `icon-size` when resolved from a `FileSource`. |
 
 **Image registration:** Images must be pre-registered via `map.addImage(name, imageData)` in custom JS (via `m.add_custom_js(...)`) before the layer renders. Use `icon_image` as a MapLibre expression to select images dynamically per feature:
 

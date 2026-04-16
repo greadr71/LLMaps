@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .base import BaseLayer
+
+if TYPE_CHECKING:
+    from ..components.data_driven_size import DataDrivenSize
 
 
 @dataclass
@@ -31,6 +34,10 @@ class CircleLayer(BaseLayer):
         Stroke color (hex string) or MapLibre expression (list).
     stroke_opacity:
         Stroke opacity 0–1 (number) or MapLibre expression (list).
+    data_driven_size:
+        When set and the layer source is a local :class:`~llmaps.sources.file.FileSource`,
+        :meth:`llmaps.map.Map.to_dict` replaces ``circle-radius`` (and attaches a size
+        legend) using percentiles of *data_driven_size.field* in the loaded file.
     """
 
     radius: Union[float, List[Any]] = 6.0
@@ -39,6 +46,7 @@ class CircleLayer(BaseLayer):
     stroke_width: Union[float, List[Any]] = 0
     stroke_color: Union[str, List[Any]] = "#000000"
     stroke_opacity: Union[float, List[Any]] = 1.0
+    data_driven_size: Optional["DataDrivenSize"] = None
 
     layer_type: str = "circle"
 

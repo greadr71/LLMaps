@@ -6,7 +6,10 @@ inspired by wibemaps architecture with llmaps design aesthetics.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+import html
+from typing import Any, Dict, List
+
+from llmaps.components.data_driven_size import render_size_legend_svg_fragment
 
 
 def _extract_simple_color(color_value: Any) -> str:
@@ -69,6 +72,31 @@ def _get_layer_display_info(layer: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
+def _default_tips_title(locale: str) -> str:
+    """Localized default heading for the collapsible instructions block."""
+    loc = str(locale or "en-US").replace("_", "-").lower()
+    if loc.startswith("ru"):
+        return "💡 Подсказки"
+    return "💡 Tips"
+
+
+def _collect_size_legend_specs(
+    config: Dict[str, Any], legend_config: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    specs: List[Dict[str, Any]] = []
+    for layer in config.get("layers", []):
+        meta = layer.get("metadata") or {}
+        leg = meta.get("llmaps_size_legend")
+        if isinstance(leg, dict):
+            specs.append(leg)
+    extra = legend_config.get("size_legends")
+    if isinstance(extra, list):
+        for item in extra:
+            if isinstance(item, dict):
+                specs.append(item)
+    return specs
+
+
 def generate_legend_html(config: Dict[str, Any]) -> str:
     """Generate server-side HTML for the legend component.
 
@@ -110,6 +138,14 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
     layer_color_ramps = legend_config.get("layer_color_ramps", {})
     instructions = legend_config.get("instructions")
     collapsed_tips = legend_config.get("collapsed", True)
+    tips_title_raw = legend_config.get("tips_title")
+    map_locale = str(config.get("locale") or "en-US")
+    if tips_title_raw is not None:
+        tips_title_display = html.escape(str(tips_title_raw))
+    else:
+        tips_title_display = html.escape(_default_tips_title(map_locale))
+    size_legend_specs = _collect_size_legend_specs(config, legend_config)
+    has_size_legends = len(size_legend_specs) > 0
 
     # Build layer information
     # A layer appears in the legend if it has a label OR a color ramp
@@ -149,7 +185,7 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
             
             # Add separator if not last entry or there are layers/basemap/instructions after
             separator_class = ""
-            if not is_last_entry or layers_info or has_basemap or instructions:
+            if not is_last_entry or layers_info or has_basemap or instructions or has_size_legends:
                 separator_class = " llmaps-legend-section-separator"
             
             sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
@@ -166,7 +202,7 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
         gradient = f"linear-gradient(to right, {', '.join(colors)})"
         
         separator_class = ""
-        if layers_info or has_basemap or instructions:
+        if layers_info or has_basemap or instructions or has_size_legends:
             separator_class = " llmaps-legend-section-separator"
         
         sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
@@ -225,7 +261,7 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
 
         # Section separator class (only if not last layer or there's more content after)
         separator_class = ""
-        if not is_last_layer or has_basemap or instructions:
+        if not is_last_layer or has_basemap or instructions or has_size_legends:
             separator_class = " llmaps-legend-section-separator"
 
         sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
@@ -243,7 +279,9 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
             provider_name = provider.get("name", provider_id)
             options_html.append(f'<option value="{provider_id}">{provider_name}</option>')
 
-        separator_class = " llmaps-legend-section-separator" if instructions else ""
+        separator_class = (
+            " llmaps-legend-section-separator" if (instructions or has_size_legends) else ""
+        )
         sections.append(f'''        <div class="llmaps-legend-section llmaps-legend-basemap{separator_class}">
             <div class="llmaps-basemap-select-wrap">
                 <select class="llmaps-basemap-select" id="llmaps-basemap-select">
@@ -252,14 +290,32 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
             </div>
         </div>''')
 
+    # Size-by-value legend blocks (from layer metadata or Legend.size_legends)
+    if size_legend_specs:
+        for i, spec in enumerate(size_legend_specs):
+            svg_block = render_size_legend_svg_fragment(spec)
+            if not svg_block:
+                continue
+            is_last = i == len(size_legend_specs) - 1
+            sep = ""
+            if not is_last or instructions:
+                sep = " llmaps-legend-section-separator"
+            sections.append(
+                f'''        <div class="llmaps-legend-section llmaps-size-legend-section{sep}">
+            <div class="llmaps-size-legend-wrap">
+                {svg_block}
+            </div>
+        </div>'''
+            )
+
     # 4. Collapsible Tips section (if instructions provided)
     if instructions:
-        tips_items = [f'<li>{tip}</li>' for tip in instructions]
+        tips_items = [f"<li>{html.escape(str(tip))}</li>" for tip in instructions]
         collapsed_class = " collapsed" if collapsed_tips else ""
 
         sections.append(f'''        <div class="llmaps-legend-instructions">
             <div class="llmaps-legend-instructions-header{collapsed_class}" id="llmaps-tips-header">
-                <span class="llmaps-legend-instructions-title">💡 Tips</span>
+                <span class="llmaps-legend-instructions-title">{tips_title_display}</span>
                 <span class="llmaps-legend-instructions-arrow">▼</span>
             </div>
             <div class="llmaps-legend-instructions-content{collapsed_class}" id="llmaps-tips-content">

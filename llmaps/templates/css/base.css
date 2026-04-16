@@ -516,6 +516,19 @@ body {
   color: #374151;
 }
 
+/* Size-by-value legend (DataDrivenSize) */
+.llmaps-size-legend-section {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.llmaps-size-legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
 /* Dashboard — persistent map overlay */
 .llmaps-dashboard {
   position: absolute;

@@ -222,7 +222,7 @@ class Map:
         for layer in self._layers:
             layer_dict = layer.to_dict()
             layers_list.append(layer_dict)
-            
+
             # If a fill layer needs a thick stroke, create a separate line layer
             metadata = layer_dict.get("metadata", {})
             if metadata.get("needs_outline_layer"):
@@ -243,6 +243,8 @@ class Map:
                 if layer_dict.get("maxzoom") is not None:
                     outline_layer["maxzoom"] = layer_dict["maxzoom"]
                 layers_list.append(outline_layer)
+
+        layers_list = self._apply_data_driven_sizes(layers_list)
 
         hash_position = self.hash_position
         if hash_position is None:
@@ -318,6 +320,60 @@ class Map:
         if self._comparison is not None:
             out["comparison"] = self._comparison
         return out
+
+    def _apply_data_driven_sizes(self, layers_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Replace circle-radius / icon-size from :class:`~llmaps.components.data_driven_size.DataDrivenSize` when possible."""
+        from .components.data_driven_size import DataDrivenSize
+        from .core.utils import load_gdf
+
+        by_id = {layer.id: layer for layer in self._layers}
+        for layer_dict in layers_list:
+            layer_id = layer_dict.get("id")
+            py_layer = by_id.get(layer_id) if layer_id else None
+            if py_layer is None:
+                continue
+            dds = getattr(py_layer, "data_driven_size", None)
+            if not isinstance(dds, DataDrivenSize):
+                continue
+            gdf = load_gdf(py_layer.source)
+            if gdf is None or dds.field not in gdf.columns:
+                continue
+            ser = gdf[dds.field]
+            try:
+                import pandas as pd
+
+                num = pd.to_numeric(ser, errors="coerce").dropna()
+            except Exception:
+                continue
+            if num.empty:
+                continue
+            resolved = dds.resolve(num.values, locale=self.locale)
+            if not resolved:
+                continue
+            expr = resolved["interpolate_expression"]
+            legend_spec = resolved["legend_spec"]
+            ltype = layer_dict.get("type")
+            if ltype == "circle":
+                paint = layer_dict.setdefault("paint", {})
+                paint["circle-radius"] = expr
+                cexpr = resolved.get("color_expression")
+                if cexpr is not None:
+                    paint["circle-color"] = cexpr
+            elif ltype == "symbol":
+                layer_dict.setdefault("layout", {})["icon-size"] = expr
+                # Color ramp is only applied to circle-color; strip legend-only fills.
+                circles = legend_spec.get("circles") or []
+                if circles:
+                    legend_spec = {
+                        **legend_spec,
+                        "circles": [{k: v for k, v in c.items() if k != "fill"} for c in circles],
+                    }
+            else:
+                continue
+            meta = dict(layer_dict.get("metadata") or {})
+            meta["llmaps_size_legend"] = legend_spec
+            layer_dict["metadata"] = meta
+        return layers_list
 
     # ------------------------------------------------------------------
     # Output helpers

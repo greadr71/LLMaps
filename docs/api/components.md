@@ -10,7 +10,7 @@ All components inherit from `BaseComponent` and implement `to_dict()`. They have
 
 ## Legend
 
-Shows layer names and optional visibility toggles. Can display precomputed feature counts per layer.
+Shows layer names and optional visibility toggles. Can display precomputed feature counts per layer, optional collapsible tips, and optional **size-by-value** blocks (from `DataDrivenSize` on layers or from `size_legends`).
 
 ```python
 from llmaps.components import Legend
@@ -29,6 +29,62 @@ Legend(
 | `show_toggle` | bool | True | Whether each layer can be toggled on/off from the legend. |
 | `layer_labels` | dict | {} | Map layer id → human-readable label. |
 | `layer_counts` | dict | {} | Map layer id → precomputed feature count (displayed as static number). |
+| `instructions` | list of str or None | None | Tip strings shown in a collapsible section at the bottom of the legend. |
+| `collapsed` | bool | True | Whether the tips section starts collapsed. |
+| `tips_title` | str or None | None | Heading for the tips block. If omitted, defaults from `Map.locale` (`en-US` → “💡 Tips”, `ru-RU` → “💡 Подсказки”). |
+| `size_legends` | list of dict or None | None | Extra size-legend payloads (same shape as layer `metadata["llmaps_size_legend"]`). Usually left unset; use `DataDrivenSize` on `CircleLayer` / `SymbolLayer` instead. |
+
+---
+
+## DataDrivenSize
+
+Builds a MapLibre `interpolate` / `linear` expression from three value stops (percentiles by default) and attaches a matching **three-circle** SVG block in the server-rendered legend.
+
+Optionally drives **`circle-color`** on `CircleLayer` from `color_stops`: either **linear interpolate** between any number of `(value, "#hex")` pairs, or a **`step`** ramp (hard bands). Legend circle fills follow `color_stops` at the three size stops, unless you override them with `legend_circle_colors` (low, mid, high — same order as sorted size stops).
+
+Attach to a `CircleLayer` or `SymbolLayer` as `data_driven_size=...`. At `Map.to_dict()` time, if the layer uses a local `FileSource`, LLMaps loads the file, reads the numeric column(s), replaces `circle-radius` / `icon-size`, and stores `metadata["llmaps_size_legend"]`. **`color_stops` / `color_mode` / `color_field` apply only to `CircleLayer`** (they set `circle-color`). `SymbolLayer` resolution affects `icon-size` only; use custom paint or SDF `icon-color` separately if needed. For remote-only sources, set paint/layout yourself.
+
+```python
+from llmaps.components import DataDrivenSize
+from llmaps.layers import CircleLayer
+
+dds = DataDrivenSize(
+    field="population",
+    size_range=(4.0, 22.0),
+    auto_percentiles=(0.1, 0.5, 0.9),
+    min_value=None,
+    max_value=None,
+    value_format="thousands",
+    legend_visual="fill",
+    legend_color="#64748b",
+    legend_title="Population",
+    locale="en-US",
+    color_stops=[(0, "#ecfccb"), (5000, "#65a30d"), (50000, "#365314")],
+    color_mode="interpolate",
+)
+layer = CircleLayer(id="cities", source=src, color="#3182bd", data_driven_size=dds)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `field` | str | required | GeoJSON property used in `["get", field]` for **size**. |
+| `size_range` | (float, float) | `(4, 22)` | Output at low / high stops (circle radius in px, or symbol `icon-size` scale). |
+| `auto_percentiles` | (float, float, float) | `(0.1, 0.5, 0.9)` | Percentiles for the three domain stops (unless overridden by `min_value` / `max_value`). |
+| `min_value`, `max_value` | float or None | None | Optional fixed low / high domain ends for the interpolate stops. |
+| `value_format` | str or callable | `"thousands"` | Legend labels: `"thousands"`, `"raw"`, `"mln_rub"`, or `fn(value) -> str`. |
+| `legend_visual` | `"fill"` \| `"stroke"` | `"fill"` | Filled disks vs outline rings in the SVG. |
+| `legend_color` | str | `"#64748b"` | Single fill (`fill`) or stroke color (`stroke`) when no per-circle fills. |
+| `legend_title` | str or None | None | Optional title above the SVG. |
+| `locale` | str | `"en-US"` | BCP 47 tag for built-in numeric formats. |
+| `color_stops` | list of (float, str) or None | None | `(value, "#hex")` pairs for `circle-color`. At least two pairs for `interpolate`; one or more thresholds for `step`. |
+| `color_mode` | `"interpolate"` \| `"step"` | `"interpolate"` | MapLibre expression kind for color. |
+| `color_field` | str or None | None | Property for color `get`; defaults to `field`. |
+| `color_step_below` | str or None | None | For `step`: color when value **&lt;** first threshold. Defaults to `"#e5e7eb"`. |
+| `legend_circle_colors` | (str, str, str) or None | None | Fixed hex colors for the three legend circles (low → high value). Overrides auto colors from `color_stops`; map color still uses `color_stops` when set. Without `color_stops`, only the legend uses these fills. |
+
+**Helpers:** `color_at_value(stops, x)` — linear RGB sample along `color_stops` (exported from `llmaps.components`).
+
+**Example:** `examples/technical/data-driven-size/build_map.py`.
 
 ---
 
