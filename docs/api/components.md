@@ -44,6 +44,12 @@ Optionally drives **`circle-color`** on `CircleLayer` from `color_stops`: either
 
 Attach to a `CircleLayer` or `SymbolLayer` as `data_driven_size=...`. At `Map.to_dict()` time, if the layer uses a local `FileSource`, LLMaps loads the file, reads the numeric column(s), replaces `circle-radius` / `icon-size`, and stores `metadata["llmaps_size_legend"]`. **`color_stops` / `color_mode` / `color_field` apply only to `CircleLayer`** (they set `circle-color`). `SymbolLayer` resolution affects `icon-size` only; use custom paint or SDF `icon-color` separately if needed. For remote-only sources, set paint/layout yourself.
 
+**Staleness:** anything resolved here is **frozen when the HTML is generated**. Maps backed by databases or APIs that change every day should **not** use `FileSource` + `DataDrivenSize` to imply “always current” data—refresh the file and re-export, or compute size expressions in client-side JS after fetching live GeoJSON.
+
+**Inline sample (no `FileSource`):** pass `data_driven_size_values=[...]` on `CircleLayer` / `SymbolLayer` together with `data_driven_size=...`. LLMaps runs the same `resolve()` logic on that array at `Map.to_dict()` time (e.g. after you `requests.get(...)` and extract the numeric column in your map script). The HTML still reflects **that** sample until you export again.
+
+**Client-side sizing (`data_driven_size_client=True`):** with `data_driven_size=...` set, `Map.to_dict()` does **not** call `resolve()` or touch paint/layout. It only adds `metadata["llmaps_data_driven_size_spec"]` (from `DataDrivenSize.client_spec_dict()`). The generated HTML includes `data_driven_size_client.js`, which exposes `llmapsApplyDataDrivenSizeFromValues(map, layerId, layerType, numericValues, spec, options?)` — call it after you fetch numbers in the browser (e.g. from pg_featureserv). `layerType` is `"circle"` or `"symbol"`. Optional `options.filterPositive` matches common sales-only samples.
+
 ```python
 from llmaps.components import DataDrivenSize
 from llmaps.layers import CircleLayer

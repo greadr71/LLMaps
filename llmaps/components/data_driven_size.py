@@ -315,6 +315,20 @@ class DataDrivenSize:
     :class:`llmaps.sources.file.FileSource` so percentiles can be read from
     local data.
 
+    **Important:** values and legend are **frozen at HTML export time**. For
+    datasets that change daily (API, pg_featureserv, live tiles), re-run export
+    after refreshing your sample, or build MapLibre size expressions in the client
+    after fetching fresh features.
+
+    To drive resolution from numbers obtained in Python (e.g. an HTTP request) without
+    a ``FileSource``, set ``data_driven_size_values`` on :class:`~llmaps.layers.circle.CircleLayer`
+    or :class:`~llmaps.layers.symbol.SymbolLayer` alongside ``data_driven_size``.
+
+    For **browser-time** resolution, set ``data_driven_size_client=True`` on the layer
+    and use :meth:`client_spec_dict` output (``metadata["llmaps_data_driven_size_spec"]``)
+    with the bundled ``llmapsApplyDataDrivenSizeFromValues`` helper, or Atlas
+    ``AtlasDataDrivenSize`` in custom JS.
+
     Parameters
     ----------
     field:
@@ -359,6 +373,46 @@ class DataDrivenSize:
     color_field: Optional[str] = None
     color_step_below: Optional[str] = None
     legend_circle_colors: Optional[Tuple[str, str, str]] = None
+
+    def client_spec_dict(self, *, locale: Optional[str] = None) -> Dict[str, Any]:
+        """JSON-serializable spec for browser-side sizing (no export-time ``resolve``).
+
+        Written to ``layer.metadata["llmaps_data_driven_size_spec"]`` when
+        ``data_driven_size_client=True`` on :class:`~llmaps.layers.circle.CircleLayer`
+        or :class:`~llmaps.layers.symbol.SymbolLayer`. Pair with
+        ``llmaps/templates/js/data_driven_size_client.js`` (injected when any layer
+        carries this metadata) and a runtime numeric sample from pg_featureserv
+        or similar.
+        """
+        loc = locale if locale is not None else self.locale
+        vf: Union[str, Any] = self.value_format
+        vf_out = vf if isinstance(vf, str) else "raw"
+        out: Dict[str, Any] = {
+            "version": 1,
+            "field": self.field,
+            "size_range": [float(self.size_range[0]), float(self.size_range[1])],
+            "auto_percentiles": [
+                float(self.auto_percentiles[0]),
+                float(self.auto_percentiles[1]),
+                float(self.auto_percentiles[2]),
+            ],
+            "min_value": None if self.min_value is None else float(self.min_value),
+            "max_value": None if self.max_value is None else float(self.max_value),
+            "value_format": vf_out,
+            "locale": loc,
+            "legend_visual": self.legend_visual,
+            "legend_color": self.legend_color,
+            "legend_title": self.legend_title,
+            "color_field": self.color_field or self.field,
+            "color_mode": self.color_mode,
+        }
+        if self.color_stops is not None:
+            out["color_stops"] = [[float(a), str(b)] for a, b in self.color_stops]
+        if self.color_step_below is not None:
+            out["color_step_below"] = str(self.color_step_below)
+        if self.legend_circle_colors is not None:
+            out["legend_circle_colors"] = [str(x) for x in self.legend_circle_colors]
+        return out
 
     def resolve(
         self, values: Sequence[float], *, locale: Optional[str] = None

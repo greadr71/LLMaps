@@ -9,7 +9,8 @@ from llmaps import Map
 from llmaps.components import DataDrivenSize, Legend
 from llmaps.components.data_driven_size import _percentile_sorted, color_at_value
 from llmaps.core.legend_generator import _default_tips_title, generate_legend_html
-from llmaps.layers import CircleLayer
+from llmaps.layers import CircleLayer, SymbolLayer
+from llmaps.sources.api import ApiSource
 from llmaps.sources.file import FileSource
 
 
@@ -99,6 +100,106 @@ def test_legend_tips_title_override():
     }
     html = generate_legend_html(config)
     assert "💡 Hints" in html
+
+
+def test_map_to_dict_resolves_circle_data_driven_size_from_inline_values():
+    """ApiSource has no local file; DDS uses data_driven_size_values only."""
+    src = ApiSource(id="live", url="https://example.invalid/unused-at-to-dict")
+    dds = DataDrivenSize(field="metric", size_range=(3.0, 18.0), locale="en-US")
+    layer = CircleLayer(
+        id="pts",
+        source=src,
+        color="#333",
+        data_driven_size=dds,
+        data_driven_size_values=[10.0, 20.0, 50.0, 90.0, 200.0, 400.0],
+    )
+    m = Map(center=[0, 0], zoom=2, embedded=False)
+    m.add_layer(layer)
+    m.add_component(Legend(layer_labels={"pts": "P"}))
+    cfg = m.to_dict()
+    layer_cfg = next(L for L in cfg["layers"] if L["id"] == "pts")
+    rad = layer_cfg["paint"]["circle-radius"]
+    assert isinstance(rad, list) and rad[0] == "interpolate"
+    assert rad[2] == ["to-number", ["get", "metric"], 0]
+    assert "llmaps_size_legend" in layer_cfg["metadata"]
+
+
+def test_data_driven_size_client_spec_dict():
+    dds = DataDrivenSize(
+        field="metric",
+        size_range=(2.0, 9.0),
+        auto_percentiles=(0.15, 0.55, 0.85),
+        min_value=1.0,
+        legend_title="T",
+        locale="ru-RU",
+    )
+    spec = dds.client_spec_dict()
+    assert spec["version"] == 1
+    assert spec["field"] == "metric"
+    assert spec["size_range"] == [2.0, 9.0]
+    assert spec["auto_percentiles"] == [0.15, 0.55, 0.85]
+    assert spec["min_value"] == 1.0
+    assert spec["legend_title"] == "T"
+    assert spec["locale"] == "ru-RU"
+
+
+def test_to_html_includes_client_dds_runtime_when_spec_present():
+    src = ApiSource(id="s", url="https://example.invalid/x")
+    dds = DataDrivenSize(field="v", size_range=(1.0, 5.0))
+    m = Map(center=[0, 0], zoom=2, embedded=False, tiles="osm")
+    m.add_layer(
+        CircleLayer(
+            id="c",
+            source=src,
+            color="#222",
+            data_driven_size=dds,
+            data_driven_size_client=True,
+        )
+    )
+    html = m.to_html()
+    assert "llmapsApplyDataDrivenSizeFromValues" in html
+
+
+def test_map_to_dict_client_mode_emits_spec_not_interpolate():
+    src = ApiSource(id="live", url="https://example.invalid/unused")
+    dds = DataDrivenSize(field="x", size_range=(1.0, 8.0), locale="en-US")
+    layer = CircleLayer(
+        id="c",
+        source=src,
+        color="#111",
+        radius=5.5,
+        data_driven_size=dds,
+        data_driven_size_client=True,
+        data_driven_size_values=[1.0, 2.0, 3.0],
+    )
+    m = Map(center=[0, 0], zoom=2, embedded=False)
+    m.add_layer(layer)
+    cfg = m.to_dict()
+    layer_cfg = next(L for L in cfg["layers"] if L["id"] == "c")
+    assert layer_cfg["paint"]["circle-radius"] == 5.5
+    meta = layer_cfg.get("metadata") or {}
+    assert "llmaps_data_driven_size_spec" in meta
+    assert "llmaps_size_legend" not in meta
+
+
+def test_map_to_dict_resolves_symbol_icon_size_from_inline_values():
+    src = ApiSource(id="sym", url="https://example.invalid/unused")
+    dds = DataDrivenSize(field="w", size_range=(0.5, 2.0), legend_visual="stroke", locale="en-US")
+    layer = SymbolLayer(
+        id="m",
+        source=src,
+        source_layer=None,
+        icon_image="dot",
+        data_driven_size=dds,
+        data_driven_size_values=[1.0, 2.0, 4.0, 8.0, 16.0],
+    )
+    m = Map(center=[0, 0], zoom=2, embedded=False)
+    m.add_layer(layer)
+    m.add_component(Legend(layer_labels={"m": "M"}))
+    cfg = m.to_dict()
+    layer_cfg = next(L for L in cfg["layers"] if L["id"] == "m")
+    assert layer_cfg["layout"]["icon-size"][0] == "interpolate"
+    assert "llmaps_size_legend" in layer_cfg["metadata"]
 
 
 def test_map_to_dict_resolves_circle_data_driven_size(tmp_path):

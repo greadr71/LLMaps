@@ -72,6 +72,14 @@ _JS_TEMPLATES = (
 )
 
 
+def _config_has_data_driven_size_client(config: Dict[str, Any]) -> bool:
+    for layer in config.get("layers") or []:
+        meta = layer.get("metadata") or {}
+        if meta.get("llmaps_data_driven_size_spec"):
+            return True
+    return False
+
+
 def _render_base_js(config: Dict[str, Any]) -> str:
     """Render all JS templates with config context and concatenate into one string."""
     from llmaps.optimizers.compression import generate_decompression_js
@@ -96,7 +104,11 @@ def _render_base_js(config: Dict[str, Any]) -> str:
     
     # Add server-rendered legend JS
     parts.append(generate_legend_js())
-    
+
+    if _config_has_data_driven_size_client(config):
+        dds_client_path = resources.files("llmaps") / "templates" / "js" / "data_driven_size_client.js"
+        parts.append(dds_client_path.read_text(encoding="utf-8"))
+
     return "\n".join(parts)
 
 

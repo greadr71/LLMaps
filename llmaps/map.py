@@ -322,7 +322,22 @@ class Map:
         return out
 
     def _apply_data_driven_sizes(self, layers_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Replace circle-radius / icon-size from :class:`~llmaps.components.data_driven_size.DataDrivenSize` when possible."""
+        """Replace circle-radius / icon-size from :class:`~llmaps.components.data_driven_size.DataDrivenSize` when possible.
+
+        Values for percentiles come from either:
+
+        * ``layer.data_driven_size_values`` — explicit numeric sample (e.g. fetched from
+          an API in Python before :meth:`save`), or
+        * a local :class:`~llmaps.sources.file.FileSource` on the layer — column
+          ``data_driven_size.field`` via :meth:`~llmaps.core.utils.load_gdf`.
+
+        In both cases the resulting expressions and legend are **fixed at HTML export
+        time**; they do not auto-refresh in the browser when remote data changes.
+
+        If ``layer.data_driven_size_client`` is ``True``, only
+        ``metadata["llmaps_data_driven_size_spec"]`` is written and paint is left as
+        declared on the layer (browser applies sizing via bundled JS).
+        """
         from .components.data_driven_size import DataDrivenSize
         from .core.utils import load_gdf
 
@@ -335,19 +350,42 @@ class Map:
             dds = getattr(py_layer, "data_driven_size", None)
             if not isinstance(dds, DataDrivenSize):
                 continue
-            gdf = load_gdf(py_layer.source)
-            if gdf is None or dds.field not in gdf.columns:
-                continue
-            ser = gdf[dds.field]
-            try:
-                import pandas as pd
 
-                num = pd.to_numeric(ser, errors="coerce").dropna()
-            except Exception:
+            if getattr(py_layer, "data_driven_size_client", False):
+                meta = dict(layer_dict.get("metadata") or {})
+                meta["llmaps_data_driven_size_spec"] = dds.client_spec_dict(locale=self.locale)
+                layer_dict["metadata"] = meta
                 continue
-            if num.empty:
-                continue
-            resolved = dds.resolve(num.values, locale=self.locale)
+
+            num_values = None
+            inline = getattr(py_layer, "data_driven_size_values", None)
+            if inline is not None:
+                try:
+                    import numpy as np
+
+                    arr = np.asarray(list(inline), dtype=float)
+                except (TypeError, ValueError):
+                    arr = None
+                if arr is not None:
+                    arr = arr[np.isfinite(arr)]
+                    if arr.size > 0:
+                        num_values = arr
+            if num_values is None:
+                gdf = load_gdf(py_layer.source)
+                if gdf is None or dds.field not in gdf.columns:
+                    continue
+                ser = gdf[dds.field]
+                try:
+                    import pandas as pd
+
+                    num = pd.to_numeric(ser, errors="coerce").dropna()
+                except Exception:
+                    continue
+                if num.empty:
+                    continue
+                num_values = num.values
+
+            resolved = dds.resolve(num_values, locale=self.locale)
             if not resolved:
                 continue
             expr = resolved["interpolate_expression"]

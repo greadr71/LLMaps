@@ -47,7 +47,8 @@ m.save("my_map.html")
 | Scrollytelling + comparison | Storytelling + Scene(comparison=SceneComparison(...)) |
 | Data from API | CircleLayer/FillLayer + ApiSource + Legend |
 | Vector tiles | VectorTileLayer + VectorTileSource |
-| Marker size from a numeric column (local GeoJSON) | CircleLayer/SymbolLayer + `data_driven_size=DataDrivenSize(...)` + FileSource + Legend |
+| Marker size from a numeric column (**snapshot at HTML save**) | `data_driven_size` + either `FileSource` **or** `data_driven_size_values=[...]` (API sample in Python) + Legend — re-export when the sample changes |
+| Marker size **live in the browser** (pg_featureserv / custom fetch) | `data_driven_size` + `data_driven_size_client=True` → `metadata.llmaps_data_driven_size_spec` + bundled `llmapsApplyDataDrivenSizeFromValues`; or Atlas `assets/js/data-driven-size.js` + your `map.js` |
 
 ## Constructors (Python stubs)
 
@@ -62,8 +63,8 @@ Map(center=[lon, lat], zoom=10.0, title=None, tiles="osm", embedded=True, use_co
 # .add_custom_js(js) .add_custom_css(css) .add_custom_html(html) .embed_data(key, data)
 
 # Layers — all need id, source
-CircleLayer(id, source, radius=6.0, color="#3182bd", opacity=0.8, data_driven_size=None)
-# data_driven_size: optional DataDrivenSize(field=...) — Map.to_dict() reads FileSource, sets circle-radius interpolate + size legend metadata; with color_stops also sets circle-color (interpolate or step).
+CircleLayer(id, source, radius=6.0, color="#3182bd", opacity=0.8, data_driven_size=None, data_driven_size_values=None, data_driven_size_client=False)
+# data_driven_size: optional DataDrivenSize(field=...) — at to_dict: if data_driven_size_client=True, only metadata.llmaps_data_driven_size_spec (no paint change); else uses data_driven_size_values or FileSource; sets circle-radius interpolate + size legend; color_stops also sets circle-color.
 FillLayer(id, source, fill_color="#3182bd", fill_opacity=0.6, stroke_color="#08519c", stroke_width=1.0, feature_state=None)
 # fill_color/fill_opacity accept MapLibre expressions (e.g. feature-state). feature_state: {"active": True, "color": "POP_EST"} auto-sets state from GeoJSON (no custom JS). stroke_width>1 adds outline layer.
 H3Layer(id, source, h3_column=None, resolution=8, aggregation="count", property_field="value",
@@ -78,7 +79,7 @@ SymbolLayer(id, source, source_layer=None,
             icon_opacity=1.0,
             text_field=None, text_size=12.0, text_anchor="top", text_offset=[0.0, 0.5],
             text_color="#222222", text_opacity=1.0, text_halo_color="rgba(255,255,255,0.8)", text_halo_width=0.0,
-            data_driven_size=None)
+            data_driven_size=None, data_driven_size_values=None, data_driven_size_client=False)
 # icon_image: string (pre-registered image name) or MapLibre expression list. text_field: plain property name
 # (auto-wrapped to ["get", name]) or expression list. source_layer: set for VectorTileSource only.
 
@@ -93,7 +94,7 @@ Legend(position="top-right", show_toggle=True, layer_labels={}, layer_counts={},
 # instructions: list of tip strings (collapsible block). tips_title: optional; default from Map.locale (en → "💡 Tips", ru → "💡 Подсказки").
 # size_legends: optional extra size-legend dicts; normally use DataDrivenSize on a layer instead.
 
-# DataDrivenSize — percentile-based circle-radius / icon-size + SVG size legend (FileSource only at to_dict time)
+# DataDrivenSize — percentile-based circle-radius / icon-size + SVG size legend (to_dict: FileSource OR data_driven_size_values; frozen at save) OR client_spec via data_driven_size_client=True
 # Optional circle-color: color_stops=[(v,"#hex"),...], color_mode="interpolate"|"step", color_field=None, color_step_below=None,
 # legend_circle_colors=(low,mid,high) hex — overrides legend fills only when color_stops set; without color_stops, legend-only fills.
 DataDrivenSize(field, size_range=(4.0, 22.0), auto_percentiles=(0.1, 0.5, 0.9),

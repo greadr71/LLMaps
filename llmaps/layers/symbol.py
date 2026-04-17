@@ -8,7 +8,7 @@ Works with both GeoJSON sources (FileSource, ApiSource) and vector tile sources
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
 
 from .base import BaseLayer
 
@@ -70,8 +70,13 @@ class SymbolLayer(BaseLayer):
     text_halo_width:
         Width of the text halo in pixels (0 = no halo).
     data_driven_size:
-        Same as :attr:`CircleLayer.data_driven_size`, applied to ``icon-size``
-        in the layer layout when resolved from a file source.
+        Same as :attr:`CircleLayer.data_driven_size`, applied to ``icon-size`` in the
+        layer layout when resolved.
+    data_driven_size_values:
+        Same as :attr:`CircleLayer.data_driven_size_values` (optional numeric sample for
+        resolution without a ``FileSource``).
+    data_driven_size_client:
+        Same as :attr:`CircleLayer.data_driven_size_client`.
     """
 
     source_layer: Optional[str] = None
@@ -100,6 +105,8 @@ class SymbolLayer(BaseLayer):
     text_halo_color: str = "rgba(255,255,255,0.8)"
     text_halo_width: float = 0.0
     data_driven_size: Optional["DataDrivenSize"] = None
+    data_driven_size_values: Optional[Sequence[float]] = None
+    data_driven_size_client: bool = False
 
     layer_type: str = "symbol"
 
