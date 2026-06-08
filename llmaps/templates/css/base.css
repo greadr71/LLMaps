@@ -381,6 +381,52 @@ body {
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* Declarative legend groups */
+.llmaps-legend-group {
+  padding: 0;
+}
+.llmaps-legend-group + .llmaps-legend-group {
+  margin-top: 12px;
+}
+.llmaps-legend-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.llmaps-legend-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #4b5563;
+}
+.llmaps-legend-group-title-static {
+  margin: 0 0 8px;
+}
+.llmaps-legend-group-arrow {
+  font-size: 10px;
+  color: #6b7280;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.llmaps-legend-group-header.collapsed .llmaps-legend-group-arrow {
+  transform: rotate(-90deg);
+}
+.llmaps-legend-group-content {
+  overflow: hidden;
+}
+.llmaps-legend-group-content.collapsed {
+  display: none;
+}
+
 /* Layer header with toggle */
 .llmaps-legend-layer-header {
   display: flex;

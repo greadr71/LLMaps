@@ -7,6 +7,7 @@ inspired by wibemaps architecture with llmaps design aesthetics.
 from __future__ import annotations
 
 import html
+import re
 from typing import Any, Dict, List
 
 from llmaps.components.data_driven_size import render_size_legend_svg_fragment
@@ -84,17 +85,140 @@ def _collect_size_legend_specs(
     config: Dict[str, Any], legend_config: Dict[str, Any]
 ) -> List[Dict[str, Any]]:
     specs: List[Dict[str, Any]] = []
-    for layer in config.get("layers", []):
+    for layer_index, layer in enumerate(config.get("layers", [])):
         meta = layer.get("metadata") or {}
         leg = meta.get("llmaps_size_legend")
         if isinstance(leg, dict):
-            specs.append(leg)
+            spec = dict(leg)
+            spec.setdefault("id", layer.get("id") or f"layer-{layer_index}")
+            specs.append(spec)
     extra = legend_config.get("size_legends")
     if isinstance(extra, list):
-        for item in extra:
+        for item_index, item in enumerate(extra):
             if isinstance(item, dict):
-                specs.append(item)
+                spec = dict(item)
+                spec.setdefault("id", f"extra-{item_index}")
+                specs.append(spec)
     return specs
+
+
+def _slugify_legend_group_id(value: Any, fallback: str) -> str:
+    raw = str(value or "").strip().lower()
+    slug = re.sub(r"[^a-z0-9_-]+", "-", raw).strip("-")
+    return slug or fallback
+
+
+def _legend_html_id(value: str) -> str:
+    safe = re.sub(r"[^A-Za-z0-9_-]+", "-", value).strip("-")
+    return safe or "legend-group"
+
+
+def _append_separator(html_block: str) -> str:
+    if 'class="llmaps-legend-group' in html_block:
+        if 'class="llmaps-legend-group llmaps-legend-section-separator' in html_block:
+            return html_block
+        return html_block.replace(
+            'class="llmaps-legend-group',
+            'class="llmaps-legend-group llmaps-legend-section-separator',
+            1,
+        )
+    if "llmaps-legend-section-separator" in html_block:
+        return html_block
+    return html_block.replace(
+        'class="llmaps-legend-section',
+        'class="llmaps-legend-section llmaps-legend-section-separator',
+        1,
+    )
+
+
+def _render_legend_items(items: List[Dict[str, str]]) -> str:
+    rendered: List[str] = []
+    total = len(items)
+    for i, item in enumerate(items):
+        html_block = item["html"]
+        if i < total - 1:
+            html_block = _append_separator(html_block)
+        rendered.append(html_block)
+    return chr(10).join(rendered)
+
+
+def _render_layer_section(info: Dict[str, Any], show_toggle: bool) -> str:
+    layer_id = str(info["layer_id"])
+    label = html.escape(str(info["label"]))
+    color = html.escape(str(info["color"]), quote=True)
+    icon_class = html.escape(str(info["icon_class"]), quote=True)
+    count = info["count"]
+    description = info["description"]
+    color_ramp = info["color_ramp"]
+
+    desc_parts = []
+    if description:
+        desc_parts.append(html.escape(str(description)))
+    if count is not None:
+        desc_parts.append(f"({int(count):,})")
+
+    desc_html = ""
+    if desc_parts:
+        desc_html = f'\n            <div class="llmaps-legend-description">{" ".join(desc_parts)}</div>'
+
+    toggle_html = ""
+    if show_toggle:
+        toggle_html = f'''
+                <label class="llmaps-layer-toggle">
+                    <input type="checkbox" checked data-layer-id="{html.escape(layer_id, quote=True)}">
+                    <span class="llmaps-toggle-slider"></span>
+                </label>'''
+
+    ramp_html = ""
+    if color_ramp and color_ramp.get("stops"):
+        stops = color_ramp["stops"]
+        colors = [str(stop[1]) for stop in stops]
+        gradient = f"linear-gradient(to right, {', '.join(colors)})"
+        label_min = html.escape(str(color_ramp.get("label_min", stops[0][0])))
+        label_max = html.escape(str(color_ramp.get("label_max", stops[-1][0])))
+        ramp_html = f'''
+            <div class="llmaps-legend-ramp" style="background: {html.escape(gradient, quote=True)};"></div>
+            <div class="llmaps-legend-ramp-labels">
+                <span class="llmaps-legend-ramp-min">{label_min}</span>
+                <span class="llmaps-legend-ramp-max">{label_max}</span>
+            </div>'''
+
+    return f'''        <div class="llmaps-legend-section" data-legend-layer-id="{html.escape(layer_id, quote=True)}">
+            <div class="llmaps-legend-layer-header">
+                <div class="llmaps-legend-icon {icon_class}" style="background-color: {color};"></div>
+                <div class="llmaps-legend-item-label">{label}</div>{toggle_html}
+            </div>{desc_html}{ramp_html}
+        </div>'''
+
+
+def _render_legend_group(group: Dict[str, Any], items: List[Dict[str, str]]) -> str:
+    group_id = _slugify_legend_group_id(
+        group.get("id") or group.get("key") or group.get("title"),
+        "group",
+    )
+    title = group.get("title")
+    collapsible = bool(group.get("collapsible", False) or group.get("collapsed", False))
+    collapsed = bool(group.get("collapsed", False))
+    collapsed_class = " collapsed" if collapsed else ""
+    content_id = f"llmaps-legend-group-{_legend_html_id(group_id)}"
+    title_html = ""
+    if title and collapsible:
+        title_html = f'''            <button class="llmaps-legend-group-header{collapsed_class}" type="button" data-legend-group-target="{html.escape(content_id, quote=True)}" aria-expanded="{str(not collapsed).lower()}">
+                <span class="llmaps-legend-group-title">{html.escape(str(title))}</span>
+                <span class="llmaps-legend-group-arrow">▼</span>
+            </button>'''
+    elif title:
+        title_html = f'''            <div class="llmaps-legend-group-title llmaps-legend-group-title-static">{html.escape(str(title))}</div>'''
+    if group.get("item_separators"):
+        content_html = _render_legend_items(items)
+    else:
+        content_html = chr(10).join(item["html"] for item in items)
+    return f'''        <div class="llmaps-legend-group" data-legend-group-id="{html.escape(group_id, quote=True)}">
+{title_html}
+            <div class="llmaps-legend-group-content{collapsed_class}" id="{html.escape(content_id, quote=True)}">
+{content_html}
+            </div>
+        </div>'''
 
 
 def generate_legend_html(config: Dict[str, Any]) -> str:
@@ -173,147 +297,83 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
             basemap_in_legend = True
             break
 
-    # Build HTML sections
-    sections = []
+    # Build legend items. Flat legends keep the historical visual order, while
+    # grouped legends can reorder the same item pool declaratively.
+    items: List[Dict[str, str]] = []
 
-    # Simple entries section (if provided)
     if entries:
-        for i, entry in enumerate(entries):
-            label = entry.get("label", "Unnamed")
-            color = entry.get("color", "#999")
-            is_last_entry = (i == len(entries) - 1)
-            
-            # Add separator if not last entry or there are layers/basemap/instructions after
-            separator_class = ""
-            if not is_last_entry or layers_info or has_basemap or instructions or has_size_legends:
-                separator_class = " llmaps-legend-section-separator"
-            
-            sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
+        entry_sections = []
+        for entry in entries:
+            label = html.escape(str(entry.get("label", "Unnamed")))
+            color = html.escape(str(entry.get("color", "#999")), quote=True)
+            entry_sections.append(f'''        <div class="llmaps-legend-section">
             <div class="llmaps-legend-layer-header">
                 <div class="llmaps-legend-icon circle" style="background-color: {color};"></div>
                 <div class="llmaps-legend-item-label">{label}</div>
             </div>
         </div>''')
+        items.append({"key": "entries", "html": _render_legend_items([{"html": s} for s in entry_sections])})
 
-    # Global color ramp (if provided and no per-layer ramps)
     if color_ramp and color_ramp.get("colors") and color_ramp.get("labels"):
-        colors = color_ramp["colors"]
+        colors = [str(c) for c in color_ramp["colors"]]
         labels = color_ramp["labels"]
         gradient = f"linear-gradient(to right, {', '.join(colors)})"
-        
-        separator_class = ""
-        if layers_info or has_basemap or instructions or has_size_legends:
-            separator_class = " llmaps-legend-section-separator"
-        
-        sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
-            <div class="llmaps-legend-ramp" style="background: {gradient};"></div>
+        items.append({"key": "color_ramp", "html": f'''        <div class="llmaps-legend-section">
+            <div class="llmaps-legend-ramp" style="background: {html.escape(gradient, quote=True)};"></div>
             <div class="llmaps-legend-ramp-labels">
-                <span class="llmaps-legend-ramp-min">{labels[0]}</span>
-                <span class="llmaps-legend-ramp-max">{labels[-1]}</span>
+                <span class="llmaps-legend-ramp-min">{html.escape(str(labels[0]))}</span>
+                <span class="llmaps-legend-ramp-max">{html.escape(str(labels[-1]))}</span>
             </div>
-        </div>''')
+        </div>'''})
 
-    # Layer sections (title is only in legend header, no duplicate section)
-    for i, info in enumerate(layers_info):
-        is_last_layer = (i == len(layers_info) - 1)
-        layer_id = info["layer_id"]
-        label = info["label"]
-        color = info["color"]
-        icon_class = info["icon_class"]
-        count = info["count"]
-        description = info["description"]
-        color_ramp = info["color_ramp"]
+    for info in layers_info:
+        layer_id = str(info["layer_id"])
+        items.append(
+            {
+                "key": f"layer:{layer_id}",
+                "html": _render_layer_section(info, show_toggle),
+            }
+        )
 
-        # Build description HTML
-        desc_parts = []
-        if description:
-            desc_parts.append(description)
-        if count is not None:
-            desc_parts.append(f"({count:,})")
-
-        desc_html = ""
-        if desc_parts:
-            desc_html = f'\n            <div class="llmaps-legend-description">{" ".join(desc_parts)}</div>'
-
-        # Build toggle HTML (iOS-style switch)
-        toggle_html = ""
-        if show_toggle:
-            toggle_html = f'''
-                <label class="llmaps-layer-toggle">
-                    <input type="checkbox" checked data-layer-id="{layer_id}">
-                    <span class="llmaps-toggle-slider"></span>
-                </label>'''
-
-        # Build color ramp HTML
-        ramp_html = ""
-        if color_ramp and color_ramp.get("stops"):
-            stops = color_ramp["stops"]
-            colors = [stop[1] for stop in stops]
-            gradient = f"linear-gradient(to right, {', '.join(colors)})"
-            label_min = color_ramp.get("label_min", stops[0][0])
-            label_max = color_ramp.get("label_max", stops[-1][0])
-            ramp_html = f'''
-            <div class="llmaps-legend-ramp" style="background: {gradient};"></div>
-            <div class="llmaps-legend-ramp-labels">
-                <span class="llmaps-legend-ramp-min">{label_min}</span>
-                <span class="llmaps-legend-ramp-max">{label_max}</span>
-            </div>'''
-
-        # Section separator class (only if not last layer or there's more content after)
-        separator_class = ""
-        if not is_last_layer or has_basemap or instructions or has_size_legends:
-            separator_class = " llmaps-legend-section-separator"
-
-        sections.append(f'''        <div class="llmaps-legend-section{separator_class}">
-            <div class="llmaps-legend-layer-header">
-                <div class="llmaps-legend-icon {icon_class}" style="background-color: {color};"></div>
-                <div class="llmaps-legend-item-label">{label}</div>{toggle_html}
-            </div>{desc_html}{ramp_html}
-        </div>''')
-
-    # 3. Basemap switcher section (if present)
     if has_basemap and basemap_in_legend:
         options_html = []
         for provider in tile_providers:
-            provider_id = provider.get("id", "")
-            provider_name = provider.get("name", provider_id)
-            options_html.append(f'<option value="{provider_id}">{provider_name}</option>')
+            provider_id = str(provider.get("id", ""))
+            provider_name = str(provider.get("name", provider_id))
+            options_html.append(
+                f'<option value="{html.escape(provider_id, quote=True)}">{html.escape(provider_name)}</option>'
+            )
 
-        separator_class = (
-            " llmaps-legend-section-separator" if (instructions or has_size_legends) else ""
-        )
-        sections.append(f'''        <div class="llmaps-legend-section llmaps-legend-basemap{separator_class}">
+        items.append({"key": "basemap", "html": f'''        <div class="llmaps-legend-section llmaps-legend-basemap">
             <div class="llmaps-basemap-select-wrap">
                 <select class="llmaps-basemap-select" id="llmaps-basemap-select">
                     {chr(10).join(f"                    {opt}" for opt in options_html)}
                 </select>
             </div>
-        </div>''')
+        </div>'''})
 
-    # Size-by-value legend blocks (from layer metadata or Legend.size_legends)
     if size_legend_specs:
-        for i, spec in enumerate(size_legend_specs):
+        for spec in size_legend_specs:
             svg_block = render_size_legend_svg_fragment(spec)
             if not svg_block:
                 continue
-            is_last = i == len(size_legend_specs) - 1
-            sep = ""
-            if not is_last or instructions:
-                sep = " llmaps-legend-section-separator"
-            sections.append(
-                f'''        <div class="llmaps-legend-section llmaps-size-legend-section{sep}">
+            spec_id = str(spec.get("id"))
+            items.append(
+                {
+                    "key": f"size_legend:{spec_id}",
+                    "html": f'''        <div class="llmaps-legend-section llmaps-size-legend-section" data-size-legend-id="{html.escape(spec_id, quote=True)}">
             <div class="llmaps-size-legend-wrap">
                 {svg_block}
             </div>
-        </div>'''
+        </div>''',
+                }
             )
 
-    # 4. Collapsible Tips section (if instructions provided)
     if instructions:
         tips_items = [f"<li>{html.escape(str(tip))}</li>" for tip in instructions]
         collapsed_class = " collapsed" if collapsed_tips else ""
 
-        sections.append(f'''        <div class="llmaps-legend-instructions">
+        items.append({"key": "instructions", "html": f'''        <div class="llmaps-legend-instructions">
             <div class="llmaps-legend-instructions-header{collapsed_class}" id="llmaps-tips-header">
                 <span class="llmaps-legend-instructions-title">{tips_title_display}</span>
                 <span class="llmaps-legend-instructions-arrow">▼</span>
@@ -323,17 +383,88 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
                     {chr(10).join(f"                    {item}" for item in tips_items)}
                 </ul>
             </div>
-        </div>''')
+        </div>'''})
+
+    item_by_key = {item["key"]: item for item in items}
+    rendered_keys: set[str] = set()
+    sections: List[str] = []
+    groups = legend_config.get("groups") or []
+    order = legend_config.get("order") or []
+
+    if groups:
+        group_by_key: Dict[str, Dict[str, Any]] = {}
+        for i, group in enumerate(groups):
+            if not isinstance(group, dict):
+                continue
+            group_id = _slugify_legend_group_id(
+                group.get("id") or group.get("key") or group.get("title"),
+                f"group-{i}",
+            )
+            group_by_key[f"group:{group_id}"] = group
+
+        def render_group(group: Dict[str, Any]) -> str:
+            group_items: List[Dict[str, str]] = []
+            group_keys: List[str] = []
+            for layer_id in group.get("layer_ids") or []:
+                group_keys.append(f"layer:{layer_id}")
+            for size_legend_id in group.get("size_legend_ids") or []:
+                group_keys.append(f"size_legend:{size_legend_id}")
+            for key in group.get("order") or []:
+                if isinstance(key, str):
+                    group_keys.append(key)
+
+            for key in dict.fromkeys(group_keys):
+                item = item_by_key.get(key)
+                if item is None or key in rendered_keys:
+                    continue
+                group_items.append(item)
+                rendered_keys.add(key)
+            if not group_items:
+                return ""
+            rendered = _render_legend_group(group, group_items)
+            if group.get("separator_after"):
+                rendered = _append_separator(rendered)
+            return rendered
+
+        ordered_refs = [str(ref) for ref in order] if order else list(group_by_key.keys())
+        for ref in ordered_refs:
+            if ref.startswith("group:"):
+                rendered = render_group(group_by_key.get(ref, {}))
+                if rendered:
+                    sections.append(rendered)
+                continue
+            item = item_by_key.get(ref)
+            if item is not None and ref not in rendered_keys:
+                sections.append(item["html"])
+                rendered_keys.add(ref)
+
+        for group_key, group in group_by_key.items():
+            if group_key not in ordered_refs:
+                rendered = render_group(group)
+                if rendered:
+                    sections.append(rendered)
+
+        for item in items:
+            if item["key"] not in rendered_keys:
+                sections.append(item["html"])
+                rendered_keys.add(item["key"])
+    else:
+        sections = [item["html"] for item in items]
+
+    if groups:
+        sections_html = chr(10).join(sections)
+    else:
+        sections_html = _render_legend_items([{"html": s} for s in sections])
 
     # Assemble final legend HTML
     description_html = ""
     if description:
-        description_html = f'\n            <div class="llmaps-legend-description" style="padding: 0 20px 12px 20px; font-size: 13px; color: #6b7280;">{description}</div>'
+        description_html = f'\n            <div class="llmaps-legend-description" style="padding: 0 20px 12px 20px; font-size: 13px; color: #6b7280;">{html.escape(str(description))}</div>'
     
     return f'''    <!-- Legend (server-rendered) -->
     <div class="llmaps-legend {position}">
         <div class="llmaps-legend-header">
-            <div class="llmaps-legend-title">{title}</div>
+            <div class="llmaps-legend-title">{html.escape(str(title))}</div>
             <div class="llmaps-legend-toggle-btn" id="llmaps-legend-toggle">
                 <svg class="llmaps-chevron-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -344,7 +475,7 @@ def generate_legend_html(config: Dict[str, Any]) -> str:
             </div>
         </div>{description_html}
         <div class="llmaps-legend-content">
-{chr(10).join(sections)}
+{sections_html}
         </div>
     </div>'''
 
@@ -405,4 +536,18 @@ def generate_legend_js() -> str:
                     tipsContent.classList.toggle('collapsed');
                 });
             }
+
+            // Legend groups
+            const groupHeaders = legendEl.querySelectorAll('.llmaps-legend-group-header[data-legend-group-target]');
+            groupHeaders.forEach(function(header) {
+                header.addEventListener('click', function() {
+                    const targetId = header.getAttribute('data-legend-group-target');
+                    const content = targetId ? document.getElementById(targetId) : null;
+                    if (!content) return;
+                    const collapsed = !content.classList.contains('collapsed');
+                    header.classList.toggle('collapsed', collapsed);
+                    content.classList.toggle('collapsed', collapsed);
+                    header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                });
+            });
         })();'''

@@ -33,6 +33,41 @@ Legend(
 | `collapsed` | bool | True | Whether the tips section starts collapsed. |
 | `tips_title` | str or None | None | Heading for the tips block. If omitted, defaults from `Map.locale` (`en-US` → “💡 Tips”, `ru-RU` → “💡 Подсказки”). |
 | `size_legends` | list of dict or None | None | Extra size-legend payloads (same shape as layer `metadata["llmaps_size_legend"]`). Usually left unset; use `DataDrivenSize` on `CircleLayer` / `SymbolLayer` instead. |
+| `groups` | list of dict or None | None | Declarative legend groups. Each group supports `id`, `title`, `layer_ids`, `size_legend_ids`, optional local `order`, and `collapsed`. |
+| `order` | list of str or None | None | Optional top-level display order. Use tokens like `"group:places"`, `"layer:points"`, `"size_legend:population"`, `"entries"`, `"color_ramp"`, `"basemap"`, and `"instructions"`. |
+
+Grouped legend example:
+
+```python
+Legend(
+    layer_labels={
+        "cities": "Cities",
+        "stores": "Stores",
+    },
+    size_legends=[
+        {
+            "id": "city-population",
+            "title": "Population",
+            "visual": "fill",
+            "circles": [
+                {"value": 1000, "size_px": 4, "label": "1k"},
+                {"value": 10000, "size_px": 10, "label": "10k"},
+                {"value": 50000, "size_px": 18, "label": "50k"},
+            ],
+        }
+    ],
+    groups=[
+        {
+            "id": "places",
+            "title": "Places",
+            "layer_ids": ["cities"],
+            "size_legend_ids": ["city-population"],
+        },
+        {"id": "commerce", "title": "Commerce", "layer_ids": ["stores"]},
+    ],
+    order=["group:places", "group:commerce", "instructions"],
+)
+```
 
 ---
 

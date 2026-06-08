@@ -60,6 +60,15 @@ class Legend(BaseComponent):
         ``metadata["llmaps_size_legend"]``) merged after auto-collected layer
         legends. Normally you do not set this; use
         :class:`~llmaps.components.data_driven_size.DataDrivenSize` on a layer.
+    groups:
+        Optional declarative legend groups. Each group is a mapping with an
+        ``id``, optional ``title``, optional ``layer_ids`` list, optional
+        ``size_legend_ids`` list, and optional ``collapsed`` flag.
+    order:
+        Optional ordered list of legend item references. Supported tokens are
+        ``"group:<id>"``, ``"layer:<id>"``, ``"size_legend:<id>"``,
+        ``"entries"``, ``"color_ramp"``, ``"basemap"``, and
+        ``"instructions"``.
     """
 
     position: str = "top-right"
@@ -77,6 +86,8 @@ class Legend(BaseComponent):
     collapsed: bool = True
     tips_title: Optional[str] = None
     size_legends: Optional[List[Dict[str, Any]]] = None
+    groups: Optional[List[Dict[str, Any]]] = None
+    order: Optional[List[str]] = None
 
     def __post_init__(self) -> None:
         self.component_type = "legend"
@@ -110,5 +121,8 @@ class Legend(BaseComponent):
             base["tips_title"] = self.tips_title
         if self.size_legends:
             base["size_legends"] = [dict(s) for s in self.size_legends]
+        if self.groups:
+            base["groups"] = [dict(g) for g in self.groups]
+        if self.order:
+            base["order"] = list(self.order)
         return base
-

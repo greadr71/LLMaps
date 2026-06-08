@@ -124,6 +124,79 @@ def test_legend_tips_title_override():
     assert "💡 Hints" in html
 
 
+def test_legend_groups_order_layers_size_legend_and_instructions():
+    config = {
+        "locale": "en-US",
+        "title": "T",
+        "layers": [
+            {
+                "id": "points",
+                "type": "circle",
+                "paint": {"circle-color": "#ff0000"},
+            },
+            {
+                "id": "offices",
+                "type": "circle",
+                "paint": {"circle-color": "#00ff00"},
+            },
+        ],
+        "components": [
+            {
+                "type": "legend",
+                "layer_labels": {"points": "Points", "offices": "Offices"},
+                "instructions": ["Use it"],
+                "size_legends": [
+                    {
+                        "id": "points-size",
+                        "title": "Point size",
+                        "visual": "fill",
+                        "fill_color": "#64748b",
+                        "circles": [
+                            {"value": 1, "size_px": 4, "label": "1"},
+                            {"value": 2, "size_px": 8, "label": "2"},
+                            {"value": 3, "size_px": 12, "label": "3"},
+                        ],
+                    }
+                ],
+                "groups": [
+                    {
+                        "id": "points",
+                        "title": "Point group",
+                        "layer_ids": ["points"],
+                        "size_legend_ids": ["points-size"],
+                    },
+                    {
+                        "id": "offices",
+                        "title": "Office group",
+                        "layer_ids": ["offices"],
+                        "collapsed": True,
+                    },
+                ],
+                "order": ["group:points", "group:offices", "instructions"],
+            }
+        ],
+    }
+    html = generate_legend_html(config)
+    assert 'data-legend-group-id="points"' in html
+    assert 'data-legend-group-id="offices"' in html
+    assert 'data-size-legend-id="points-size"' in html
+    assert 'llmaps-legend-group-header collapsed' in html
+    assert html.index("Point group") < html.index("Points")
+    assert html.index("Points") < html.index("Point size")
+    assert html.index("Office group") < html.index("Offices")
+    assert html.index("Offices") < html.index("Use it")
+
+
+def test_legend_to_dict_includes_groups_and_order():
+    legend = Legend(
+        groups=[{"id": "a", "title": "A", "layer_ids": ["l"]}],
+        order=["group:a", "instructions"],
+    )
+    cfg = legend.to_dict()
+    assert cfg["groups"] == [{"id": "a", "title": "A", "layer_ids": ["l"]}]
+    assert cfg["order"] == ["group:a", "instructions"]
+
+
 def test_map_to_dict_resolves_circle_data_driven_size_from_inline_values():
     """ApiSource has no local file; DDS uses data_driven_size_values only."""
     src = ApiSource(id="live", url="https://example.invalid/unused-at-to-dict")
