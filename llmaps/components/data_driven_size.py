@@ -326,8 +326,9 @@ class DataDrivenSize:
 
     For **browser-time** resolution, set ``data_driven_size_client=True`` on the layer
     and use :meth:`client_spec_dict` output (``metadata["llmaps_data_driven_size_spec"]``)
-    with the bundled ``llmapsApplyDataDrivenSizeFromValues`` helper, or Atlas
-    ``AtlasDataDrivenSize`` in custom JS.
+    with the bundled ``llmapsApplyDataDrivenSizeFromValues`` helper. The browser helper
+    also accepts Atlas-style camelCase options and exposes ``llmapsApplyRuntimeStyle``
+    / ``llmapsApplyRuntimeStyles`` for runtime paint/layout/filter expressions.
 
     Parameters
     ----------

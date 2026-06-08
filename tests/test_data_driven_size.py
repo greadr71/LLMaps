@@ -1,6 +1,9 @@
 """Tests for DataDrivenSize and localized legend tips."""
 
 import json
+import shutil
+import subprocess
+from importlib import resources
 
 import numpy as np
 import pytest
@@ -12,6 +15,25 @@ from llmaps.core.legend_generator import _default_tips_title, generate_legend_ht
 from llmaps.layers import CircleLayer, SymbolLayer
 from llmaps.sources.api import ApiSource
 from llmaps.sources.file import FileSource
+
+
+def _run_dds_client_js(script: str) -> dict:
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+
+    helper = (
+        resources.files("llmaps")
+        .joinpath("templates/js/data_driven_size_client.js")
+        .read_text(encoding="utf-8")
+    )
+    completed = subprocess.run(
+        [node, "-e", helper + "\n" + script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(completed.stdout)
 
 
 def test_percentile_sorted_edges():
@@ -158,6 +180,60 @@ def test_to_html_includes_client_dds_runtime_when_spec_present():
     )
     html = m.to_html()
     assert "llmapsApplyDataDrivenSizeFromValues" in html
+
+
+def test_data_driven_size_client_accepts_iterable_and_camel_case_spec():
+    out = _run_dds_client_js(
+        """
+        const values = new Set([-2, 0, 10, 20, 50, 90, 200, 400]);
+        const stops = global.llmapsDataDrivenSizeResolveFromValues(values, {
+          sizeRange: [3, 18],
+          autoPercentiles: [0.1, 0.5, 0.9],
+          minValue: 5,
+          filterPositive: true
+        });
+        const expr = global.llmapsDataDrivenSizeBuildInterpolate(
+          'metric',
+          stops,
+          { coalesceDefault: true }
+        );
+        console.log(JSON.stringify({ stops, expr }));
+        """
+    )
+    assert out["stops"]["s0"] == 3
+    assert out["stops"]["s2"] == 18
+    assert out["stops"]["v0"] == 5
+    assert out["expr"][2] == ["coalesce", ["to-number", ["get", "metric"], 0], 0]
+
+
+def test_runtime_style_client_applies_paint_layout_and_filter():
+    out = _run_dds_client_js(
+        """
+        const calls = [];
+        const map = {
+          getLayer: (id) => id === 'mvt-layer',
+          setPaintProperty: (layer, name, value) => calls.push(['paint', layer, name, value]),
+          setLayoutProperty: (layer, name, value) => calls.push(['layout', layer, name, value]),
+          setFilter: (layer, value) => calls.push(['filter', layer, value])
+        };
+        const ok = global.llmapsApplyRuntimeStyle(map, 'mvt-layer', {
+          paint: { 'circle-radius': ['interpolate', ['linear'], ['get', 'v'], 1, 4, 10, 20] },
+          layout: { visibility: 'visible' },
+          filter: ['>', ['get', 'v'], 0]
+        });
+        console.log(JSON.stringify({ ok, calls }));
+        """
+    )
+    assert out["ok"] is True
+    radius_call = [
+        "paint",
+        "mvt-layer",
+        "circle-radius",
+        ["interpolate", ["linear"], ["get", "v"], 1, 4, 10, 20],
+    ]
+    assert radius_call in out["calls"]
+    assert ["layout", "mvt-layer", "visibility", "visible"] in out["calls"]
+    assert ["filter", "mvt-layer", [">", ["get", "v"], 0]] in out["calls"]
 
 
 def test_map_to_dict_client_mode_emits_spec_not_interpolate():

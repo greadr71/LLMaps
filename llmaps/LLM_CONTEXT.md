@@ -48,7 +48,7 @@ m.save("my_map.html")
 | Data from API | CircleLayer/FillLayer + ApiSource + Legend |
 | Vector tiles | VectorTileLayer + VectorTileSource |
 | Marker size from a numeric column (**snapshot at HTML save**) | `data_driven_size` + either `FileSource` **or** `data_driven_size_values=[...]` (API sample in Python) + Legend — re-export when the sample changes |
-| Marker size **live in the browser** (pg_featureserv / custom fetch) | `data_driven_size` + `data_driven_size_client=True` → `metadata.llmaps_data_driven_size_spec` + bundled `llmapsApplyDataDrivenSizeFromValues`; or Atlas `assets/js/data-driven-size.js` + your `map.js` |
+| Marker size **live in the browser** (pg_featureserv / custom fetch) | `data_driven_size` + `data_driven_size_client=True` → `metadata.llmaps_data_driven_size_spec` + bundled `llmapsApplyDataDrivenSizeFromValues`; the browser helper also accepts Atlas-style camelCase options and exposes `llmapsApplyRuntimeStyle(s)` for runtime paint/layout/filter on MVT layers |
 
 ## Constructors (Python stubs)
 
