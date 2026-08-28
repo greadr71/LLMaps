@@ -33,6 +33,7 @@ class FillLayer(BaseLayer):
     fill_opacity: Union[float, List[Any]] = 0.6
     stroke_color: Union[str, List[Any], None] = "#08519c"
     stroke_width: Union[float, List[Any], None] = 1.0
+    source_layer: Optional[str] = None
 
     layer_type: str = "fill"
 
@@ -57,5 +58,7 @@ class FillLayer(BaseLayer):
                 base["metadata"]["outline_width"] = self.stroke_width
 
         base["paint"] = paint
+        if self.source_layer:
+            base["source-layer"] = self.source_layer
         return base
 

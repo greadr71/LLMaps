@@ -238,6 +238,8 @@ class Map:
                     },
                     "layout": {},
                 }
+                if layer_dict.get("source-layer") is not None:
+                    outline_layer["source-layer"] = layer_dict["source-layer"]
                 if layer_dict.get("minzoom") is not None:
                     outline_layer["minzoom"] = layer_dict["minzoom"]
                 if layer_dict.get("maxzoom") is not None:
